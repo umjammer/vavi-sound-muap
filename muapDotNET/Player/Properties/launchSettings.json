@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Player": {
-      "commandName": "Project",
-      "commandLineArgs": "\"D:\\bootcamp\\FM音源\\player\\muap641 (1)\\MUSIC\\SPB\\VP.o\""
-    }
-  }
-}

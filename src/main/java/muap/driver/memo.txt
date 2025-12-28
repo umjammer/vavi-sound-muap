@@ -1,0 +1,79 @@
+﻿
+pcm_check
+ |  push① (7 types)
+ |
+ |  push② (4 types)
+ |--pcmload3 Safe
+ |--pcmload6
+ |    It seems to be finished when it returns for now
+ |    If return value is false, returns with both pop① and pop② still needed
+ |  
+ |  pop② (4 types)
+ |--pcmload15 Safe
+      Perform pop① and terminate pcm_check
+
+pcmload3 Argument: Table of PCM start addresses
+    Determines whether to read PCM data that the user wants defined.
+    There is no processing that significantly affects the flow of control.
+
+pcmload15
+    There is no processing that significantly affects the flow of control.
+    Has pop①.
+
+pcmload6 Argument: Table of PCM start addresses
+ |
+ |  pushA Exists
+ |  push x2 Exists
+ |--set_usrpcmfile Safe Gets filename
+ |--fdd_notready   Caution
+ |--pcmload9s
+ |    Performs popA popx2. Also performs pop①②
+ |    Method end
+ |--subdir1
+ |    popA popx2 pop①② required
+ |    Method end
+
+fdd_notready
+ |Method that wants pcmload9s or subdir1 called based on return value
+ |--set_usrpcmfile Safe
+
+pcmload16
+    Calls pcmload9
+    
+pcmload9s(pcmload9)
+ |
+ |  popA Exists
+ |  Additionally has pop x4
+ |  Calls pcmload15
+
+subdir1
+ |--pcm_init Safe
+ |    Continue processing
+ |--pcmload16
+ |    Performs popA popx2. Also performs pop①②
+ |    Method end
+ |--pcmload13 Extremely Dangerous
+ |    popA for some reason
+ |    Then pcmload16 (this is fine)
+ |--load_userpcm
+ |--xferpcm
+ |    Continue processing
+ |--pcmload9
+ |    Performs popA popx2. Also performs pop①
+ |    Method end
+
+pcmload13
+ |    popA for some reason -> handled by pushA immediately after for now
+ |    Then pcmload16
+
+load_userpcm
+ |    
+ |--pcmload9    
+ |    Performs popA popx2. Also performs pop①
+ |    Method end (Instructs subdir1 to abort loading)
+ |--extpcm_write1
+ |    Method end (Instructs subdir1 to abort or continue loading)
+ |--pcmload10
+
+pcmload10 (Probably PCM transfer for spb)
+Skipped
