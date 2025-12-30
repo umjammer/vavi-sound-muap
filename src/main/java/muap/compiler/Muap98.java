@@ -61,7 +61,7 @@ public class Muap98 {
         File toneFile = new File(tone_path);
         if (!toneFile.exists()) {
             // Error: Tone file not found
-            String errorMsg = String.format("%s was not found", tone_path);
+            String errorMsg = "%s was not found".formatted(tone_path);
             if (work.compilerInfo == null) work.compilerInfo = new CompilerInfo();
             work.compilerInfo.errorList.add(new Tuple3<>(-1, -1, errorMsg));
             throw new MusException(errorMsg);

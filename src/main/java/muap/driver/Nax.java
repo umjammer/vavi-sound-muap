@@ -143,7 +143,7 @@ public class Nax {
     /** $122 tone data buffer segment */
     public int tone = 0;
     /** Kuma: Tone storage buffer */
-    public byte[] toneBuff = new byte[600]; // TODO vavi
+    public byte[] toneBuff = null;
     /** $124 86/wss pcm segment */
     private int extseg = 0;
     /** $126 86/wss pcm length(*16) */
@@ -336,7 +336,7 @@ public class Nax {
 
     private void putasciz(String mes, int sw) {
         if (sw == 0)
-            logger.log(Level.INFO, mes + "。");
+            logger.log(Level.INFO, mes + ".");
         else if (sw == 1)
             logger.log(Level.INFO, mes);
     }
@@ -411,7 +411,7 @@ public class Nax {
 
     private void patherr(String path) {
         if ((sflag & 1) != 0) return;
-        logger.log(Level.ERROR, String.format("%s%s", path, mess_g2));
+        logger.log(Level.ERROR, "%s%s".formatted(path, mess_g2));
     }
 
     private char xsmall(char al) {
@@ -453,7 +453,7 @@ public class Nax {
             play4.ssgtable = Files.readAllBytes(Paths.get(ssg2_path));
             logger.log(Level.INFO, "[{0}] File found.", ssg2_path);
         } catch (IOException e) {
-            logger.log(Level.ERROR, "File not found.{0}", ssg2_path);
+            logger.log(Level.ERROR, "File not found. {0}", ssg2_path);
         } finally {
             reg.setBx(bxbk);
         }
@@ -1101,7 +1101,7 @@ public class Nax {
                 buf = Files.readAllBytes(Paths.get(ssg1_path));
             } catch (IOException e) {
             }
-        } else logger.log(Level.ERROR, "File not found.{0}", ssg1_path);
+        } else logger.log(Level.ERROR, "File not found. {0}", ssg1_path);
 
         reg.setDx((short) (buf.length >> 16));
         if (reg.getDx() != 0 || buf.length >= pcmlen) {
@@ -2084,7 +2084,9 @@ public class Nax {
         reg.es = reg.cs;
         reg.setBx((short) 0);
         pcm_path1 = "*.*" + new String(new char[61]).replace('\0', (char) 0);
-        set_usrpcmfile(pcm_path1);
+        String[] tmp = {pcm_path1};
+        set_usrpcmfile(tmp);
+        pcm_path1 = tmp[0];
 
         reg.setDx(reg.getBx());
         reg.carry = false;
@@ -2104,14 +2106,14 @@ public class Nax {
         if (reg.carry) {
             reg.carry = false;
             if (!Files.exists(Paths.get(pcm_path1))) {
-                logger.log(Level.ERROR, "File not found.{0}", pcm_path1);
+                logger.log(Level.ERROR, "File not found. {0}", pcm_path1);
                 reg.carry = true;
             } else {
                 try {
                     filebuf = Files.readAllBytes(Paths.get(pcm_path1));
                     logger.log(Level.INFO, "[{0}] File found.", pcm_path1);
                 } catch (IOException e) {
-                    logger.log(Level.ERROR, "File not found.{0}", pcm_path1);
+                    logger.log(Level.ERROR, "File not found. {0}", pcm_path1);
                     reg.carry = true;
                 }
             }
@@ -2132,7 +2134,9 @@ public class Nax {
     private boolean fdd_notready() {
         reg.setBx((short) 0);
         pcm_path = "*.*" + new String(new char[61]).replace('\0', (char) 0);
-        set_usrpcmfile(pcm_path);
+        String[] tmp = {pcm_path};
+        set_usrpcmfile(tmp);
+        pcm_path = tmp[0];
         reg.di = reg.pop();
         reg.es = reg.pop();
 
@@ -2269,11 +2273,11 @@ public class Nax {
         return 0;
     }
 
-    private void set_usrpcmfile(String bxpath) {
+    private void set_usrpcmfile(String[] bxpath) {
         short bxbk = reg.getBx();
         short sibk = reg.getSi();
         reg.setDx(reg.getBx());
-        getpath_main(bxpath);
+        getpath_main(bxpath[0]);
         reg.di = 0;
         reg.setCx((short) 8);
         short dsbk = reg.ds;
@@ -2304,10 +2308,10 @@ public class Nax {
         reg.di++;
 
         String text = new String(buf, myEnc);
-        String sub = bxpath.substring(0, path1 + (path1 == 0 ? 0 : 1)) + text;
+        String sub = bxpath[0].substring(0, path1 + (path1 == 0 ? 0 : 1)) + text;
         int limit = (reg.di & 0xffff) + path1 - (path1 == 0 ? 1 : 0);
         if (sub.length() > limit) sub = sub.substring(0, limit);
-        bxpath = sub.replace(" ", "").replace("\0", "");
+        bxpath[0] = sub.replace(" ", "").replace("\0", "");
         reg.ds = dsbk;
         reg.setSi(sibk);
         reg.setBx(bxbk);

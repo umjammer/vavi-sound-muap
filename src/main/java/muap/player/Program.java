@@ -253,12 +253,12 @@ public class Program {
     }
 
     private static void opnaWrite(int chipId, ChipDatum dat) {
-        if (dat.address == -1) return;
+        if (dat.port == -1) return;
         mds.inst(Ym2608Inst.class).write(chipId, dat.port, dat.address, dat.data);
     }
 
     private static void opn2Write(int chipId, ChipDatum dat) {
-        if (dat.address == -1) return;
+        if (dat.port == -1) return;
         mds.inst(Ym3438Inst.class).write(chipId, dat.port, dat.address, dat.data);
     }
 

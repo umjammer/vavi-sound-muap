@@ -150,11 +150,11 @@ public class Pc98 {
                 // EOI if al == 0x20
                 return;
             } else if (dx == 0x02) {
-                ChipDatum cd = new ChipDatum(1, 2, al, 0, work.crntMmlDatum);
+                ChipDatum cd = new ChipDatum(1, 2, al & 0xff, 0, work.crntMmlDatum);
                 writeCS4231.accept(cd); // IMR
                 return;
             } else if (l == 0x5 || l == 0x7) {
-                ChipDatum cd = new ChipDatum(1, l, al, 0, work.crntMmlDatum);
+                ChipDatum cd = new ChipDatum(1, l, al & 0xff, 0, work.crntMmlDatum);
                 writeCS4231.accept(cd);
                 return;
             } else if (dx == 0x15 || dx == 0x17 || dx == 0x19 || dx == 0x5f) {
@@ -174,7 +174,7 @@ public class Pc98 {
             else if (l == 0x46) addr = 2;
 
             if (addr != -1) {
-                ChipDatum cd = new ChipDatum(0, addr, al, 0, work.crntMmlDatum);
+                ChipDatum cd = new ChipDatum(0, addr, al & 0xff, 0, work.crntMmlDatum);
                 writeCS4231.accept(cd);
                 return;
             }
@@ -214,7 +214,7 @@ public class Pc98 {
         int m = (dx >> 8) & 0xff;
         int l = dx & 0xff;
         if (l == 0x88) {
-            ChipDatum dat = new ChipDatum(-1, -1, -1, 0, work.crntMmlDatum);
+            ChipDatum dat = new ChipDatum(-1, 0, 0, 0, work.crntMmlDatum);
             if (m == 1) writeOPNAP.accept(dat);
             else writeOPN2P.accept(dat);
         }
@@ -270,7 +270,7 @@ public class Pc98 {
     }
 
     public void OutportC4231_Jump2(byte val) {
-        ChipDatum cd = new ChipDatum(2, 202, val, 0, work.crntMmlDatum);
+        ChipDatum cd = new ChipDatum(2, 202, val & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
     }
 

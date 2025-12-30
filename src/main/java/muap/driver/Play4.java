@@ -389,7 +389,7 @@ public class Play4 {
         r.setAx((short) 0);
         fade_count = 0;
 
-        r.ah = 0; // r.ch in ASM style
+        r.ch = 0; // r.ch in ASM style
         r.setSi((short) 0); // ofs:data_buff
 //magain1:
         do {
@@ -397,20 +397,20 @@ public class Play4 {
             tone2608(data_buff); // Tone resetting (ch1 to 3)
 
             r.setSi((short) ((r.getSi() + 2) & 0xffff));
-            r.ah = (byte) ((r.ah & 0xff) + 1);
-        } while ((r.ah & 0xff) < 3);
+            r.ch = (byte) ((r.ch & 0xff) + 1);
+        } while ((r.ch & 0xff) < 3);
 
-        r.ah = 6;
+        r.ch = 6;
         r.setSi((short) (6 * 2)); // ofs:data_buff+6*2
 //magain2:
         do {
             r.al = data_buff[(r.getSi() + TS) & 0xffff];
             tone2608(data_buff); // Tone resetting (ch6 to 9)
             r.setSi((short) ((r.getSi() + 2) & 0xffff));
-            r.ah = (byte) ((r.ah & 0xff) + 1);
-        } while ((r.ah & 0xff) < 9);
+            r.ch = (byte) ((r.ch & 0xff) + 1);
+        } while ((r.ch & 0xff) < 9);
 
-        r.ah = 11;
+        r.ch = 11;
         r.setSi((short) (11 * 2)); // ofs:data_buff+11*2
 //magain3:
         do {
@@ -425,16 +425,16 @@ public class Play4 {
             }
 //magain5:
             r.setSi((short) ((r.getSi() + 2) & 0xffff));
-            r.ah = (byte) ((r.ah & 0xff) + 1);
-        } while ((r.ah & 0xff) < 17);
+            r.ch = (byte) ((r.ch & 0xff) + 1);
+        } while ((r.ch & 0xff) < 17);
 
-        r.ah = 9;
+        r.ch = 9;
         r.setSi((short) (9 * 2)); // ofs:data_buff+9*2
         r.al = data_buff[(r.getSi() & 0xffff) + VS];
         volchgr(data_buff); // Rhythm volume restoration
 
         r.setSi((short) ((r.getSi() & 0xffff) + 2));
-        r.ah = (byte) ((r.ah & 0xff) + 1);
+        r.ch = (byte) ((r.ch & 0xff) + 1);
         r.al = data_buff[(r.getSi() & 0xffff) + VS];
         volchgr(data_buff); // PCM volume restoration
 
@@ -1116,12 +1116,12 @@ public class Play4 {
 //off1:
         do {
             key_off(); // key-off FM
-            r.ah = (byte) ((r.ah & 0xff) + 1);
-            if ((r.ah & 0xff) == 3) {
-                r.ah = 6;
+            r.ch = (byte) ((r.ch & 0xff) + 1);
+            if ((r.ch & 0xff) == 3) {
+                r.ch = 6;
             }
-            if ((r.ah & 0xff) == 9) {
-                r.ah = 11;
+            if ((r.ch & 0xff) == 9) {
+                r.ch = 11;
             }
             r.cl = (byte) ((r.cl & 0xff) - 1);
         } while ((r.cl & 0xff) > 0);
@@ -1133,7 +1133,7 @@ public class Play4 {
         do {
             volssg0(); // SSG volume to 0
 
-            r.ah = (byte) ((r.ah & 0xff) + 1);
+            r.ch = (byte) ((r.ch & 0xff) + 1);
             r.cl = (byte) ((r.cl & 0xff) - 1);
         } while ((r.cl & 0xff) > 0);
 
@@ -1154,32 +1154,32 @@ public class Play4 {
     // 	  CH = channel No. (0 to 16)
     // ;
     // outdata ch0 to 5 to 0188h
-    // 		ch6 to 10 subtract AL-6 and to 018Ch
-    // 		ch11 to 13 subtract AL-11 and to 0488h
-    // 		ch14 to 16 subtract AL-14 and to 048Ch
+    // 	       ch6 to 10 subtract AL-6 and to 018Ch
+    // 	       ch11 to 13 subtract AL-11 and to 0488h
+    // 	       ch14 to 16 subtract AL-14 and to 048Ch
     // outdata0 ch0 to 5 to 0188h
-    // 		ch6 to 10 to 018Ch
-    // 		ch11 to 13 to 0488h
-    // 		ch14 to 16 to 048Ch
+    // 	       ch6 to 10 to 018Ch
+    // 	       ch11 to 13 to 0488h
+    // 	       ch14 to 16 to 048Ch
     // outdata1 everything to 0188h
     // outdata1s everything to 0188h (ignore in SSGPCM mode)
     // outdata2 everything to 018Ch
     // outdata3 everything to 0488h
     // outdata4 everything to 048Ch
     // outdata6 ch0 to 11 to 0188h
-    // 		ch11 to 16 to 0488h
+    //          ch11 to 16 to 0488h
     // 
 
     private void outdataa() {
         if (!checksh()) return;
 
 //outdata:
-        if ((r.ah & 0xff) < 6) {
+        if ((r.ch & 0xff) < 6) {
             outdata1();
             return;
         }
 
-        if ((r.ah & 0xff) >= 11) {
+        if ((r.ch & 0xff) >= 11) {
             outdata5();
             return;
         }
@@ -1211,17 +1211,17 @@ public class Play4 {
         if (!checksh()) return;
 
 //outdata0:
-        if ((r.ah & 0xff) >= 14) {
+        if ((r.ch & 0xff) >= 14) {
             outdata4();
             return;
         }
 
-        if ((r.ah & 0xff) >= 11) {
+        if ((r.ch & 0xff) >= 11) {
             outdata3(); // for YM3438
             return;
         }
 
-        if ((r.ah & 0xff) >= 6) {
+        if ((r.ch & 0xff) >= 6) {
             outdata2();
             return;
         }
@@ -1252,7 +1252,7 @@ public class Play4 {
     }
 
     private void outdata6() {
-        if ((r.ah & 0xff) < 11) {
+        if ((r.ch & 0xff) < 11) {
             outdata1();
             return;
         }
@@ -1277,7 +1277,7 @@ public class Play4 {
 
     private void outdata5() {
         r.al -= 11;
-        if ((r.ah & 0xff) < 14) {
+        if ((r.ch & 0xff) < 14) {
             outdata3();
             return;
         }
@@ -1327,7 +1327,7 @@ public class Play4 {
         short axbk = r.getAx();
 
         boolean ret;
-        r.ah = realch; // CH in ASM style
+        r.ch = realch; // CH in ASM style
         calcbit();
         if (ret = (((r.getAx() & 0xffff) & shflag1) == 0))
             ret = (((r.dl & 0xff) & shflag2) == 0);
@@ -2084,11 +2084,11 @@ public class Play4 {
             short axbk = r.getAx();
 
             if (!r.carry) {
-                r.al = r.ah; // ch from ASM style
-                realch = r.ah;
+                r.al = r.ch; // ch from ASM style
+                realch = r.ch;
                 int bx_ptr = 0; // ofs:chtbl2
                 r.al = chtbl2[bx_ptr + (r.al & 0xff)];
-                r.ah = r.al; // ch from ASM style
+                r.ch = r.al; // ch from ASM style
 
                 // Rechannel: label logic
                 boolean loopRechannel;
@@ -2096,18 +2096,23 @@ public class Play4 {
                     loopRechannel = false;
                     rechannelFlg = false;
                     r.al = data_buff[(r.getSi() & 0xffff) + LC]; // Read length counter
-                    if ((r.ah & 0xff) == 10) {
+                    if ((r.ch & 0xff) == 10) {
+                        // ADPCM
                         play_pcm();
                         if (initia0Flg) return;
                     } else if (check_extpcm(data_buff)) {
+                        // Extended PCM Check
                         play_pcm();
                         if (initia0Flg) return;
-                    } else if ((r.ah & 0xff) == 9) {
+                    } else if ((r.ch & 0xff) == 9) {
+                        // RHYTHM
                         play_rhythm();
-                    } else if ((r.ah & 0xff) >= 6) {
+                    } else if ((r.ch & 0xff) >= 6) {
+                        // FM
                         play_fm();
                         if (rechannelFlg) loopRechannel = true;
-                    } else if ((r.ah & 0xff) >= 3) {
+                    } else if ((r.ch & 0xff) >= 3) {
+                        // SSG
                         play_ssg();
                     } else {
                         play_fm();
@@ -2121,7 +2126,7 @@ public class Play4 {
             r.setCx(cxbk);
             r.setDx(dxbk);
             r.setSi(sibk);
-            r.ah = (byte) ((r.ah & 0xff) + 1); // Next channel
+            r.ch = (byte) ((r.ch & 0xff) + 1); // Next channel
             r.setSi((short) ((r.getSi() & 0xffff) + 2)); // Next data buffer
             r.cl = (byte) ((r.cl & 0xff) - 1);
         } while ((r.cl & 0xff) > 0);
@@ -2418,7 +2423,7 @@ public class Play4 {
         short cxbk = r.getCx();
         short axbk = r.getAx();
 
-        r.ah = realch; // ch in ASM style
+        r.ch = realch; // ch in ASM style
         calcbit();
         r.zero = ((ch_mask1 & (r.getAx() & 0xffff)) == 0);
         if (r.zero) {
@@ -2468,7 +2473,7 @@ public class Play4 {
         r.ah = (byte) (data_buff[(r.getSi() & 0xffff) + LI] & 0xf);
         int val_ax = (r.al & 0xff) * (r.ah & 0xff);
         val_ax >>= 5;
-        r.ah = 0; // r.ch clear
+        r.ch = 0; // r.ch clear
         r.cl = data_buff[(r.getSi() & 0xffff) + LL];
         val_ax += (r.cl & 0xff);
         if (val_ax > 127) val_ax = 127;
@@ -2774,7 +2779,7 @@ public class Play4 {
 
     private void calc_keych() {
         byte cl;
-        byte ch = r.ah; // ch in ASM style
+        byte ch = r.ch; // ch in ASM style
         cl = ch;
 
         if ((ch & 0xff) < 6) {
@@ -2802,11 +2807,13 @@ public class Play4 {
 
     private void setfreq1() {
         short axbk = r.getAx();
-        r.al = (byte) (0xa4 + (r.ah & 0xff));
+        r.al = (byte) 0xa4; // f-number 2 + block
+        r.al = (byte) (r.al + r.ch);
         outdataa();
         r.setAx(axbk);
         r.ah = r.al;
-        r.al = (byte) (0xa0 + (r.ah & 0xff));
+        r.al = (byte) 0xa0; // f-number 1
+        r.al = (byte) (r.al + r.ch);
         outdataa();
     }
 
@@ -3266,7 +3273,7 @@ public class Play4 {
                 short axbk2 = r.getAx();
                 r.al = out_data[r.di & 0xffff];
                 r.al += 0x40;
-                r.al += (r.ah & 0xff); // ch in ASM style
+                r.al += (r.ch & 0xff); // ch in ASM style
                 r.ah = toneBuf[r.getBx() & 0xffff];
                 outdataa();
                 r.setAx(axbk2);
@@ -3309,7 +3316,7 @@ public class Play4 {
 
         r.al = diBuf[r.di & 0xffff];
         r.al += 0x40;
-        r.al += (r.ah & 0xff); // ch in ASM style
+        r.al += (r.ch & 0xff); // ch in ASM style
         outdataa();
 
         r.setAx(axbk);
@@ -3356,7 +3363,7 @@ public class Play4 {
         } while ((r.cl & 0xff) > 0);
 
         r.al = (byte) 0xb0;
-        r.al += (r.ah & 0xff); // ch in ASM style
+        r.al += (r.ch & 0xff); // ch in ASM style
         r.ah = tonebuff[r.getBx() & 0xffff];
         outdataa();
 
@@ -3379,7 +3386,7 @@ public class Play4 {
         do {
             short axbk = r.getAx();
             r.al += out_data[r.di & 0xffff];
-            r.al += (r.ah & 0xff); // ch in ASM style
+            r.al += (r.ch & 0xff); // ch in ASM style
             r.ah = tonebuff[r.getBx() & 0xffff];
             outdataa();
             r.di++;
@@ -3416,7 +3423,7 @@ public class Play4 {
     private void calc_nowwork() {
         r.setSi((short) 0);
         r.setAx((short) 0);
-        r.al = (byte) (r.ah & 0xff); // real ch based logic
+        r.al = (byte) (r.ch & 0xff); // real ch based logic
         r.setAx((short) ((r.getAx() & 0xffff) + (r.getAx() & 0xffff)));
         r.setSi((short) ((r.getSi() & 0xffff) + (r.getAx() & 0xffff)));
     }
@@ -3433,7 +3440,7 @@ public class Play4 {
         r.ah |= r.al;
         data_buff[(r.getSi() & 0xffff) + PN] = r.ah;
         r.al = (byte) 0xb4;
-        r.al += (r.ah & 0xff); // ch logic
+        r.al += (r.ch & 0xff); // ch logic
         r.setBx((short) ((r.getBx() & 0xffff) + 1));
         outdataa();
         r.dl = (byte) nax.objBuf[0][r.getBx() & 0xffff].dat;
@@ -3448,7 +3455,7 @@ public class Play4 {
         do {
             r.push(r.getAx());
             r.al += out_data[r.di & 0xffff];
-            r.al += (r.ah & 0xff); // ch logic
+            r.al += (r.ch & 0xff); // ch logic
             r.ah = toneBuff[r.getBx() & 0xffff];
             r.ah <<= 1;
             r.carry = ((r.dl & 1) != 0);
@@ -3466,16 +3473,16 @@ public class Play4 {
     }
 
     private void stopm() {
-        r.ah = realch; // ch in ASM style
-        if (r.al != r.ah) {
+        r.ch = realch; // ch in ASM style
+        if (r.al != r.ch) {
             short cxbk = r.getCx();
             short bxbk = r.getBx();
 
-            r.al = r.ah;
+            r.al = r.ch;
             int bx_ptr = 0; // ofs:chtbl2
 
             r.al = chtbl2[bx_ptr + (r.al & 0xff)];
-            r.ah = r.al; // ch logic
+            r.ch = r.al; // ch logic
             calcbit();
             r.setAx((short) ~(r.getAx() & 0xffff));
             r.dl = (byte) ~(r.dl & 0xff);
@@ -3488,7 +3495,7 @@ public class Play4 {
         calcbit();
         skip_data1 |= (r.getAx() & 0xffff);
         skip_data2 |= (r.dl & 0xff);
-        if ((r.ah & 0xff) == 16) {
+        if ((r.ch & 0xff) == 16) {
             check_wait();
             if (r.zero) {
                 initia0();
@@ -3548,7 +3555,7 @@ public class Play4 {
     }
 
     private void wait_r() {
-        r.ah = realch; // ch in ASM style
+        r.ch = realch; // ch in ASM style
         calcbit();
         wait_flg1 |= (r.getAx() & 0xffff);
         wait_flg2 |= (r.dl & 0xff);
@@ -3568,7 +3575,7 @@ public class Play4 {
         data_buff[(r.getSi() & 0xffff) + AD + 1] = r.bh;
         r.setAx((short) 0);
         wait_flg1 = (r.getAx() & 0xffff);
-        wait_flg2 = (byte) (r.al & 0xff);
+        wait_flg2 = r.al;
         initia0Flg = true;
         replay();
     }
@@ -3576,7 +3583,7 @@ public class Play4 {
     private void calcbit() {
         short cxbk = r.getCx();
         r.setAx((short) 0);
-        r.cl = r.ah; // ch in ASM style
+        r.cl = r.ch; // ch in ASM style
         if ((r.cl & 0xff) < 16) {
             r.setAx((short) ((r.getAx() & 0xffff) + 1));
             r.setAx((short) ((r.getAx() & 0xffff) << (r.cl & 0xff)));
@@ -3702,16 +3709,15 @@ public class Play4 {
 
     private void lfostop() {
         r.al = data_buff[(r.getSi() & 0xffff) + VS];
-        int ch = r.ah & 0xff; // ch logic
-        if (ch < 3) {
+        if ((r.ch & 0xff) < 3) { // ch logic
             lstop1();
             return;
         }
-        if (ch < 6) {
+        if ((r.ch & 0xff) < 6) { // ch logic
             lstops();
             return;
         }
-        if (ch != 10) {
+        if ((r.ch & 0xff) != 10) { // ch logic
             lstop1();
             return;
         }
@@ -3786,7 +3792,7 @@ public class Play4 {
         r.ah |= r.al;
         data_buff[(r.getSi() & 0xffff) + PN] = r.ah;
         r.al = (byte) 0xb4;
-        r.al += (r.ah & 0xff); // ch logic
+        r.al = (byte) (r.al + r.ch); // ch logic
         r.setBx((short) ((r.getBx() & 0xffff) + 1));
         outdataa();
     }
@@ -3974,7 +3980,7 @@ public class Play4 {
         r.al = 0xd;
         outdata1sa();
         r.ah = 16;
-        r.al = (byte) (r.ah & 0xff); // ch in ASM style
+        r.al = r.ch; // ch in ASM style
         r.al += 5;
         outdata1sa();
         recovFlg = true;
@@ -4007,7 +4013,7 @@ public class Play4 {
     private void calc_pcm1adrs() {
         r.setSi((short) 0); // ofs:pcm1adrs
         r.setAx((short) 0);
-        r.al = (byte) (r.ah & 0xff); // ch logic
+        r.al = r.ch; // ch logic
         r.al -= 3;
         r.setAx((short) ((r.getAx() & 0xffff) << 1));
         r.setSi((short) ((r.getSi() & 0xffff) + (r.getAx() & 0xffff)));
@@ -4018,7 +4024,7 @@ public class Play4 {
     private void setfreqs() {
         short dxbk = r.getDx();
         r.dl = r.al;
-        r.al = (byte) (r.ah & 0xff); // ch logic
+        r.al = r.ch; // ch logic
         r.al = (byte) ((r.al & 0xff) + (r.al & 0xff));
         r.al -= 5;
         outdata1sa();
@@ -4110,7 +4116,7 @@ public class Play4 {
         }
 
         r.ah = (byte) ((r.ah & 0xff) >> 3);
-        r.al = (byte) (r.ah & 0xff); // ch logic
+        r.al = r.ch; // ch logic
         r.al += 5;
         outdata1sa();
         r.carry = false;
@@ -4129,7 +4135,7 @@ public class Play4 {
             return;
         }
         r.setAx((short) 0);
-        r.al = (byte) (r.ah & 0xff); // ch logic
+        r.al = r.ch; // ch logic
         r.al += 5;
         outdata1sa();
         r.carry = true;
@@ -4138,7 +4144,7 @@ public class Play4 {
 
     private void set_env() {
         data_buff[(r.getSi() & 0xffff) + PC] = r.al;
-        r.al = (byte) (r.ah & 0xff); // ch logic
+        r.al = r.ch; // ch logic
         r.al += 5;
         r.setBx((short) ((r.getBx() & 0xffff) + 1));
         outdata1sa();
@@ -4180,7 +4186,7 @@ public class Play4 {
 
     private void mixer() {
         r.ah = mixsave;
-        r.cl = (byte) (r.ah & 0xff); // ch logic
+        r.cl = r.ch; // ch logic
         r.cl -= 3;
         r.al = 0b1001;
         r.al = (byte) ((r.al & 0xff) << (r.cl & 0xff));
@@ -4267,7 +4273,7 @@ public class Play4 {
         }
         comdataBuf[r.di] = 0;
         comdata = new String(comdataBuf, nax.myEnc);
-        logger.log(Level.INFO, comdata);
+        logger.log(Level.INFO, comdata.substring(0, comdata.contains("\0") ? comdata.indexOf("\0") : 0));
         nax.lyric = comdata;
         r.di = r.pop();
         return;
@@ -4293,12 +4299,12 @@ public class Play4 {
         }
 
         r.push(r.getCx());
-        r.ah = 3; // ch logic
+        r.ch = 3; // ch logic
         do {
             r.setAx((short) 3);
             setfreqs();
-            r.ah = (byte) ((r.ah & 0xff) + 1);
-        } while ((r.ah & 0xff) != 6);
+            r.ch = (byte) ((r.ch & 0xff) + 1);
+        } while ((r.ch & 0xff) != 6);
         r.setCx(r.pop());
 
         r.setAx((short) 0xb807);
@@ -4481,8 +4487,8 @@ public class Play4 {
         r.setDx((short) fade_count);
         if (r.getDx() != 0) {
             r.setDx((short) ((r.getDx() & 0xffff) >> 1));
-            r.carry = (r.al & 0xff) < (r.ah & 0xff);
-            r.al = (byte) ((r.al & 0xff) - (r.ah & 0xff));
+            r.carry = (r.al & 0xff) < (r.dh & 0xff);
+            r.al = (byte) (r.al - r.dh);
             if (r.carry) r.al = 0;
         }
 
@@ -4491,7 +4497,7 @@ public class Play4 {
             return;
         }
 
-        if ((r.ah & 0xff) != 9) { // realch logic
+        if ((r.ch & 0xff) != 9) { // realch logic
             volchgp(siBuf);
             return;
         }
@@ -4514,8 +4520,8 @@ public class Play4 {
 
     private void volchgp(byte[] siBuf) {
         calc_pcmwork(siBuf);
-        r.carry = (r.al & 0xff) < (r.ah & 0xff);
-        r.al = (byte) ((r.al & 0xff) - (r.ah & 0xff));
+        r.carry = (r.al & 0xff) < (r.dh & 0xff);
+        r.al = (byte) (r.al - r.dh);
         if (r.carry) r.al = 0;
 
         nax.pc98.OutportC4231_Volume((byte) (r.di & 0xffff), (byte) 0, r.al);
@@ -4557,8 +4563,7 @@ public class Play4 {
             extpcm_play();
             return;
         }
-        if ((r.ah & 0xff) != 10) // realch logic
-        {
+        if (realch != 10) { // realch logic
             recovFlg = true;
             return;
         }
@@ -4712,7 +4717,7 @@ public class Play4 {
 
     private void rest2_main() {
         if (!check_extpcm(data_buff)) {
-            if ((r.ah & 0xff) == 9) // realch logic
+            if ((r.ch & 0xff) == 9) // realch logic
             {
                 nax.pc98.outportBDummy(port1);
                 return;
@@ -4937,7 +4942,7 @@ public class Play4 {
         r.setAx(r.pop());
         r.al--;
         chtbl2[r.di & 0xffff] = r.al;
-        r.ah = r.al; // ch logic
+        r.ch = r.al; // ch logic
         calcbit();
         shflag1 |= (r.getAx() & 0xffff);
         shflag2 |= (r.dl & 0xff);
@@ -4949,8 +4954,7 @@ public class Play4 {
         data_buff[(r.getSi() + LC) & 0xffff] = 1;
         data_buff[(r.getSi() + AD) & 0xffff] = r.bl;
         data_buff[(r.getSi() + AD + 1) & 0xffff] = r.bh;
-        r.pop(); // back_fm
-        r.pop(); // play_fm
+        r.sp = (short) ((r.sp & 0xffff) + 4); // [back_fm],[play_fm]
         rechannelFlg = true;
     }
 

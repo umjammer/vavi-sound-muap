@@ -56,6 +56,7 @@ public class _8253Timer {
      */
     public _8253Timer(int renderingFreq, int masterClock) {
         this.renderingFreq = renderingFreq;
+        // The 5/10MHz PC98 is 1996800Hz, and the 8MHz PC98 is 2457600Hz.
         this.masterClock = masterClock;
     }
 
@@ -67,10 +68,8 @@ public class _8253Timer {
      * Advances the timer based on the rendering frequency.
      */
     public void timer() {
-        if (ch[0].step == 0) return;
-
         ch[0].counter += ch[0].step;
-        while (ch[0].counter >= 1.0) {
+        if (ch[0].counter >= 1.0) {
             ch[0].setStat(1);
             ch[0].counter -= 1.0;
         }
@@ -83,42 +82,35 @@ public class _8253Timer {
      */
     public boolean WriteReg(byte adr, byte data) {
         int sc;
-        int address = adr & 0xff;
-
-        switch (address) {
+        switch (adr & 0xff) {
             case 0x71:
             case 0x73:
             case 0x75:
-                sc = (address - 0x71) / 2;
+                sc = ((adr & 0xff) - 0x71) / 2;
                 if (ch[sc].c != 3) return false;
-
                 if (!ch[sc].a) {
                     ch[sc].val = (ch[sc].val & 0xff00) | (data & 0xff);
                 } else {
                     ch[sc].val = (ch[sc].val & 0x00ff) | ((data & 0xff) << 8);
                 }
-
                 ch[sc].a = !ch[sc].a;
                 ch[sc].step = 0;
-
                 if (ch[sc].val != 0 && renderingFreq != 0) {
                     ch[sc].step = (double) masterClock / ch[sc].val / renderingFreq;
                 }
                 return true;
-
             case 0x77:
                 sc = (data & 0b1100_0000) >> 6;
                 if (sc == 3) return false; // Multiple latch command not supported
-
                 int c = (data & 0b0011_0000) >> 4;
                 if (c == 0) return false; // Count latch command not supported
-
                 int m = (data & 0b0000_1110) >> 1;
-                if (m > 5) return false;
-
+                if (m > 5) m -= 4;
+                if (m != 3) return false; // Only mode 3 supported
+                int b = (data & 1);
+                if (b != 0) return false; // Only binary count supported
                 ch[sc].c = c;
-                ch[sc].b = m;
-                ch[sc].a = false;
+                ch[sc].b = b;
                 return true;
 
             default:
