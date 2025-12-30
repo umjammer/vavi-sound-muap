@@ -33,7 +33,7 @@ public class Nax {
     }
 
     private Work work;
-    private final Map<Object, Object> envVars;
+    private final Map<String, String> envVars;
     public Pc98 pc98;
     public Ems ems;
     public X86Register reg;
@@ -86,7 +86,7 @@ public class Nax {
     public byte comlength;
     public String lyric = "";
 
-    public Nax(Work work, X86Register regs, Map envVars, Pc98 pc98, Ems ems, String arg, byte[] toneBuffFromOutside, int[] labelPtr, String objPath) {
+    public Nax(Work work, X86Register regs, Map<String, String> envVars, Pc98 pc98, Ems ems, String arg, byte[] toneBuffFromOutside, int[] labelPtr, String objPath) {
         myEnc = Charset.forName("Windows-31J");
 
         this.work = work;
@@ -201,9 +201,9 @@ public class Nax {
     private byte[] xdata = new byte[4];
     private byte[] bufbuf = new byte[128];
     /** usrpcm search */
-    private String pcm_path = "*.*" + new String(new char[61]).replace('\0', (char) 0);
+    private String pcm_path = "*.*";
     /** sub-usrpcm search */
-    private String pcm_path1 = "*.*" + new String(new char[61]).replace('\0', (char) 0);
+    private String pcm_path1 = "*.*";
     /** Read buffer for PCM.TBL , TONE.DTA */
     private byte[] cusbuff;
     /** Number of bytes read */
@@ -300,17 +300,17 @@ public class Nax {
         //---------------------------------------
         if (envVars != null) {
             if (envVars.containsKey("DTA"))
-                tone_path = Paths.get(envVars.get("DTA").toString(), tone_path).toString();
+                tone_path = Paths.get(envVars.get("DTA"), tone_path).toString();
             if (envVars.containsKey("PCM")) {
-                pcmd_path = Paths.get(envVars.get("PCM").toString(), pcmd_path).toString();
-                pcmt_path = Paths.get(envVars.get("PCM").toString(), pcmt_path).toString();
-                ssg1_path = Paths.get(envVars.get("PCM").toString(), ssg1_path).toString();
-                ssg2_path = Paths.get(envVars.get("PCM").toString(), ssg2_path).toString();
+                pcmd_path = Paths.get(envVars.get("PCM"), pcmd_path).toString();
+                pcmt_path = Paths.get(envVars.get("PCM"), pcmt_path).toString();
+                ssg1_path = Paths.get(envVars.get("PCM"), ssg1_path).toString();
+                ssg2_path = Paths.get(envVars.get("PCM"), ssg2_path).toString();
             }
             if (envVars.containsKey("UDP"))
-                pcm_path = Paths.get(envVars.get("UDP").toString(), pcm_path).toString();
+                pcm_path = Paths.get(envVars.get("UDP"), pcm_path).toString();
             if (envVars.containsKey("SUD"))
-                pcm_path1 = Paths.get(envVars.get("SUD").toString(), pcm_path1).toString();
+                pcm_path1 = Paths.get(envVars.get("SUD"), pcm_path1).toString();
         }
     }
 
@@ -2083,7 +2083,7 @@ public class Nax {
 
         reg.es = reg.cs;
         reg.setBx((short) 0);
-        pcm_path1 = "*.*" + new String(new char[61]).replace('\0', (char) 0);
+        pcm_path1 = "*.*" + new String(new char[61]);
         String[] tmp = {pcm_path1};
         set_usrpcmfile(tmp);
         pcm_path1 = tmp[0];
@@ -2133,7 +2133,7 @@ public class Nax {
 
     private boolean fdd_notready() {
         reg.setBx((short) 0);
-        pcm_path = "*.*" + new String(new char[61]).replace('\0', (char) 0);
+        pcm_path = "*.*" + new String(new char[61]);
         String[] tmp = {pcm_path};
         set_usrpcmfile(tmp);
         pcm_path = tmp[0];

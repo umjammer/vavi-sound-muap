@@ -3,7 +3,6 @@ package muap.driver;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -45,7 +44,12 @@ public class Driver implements IDriver {
     public EMS_AllocMemory cs4231EMS_AllocMemory;
 
     private BiFunction<Byte, Byte, Boolean> write8253;
-    private Map<Object, Object> envVars = Collections.emptyMap(); // TODO env
+    private Map<String, String> envVars = Map.of(
+            "DTA", System.getProperty("muap.dir.dta", System.getProperty("user.dir")),
+            "PCM", System.getProperty("muap.dir.pcm", System.getProperty("user.dir")),
+            "UDP", System.getProperty("muap.dir.udp", System.getProperty("user.dir")),
+            "SUD", System.getProperty("muap.dir.sud", System.getProperty("user.dir"))
+    ); // TODO env
     private Nax nax;
     public Work work = new Work();
     private int renderingFreq = 44100;
@@ -295,7 +299,7 @@ public class Driver implements IDriver {
 
     public byte readC4231Register(byte regAddr) {
         synchronized (lockObjWriteReg) {
-            return readC4231 != null ? readC4231.apply(regAddr) : 0;
+            return readC4231 != null ? readC4231.apply(regAddr) : (byte) 0;
         }
     }
 

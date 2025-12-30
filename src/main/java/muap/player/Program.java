@@ -266,7 +266,7 @@ public class Program {
         mds.inst(Cs4231Inst.class).write(0, dat.port, dat.address, dat.data);
     }
 
-    private static byte cs4231Read(int adr) {
+    private static byte cs4231Read(byte adr) {
         return (byte) mds.inst(Cs4231Inst.class).read(0, adr & 0xff);
     }
 
