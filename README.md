@@ -1,123 +1,143 @@
-# muapDotNET
-  muap98iv(NAX)の.NET版です。  
-  
-  
-[注意]  
-  muapDotNET(MDPlaye,mml2vgmIDE含む)に関するご意見、ご感想、問い合わせ、報告など、その他は
-  直接ぱっくんソフト(みゅあっぷ関係者)様にしないようにお願いします。  
-  私のXのDMやGitHubのISSUESにまでご連絡ください。  
-  
-  
-[概要]  
-  muap98iv(NAX)を.NET版向けに移植したものです。  
-  OPNAx1,OPN2x1,CS4231x1を同時使用します。  
-  muap98/iv(V6.41A)のソースファイルをできるだけそのままC#に移植しています。  
-  公式ページ
-- [ぱっくんソフトのページ](https://packensoft.music.coocan.jp/)
-  
-[機能、特徴]  
-  muap98ivのアセンブル(コンパイル)機能とNAX(演奏プログラム)を主に移植しています。  
-  みゅあっぷの大きな特徴であるIDE機能は残念ながら移植していません。  
-  コンソールからコンパイラ、プレイヤを起動することで  
-  .musファイルのコンパイル  
-  .o  ファイルの演奏  
-  が可能です。  
-  通常はMDPlayer,mml2vgmIDEから使用していただくのが一番簡単です。  
-  
-[ご使用の前に]  
-  ーーー T.B.D  ーーー  
-  アーカイブに同梱されているremoveZoneIdent.batを実行し、ゾーン識別子を削除してください。  
-  (ゾーン識別子とは意図せずにダウンロードしたプログラムを実行した際に、動作を抑制するためにファイルに追加される、  
-  セキュリティに関する情報です。意図したダウンロードであっても付加されますので動作に支障がある場合があります。)  
-  ーーー T.B.D  ーーー  
-  
-[ビルド]  
-  VisualStudioなどで、特に問題なくビルドできると思います。  
-  
-[クイックスタート]  
-  コンパイル  
-  同梱のConsole.exeに.musファイルをドロップしてコンパイルを行います。  
-  演奏  
-  同梱のPlayer.exeに.oファイルをドロップして演奏を行います。  
-  
-[環境変数について]  
-  muapDotNETではコンパイル、演奏に必要なファイルのパスを各々の環境変数を設定することで指定することが出来ます。  
-  以下のような環境変数がありますので必要に応じて設定してください。  
-  設定されていない場合は基本的にカレントパスを参照します。  
-  MDPlayerやmml2vgmIDEで使用する場合はUDP以外は未指定にしておいて、みゅあっぷ標準のTONES.DTAなどをプログラムと同じパスに入れておくと良いと思います。  
-  ユーザーPCMはUDPを設定しておいてMDPlayerとmml2vgmIDEで同じパスを参照するようにするのが良いと思いますが、HDDに余裕があるのであれば各プログラムと同じパスに  
-  適当なフォルダを掘り、そこにファイルをそれぞれ入れておいても良いかもしれません。  
-  
-  ・DTA  
-     みゅあっぷのFM音源向け音色ファイル(TONES.DTA)の場所を指定します。  
-     設定例)  
-       DTA=C:\FM\muap\tone  
-     未設定時は
-       DTA=.  
-     となります。
-  
-  ・PCM  
-     みゅあっぷのPCM音源向け音色ファイル(以下の4つ)の場所を指定します。  
-       PCM.TBL     ADPCMのテーブルファイル  
-       PCM.DTA     ADPCMのデータファイル  
-       SSGPCM.DTA  SSGPCMのデータファイル  
-       SSGPCM.TBL  SSGPCMのテーブルファイル  
-     設定例)  
-       PCM=C:\FM\muap\pcm  
-     未設定時は
-       PCM=.  
-     となります。
-  
-  ・UDP  
-     みゅあっぷのユーザーPCM音源向け音色ファイル(任意)の場所を指定します。  
-     ユーザーPCM向けのファイルは指定パスの子パスも探索します。  
-     設定例)  
-       UDP=C:\FM\muap\userpcm  
-     未設定時は
-       UDP=.  
-     となります。
-  
-  ・SUD  
-     みゅあっぷのSUBユーザーPCM音源向け音色ファイル(任意)の場所を指定します。  
-     SUDは子パスの探索はしません。  
-     設定例)  
-       SUD=C:\FM\muap\userpcm  
-     未設定時は
-       SUD=.  
-     となります。
-  
-[独自機能]  
-  ・@Jコマンド  
-    所謂、他のドライバによくみられるJコマンドです。  
-    このコマンドが現れる位置まで演奏をスキップする機能になります。  
-    打ち込み時に使用することを想定しています。  
-  
-  ・ユーザー定義PCMを最優先に開くPathを指定できるようにした。  
-    .musファイルや.Oファイルの位置に在るPCMファイルを優先的に探すことができるようにすることを想定しています。  
-    見つからない場合は既存の動きになります。  
-  
-[著作権・免責]  
-  muapDotNETはGPLv3ライセンスとします。  
-  著作権は作者が保有しています。  
-  このソフトは無保証であり、このソフトを使用した事による  
-  いかなる損害も作者は一切の責任を負いません。  
-  
-以下のソフトウェアのソースコードをC#向けに改変し使用しています。  
-又はコード/dllを使用させていただいております。  
-これらのソース/バイナリは各著作者が著作権を持ちます。  
-ライセンスに関しては、各ドキュメントを参照してください。  
-  
- ・muap98iv             -> 独自ライセンス形態 -> コード改変  
- ・MDSound              -> GPLv3              -> dll動的リンクで使用  
- ・musicDriverInterface -> MIT                -> dll動的リンクで使用  
- ・NAudio               -> MS-PL              -> dll動的リンクで使用  
-  
-  
-[SpecialThanks]  
- 本ツールは以下の方々にお世話になっております。また以下のソフトウェア、ウェブページを参考、使用しています。  
- 本当にありがとうございます。  
-  
- ・muap98iv  
- ・Visual Studio Community 2022  
- ・さくらエディター  
-  
+[![Release](https://jitpack.io/v/umjammer/vavi-sound-muap.svg)](https://jitpack.io/#umjammer/vavi-sound-muap)
+[![Java CI](https://github.com/umjammer/vavi-sound-muap/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-sound-muap/actions/workflows/maven.yml)
+[![CodeQL](https://github.com/umjammer/vavi-sound-muap/actions/workflows/codeql.yml/badge.svg)](https://github.com/umjammer/vavi-sound-muap/actions/workflows/codeql.yml)
+![Java](https://img.shields.io/badge/Java-21-b07219)
+
+# vavi-sound-muap
+
+🪕 Java version of Muap.
+
+this is a fork of [muapDotNET](https://github.com/kuma4649/muapDotNET)
+
+## Install
+
+* [maven](https://jitpack.io/#umjammer/vavi-sound-muap)
+
+## Usage
+
+currently this project has no good player, use [vavi-sound-mdplayer](https://github.com/umjammer/vavi-sound-mdplayer) instead
+
+## References
+
+* https://packensoft.music.coocan.jp/
+
+## TODO
+
+* compiler
+* test more samples
+
+---
+
+# [Original](https://github.com/kuma4649/muapDotNET)
+
+This is the .NET version of muap98iv (NAX).
+
+## Note
+Please do not send any opinions, feedback, inquiries, reports, or other information regarding muapDotNET (including MDPlay and mml2vgmIDE) directly to Pakkunsoft (MyuApp affiliates).
+Please contact me via DM on X or GitHub ISSUES.
+
+## Summary
+This is a port of muap98iv (NAX) for .NET.
+It uses OPNAx1, OPN2x1, and CS4231x1 simultaneously.
+The source files from muap98/iv (V6.41A) have been ported to C# as closely as possible.
+Official Page
+
+Pakkunsoft Page
+
+## Features
+
+This primarily ports the assembly (compilation) function and NAX (music performance program) of muap98iv.
+Unfortunately, the IDE function, a major feature of muap, has not been ported.
+You can compile .mus files and play .o files by launching the compiler and player from the console.
+
+Usualy, it's easiest to use them with MDPlayer or mml2vgmIDE.
+
+## Before Use
+
+    -- T.B.D. --
+    Run removeZoneIdent.bat included in the archive to remove the zone identifier.
+    (A zone identifier is security information added to a file to prevent it from running when an unintentionally downloaded program is executed. It is added even when the download was intended, so it may cause problems.)
+    -- T.B.D. --
+
+## Build
+
+You should be able to build without any problems using Visual Studio or similar.
+
+## Quick Start
+
+Compiling
+Drop .mus files into the included Console.exe to compile.
+Playing
+Drop .o files into the included Player.exe to play.
+
+## About Environment Variables
+
+muapDotNET allows you to specify the paths to the files required for compilation and playback by setting the appropriate environment variables.
+The following environment variables are available, so please set them as needed.
+If not set, the current path will be referenced.
+When using with MDPlayer or mml2vgmIDE, it is recommended to leave everything except UDP unspecified and place the standard muap TONES.DTA etc. in the same path as the program.
+For user PCM, it is recommended to set UDP and have MDPlayer and mml2vgmIDE reference the same path, but if you have enough HDD space, you may also want to create appropriate folders in the same path as each program and place the files there.
+
+### DTA
+Specifies the location of muap's FM tone file (TONES.DTA).
+Example:
+DTA=C:\FM\muap\tone
+If not set, it will default to DTA=.
+
+### PCM
+Specifies the location of muap's PCM tone files (the following four).
+PCM.TBL ADPCM table file
+PCM.DTA ADPCM data file
+SSGPCM.DTA SSGPCM data file
+SSGPCM.TBL SSGPCM table file
+Example
+PCM=C:\FM\muap\pcm
+If not set, PCM=.
+
+### UDP
+Specifies the location of the tone file (optional) for Muap's user PCM sound source.
+User PCM files will also be searched for in child paths of the specified path.
+Example
+UDP=C:\FM\muap\userpcm
+If not set, UDP=.
+
+### SUD
+Specifies the location of the tone file (optional) for Muap's SUB user PCM sound source.
+SUD will not search child paths.
+Example
+SUD=C:\FM\muap\userpcm
+If not set, SUD=.
+
+## Unique Features
+
+### @J Command
+  This is the J command commonly found in other drivers.
+  This function skips playback until this command appears.
+  Intended for use when programming.
+
+### Added the ability to specify the path to open user-defined PCM files with the highest priority.
+  This is intended to prioritize PCM files located in the .mus or .O file locations.
+  If not found, the existing behavior will be restored.
+
+## Copyright/Disclaimer
+muapDotNET is licensed under the GPLv3.
+Copyright is held by the author.
+This software is provided without warranty, and the author assumes no responsibility for any damages resulting from the use of this software.
+
+The source code of the following software has been modified for C# and is used.
+Or code/dll is used.
+These source/binaries are copyrighted by their respective authors.
+For license details, please refer to the respective documentation.
+
+ * muap98iv -> Custom License -> Code Modification
+ * MDSound -> GPLv3 -> Used with dynamic dll linking
+ * musicDriverInterface -> MIT -> Used with dynamic dll linking
+ * NAudio -> MS-PL -> Used with dynamic dll linking
+
+## Special Thanks
+This tool is supported by the following people. We also use and reference the following software and websites.
+Thank you very much.
+
+ * muap98iv
+ * Visual Studio Community 2022
+ * Sakura Editor
