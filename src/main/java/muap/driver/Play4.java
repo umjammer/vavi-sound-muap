@@ -25,7 +25,7 @@ public class Play4 {
         this.nax = nax;
         r = nax.reg;
         setJumpTable1();
-        SetJumptable2();
+        setJumpTable2();
         setJumpTable3();
         this.work = work;
         this.labelPtr = labelPtr;
@@ -2320,9 +2320,9 @@ pcm_exit: {
             init_work(); // destroys ax,cx,dx,si,es
         }
 
-        // ---------------------------------
-        //  Performance routine exit process
-        // ---------------------------------
+        //
+        // Performance routine exit process
+        //
 
 //ret00:
         unmapplay_ems(); // Restore performance buffer
@@ -3883,7 +3883,6 @@ pcm_exit: {
         setfreq1(); // YM2608 frequency setting
         r.setSi(r.pop());
         r.setBx(r.pop());
-        return;
     }
 
     private void calc_nowwork() {
@@ -3892,7 +3891,6 @@ pcm_exit: {
         r.al = (byte) (r.ch & 0xff);
         r.setAx((short) ((r.getAx() & 0xffff) + (r.getAx() & 0xffff)));
         r.setSi((short) ((r.getSi() & 0xffff) + (r.getAx() & 0xffff)));
-        return;
     }
 
     /**
@@ -4132,7 +4130,7 @@ pcm_exit: {
      * LFO parameter set
      */
     private void lfopara() {
-        data_buff[(r.getSi() & 0xffff) + TI] = (byte) (data_buff[(r.getSi() & 0xffff) + TI] & 0x73); // clear corresponding bits first
+        data_buff[(r.getSi() & 0xffff) + TI] &= 0x73; // clear corresponding bits first
 
         r.al--; // SYNC on(1)
         if (r.al == 0) {
@@ -4290,7 +4288,7 @@ pcm_exit: {
     }
 
     private void sync2() {
-        data_buff[(r.getSi() & 0xffff) + TI] = (byte) (data_buff[(r.getSi() & 0xffff) + TI] & 0xef); // to addition mode
+        data_buff[(r.getSi() & 0xffff) + TI] &= 0xef; // to addition mode
         r.setAx((short) 0);
         data_buff[(r.getSi() & 0xffff) + FC] = r.al; // LFO initial value setting
         data_buff[(r.getSi() & 0xffff) + FC + 1] = r.ah;
@@ -4373,11 +4371,11 @@ pcm_exit: {
     private void setkeyon() {
         data_buff[(r.getSi() & 0xffff) + PM] |= (byte) 0x80; // key-on flag
 //clearrest:
-        data_buff[(r.getSi() & 0xffff) + LI] = (byte) (data_buff[(r.getSi() & 0xffff) + LI] & 0x7f); // clear rest bit
+        data_buff[(r.getSi() & 0xffff) + LI] &= 0x7f; // clear rest bit
     }
 
     private void clearrest() {
-        data_buff[(r.getSi() & 0xffff) + LI] = (byte) (data_buff[(r.getSi() & 0xffff) + LI] & 0x7f); // clear rest bit
+        data_buff[(r.getSi() & 0xffff) + LI] &= 0x7f; // clear rest bit
     }
 
     /**
@@ -4493,7 +4491,7 @@ pcm_exit: {
     /**
      * SSG jump table initialization
      */
-    private void SetJumptable2() {
+    private void setJumpTable2() {
         jump_table2 = new Runnable[] {
                 this::rest_ssg, this::quit, // FF(0)
                 this::quit2, this::stopm, // FD(2)
@@ -5090,12 +5088,12 @@ pcm_exit: {
         }
 
 //back_pcm:
-        int dx_ret;
+        int dxbk;
         do {
             recovFlg = false;
             recovwFlg = false;
             initia0Flg = false;
-            dx_ret = 0;
+            dxbk = 0;
 
             work.crntMmlDatum = nax.objBuf[0][r.getBx() & 0xffff];
             checkJumpMode(work.crntMmlDatum);
@@ -5112,26 +5110,26 @@ pcm_exit: {
                 r.setDx((short) 2); // ofs:back_pcm
 
 //checkpcm1:
-            dx_ret = r.getDx() & 0xffff;
+            dxbk = r.getDx() & 0xffff;
             r.setBx((short) ((r.getBx() & 0xffff) + 1));
             r.al = r.ah;
             jump_table3[(r.di & 0xffff) / 2].run();
             if (recovFlg) {
-                dx_ret = 1;
+                dxbk = 1;
                 break;
             }
             if (recovwFlg) {
-                dx_ret = 3;
+                dxbk = 3;
                 break;
             }
             if (initia0Flg) {
-                dx_ret = 4;
+                dxbk = 4;
                 break;
             }
-        } while (dx_ret == 2);
+        } while (dxbk == 2);
 
-        if (dx_ret == 1) recov();
-        else if (dx_ret == 3) recovw();
+        if (dxbk == 1) recov();
+        else if (dxbk == 3) recovw();
     }
 
     private Runnable[] jump_table3;
@@ -5401,8 +5399,8 @@ pcm_exit: {
         r.al = data_buff[(r.getSi() & 0xffff) + TS]; // AL = tone number
         // r.al = 38;
         r.setAx((short) ((r.getAx() & 0xffff) + (r.getAx() & 0xffff)));
-        r.setAx((short) (r.getAx() & 0xffff)); // ofs:pcmtable ; SI = PCM table address
-        r.di = (short) (r.getAx() & 0xffff);
+        r.setAx((short) ((r.getAx() + 0) & 0xffff)); // ofs:pcmtable ; SI = PCM table address
+        r.di = r.getAx();
         r.setAx((short) ((pcmtable[r.di & 0xffff] & 0xff) + (pcmtable[(r.di & 0xffff) + 1] & 0xff) * 0x100)); // AX = start address
         r.setDx((short) ((pcmtable[(r.di & 0xffff) + 2] & 0xff) + (pcmtable[(r.di & 0xffff) + 3] & 0xff) * 0x100)); // DX = end address
         r.carry = ((r.getDx() & 0xffff) - (r.getAx() & 0xffff)) < 0;
@@ -5489,7 +5487,7 @@ pcm_exit: {
         r.setCx(r.rcl(r.getCx(), (byte) 1)); // ADPCM = 256KB
 
         r.di = r.getAx(); // PCM = 1MB
-        r.di = (short) ((r.di & 0xffff) & 0x3fff); // offset within EMS 16KB
+        r.di &= 0x3fff; // offset within EMS 16KB
 
         r.carry = (r.getAx() & 0x8000) != 0;
         r.setAx((short) ((r.getAx() & 0xffff) << 1));
@@ -5678,9 +5676,9 @@ pcm_exit: {
      */
     private void mode_change() {
         short dsbk = r.ds;
-        r.ds = (short) (farjmp1_ >> 16); // swap segment
+        r.ds = (short) (farjmp1_ >>> 16); // swap segment
         mode_change_sub();
-        r.ds = (short) (farjmp2_ >> 16); // main segment
+        r.ds = (short) (farjmp2_ >>> 16); // main segment
         mode_change_sub();
         r.ds = dsbk;
     }
@@ -5698,7 +5696,7 @@ pcm_exit: {
 //mode1:
             jump2_ = 0;
             nax.pc98.OutportC4231_Jump2((byte) jump2_);
-            gotoModeChgExit();
+//mode_chg_exit:
             r.setAx(axbk);
             return;
         }
@@ -5707,7 +5705,7 @@ pcm_exit: {
 //mode2:
             jump2_ = 1; // (short)(test_lop2_ - test_lop1_);
             nax.pc98.OutportC4231_Jump2((byte) jump2_);
-            gotoModeChgExit();
+//mode_chg_exit:
             r.setAx(axbk);
             return;
         }
@@ -5716,20 +5714,17 @@ pcm_exit: {
 //mode3:
             jump2_ = 2; // (short)(test_entry3_ - test_lop1_);
             nax.pc98.OutportC4231_Jump2((byte) jump2_);
-            gotoModeChgExit();
+//mode_chg_exit:
             r.setAx(axbk);
             return;
         }
 
-        jump1_ = (short) (0xeb + (dsp_exit_ - jump1_ - 2) * 256);
+        jump1_ = (0xeb + (dsp_exit_ - jump1_ - 2) * 256) & 0xffff;
         nax.pc98.OutportC4231_Jump1(jump1_);
 
-        gotoModeChgExit();
+//mode_chg_exit:
         r.setAx(axbk);
         // popf
-    }
-
-    private void gotoModeChgExit() {
     }
 
     /**
@@ -5742,9 +5737,9 @@ pcm_exit: {
             r.al = 127;
         }
         short dsbk = r.ds;
-        r.ds = (short) (farjmp1_ >> 16); // swap segment
+        r.ds = (short) (farjmp1_ & 0xffff); // swap segment
         set_mul_sub();
-        r.ds = (short) (farjmp2_ >> 16); // main segment
+        r.ds = (short) (farjmp2_ & 0xffff); // main segment
         set_mul_sub();
         r.ds = dsbk;
     }

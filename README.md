@@ -15,7 +15,7 @@ this is a fork of [muapDotNET](https://github.com/kuma4649/muapDotNET)
 
 ## Usage
 
-currently this project has no good player, use [vavi-sound-mdplayer](https://github.com/umjammer/vavi-sound-mdplayer) instead
+ [sample](src/test/java/TestCase.java)
 
 ## References
 

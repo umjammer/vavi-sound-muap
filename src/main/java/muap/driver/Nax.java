@@ -299,9 +299,9 @@ public class Nax {
     };
 
     public void initCallMenu() {
-        //---------------------------------------
+        //
         // Set paths based on environment variables
-        //---------------------------------------
+        //
         if (envVars != null) {
             if (envVars.containsKey("DTA"))
                 tone_path = Paths.get(envVars.get("DTA"), tone_path).toString();
@@ -453,7 +453,7 @@ public class Nax {
         Set_buff(arg);
         reg.ah = reg.al;
         reg.al = 0;
-        pcmlen = reg.getAx();
+        pcmlen = reg.getAx() & 0xffff;
     }
 
     /**
@@ -1691,7 +1691,7 @@ public class Nax {
             return;
         }
         if (cusbuff[0] == 0x5a) {
-            //adpcm_ready:
+//adpcm_ready:
             m_mode[3] |= 4; // Enable ADPCM
         }
 
@@ -1910,7 +1910,7 @@ public class Nax {
                 try {
                     buf = Files.readAllBytes(Paths.get(ssg1_path));
                 } catch (IOException e) {
-                    logger.log(Level.ERROR, "File not found.{0}", ssg1_path);
+                    logger.log(Level.ERROR, "File not found. {0}", ssg1_path);
                 }
                 pcmBuff = new byte[pcmlen];
                 System.arraycopy(buf, 0, pcmBuff, 0, buf.length > pcmlen ? pcmlen : buf.length);
@@ -2302,7 +2302,7 @@ public class Nax {
         }
         di = (bxbuf[bx + 2] & 0xff) + (bxbuf[bx + 3] & 0xff) * 0x100; // DI = storage end address
 
-        //pcmload23:
+//pcmload23:
         if (bxbuf != play4.ssgtable) {
             pcmbyte = di;
         }
@@ -2415,7 +2415,7 @@ public class Nax {
                 filebuf = Files.readAllBytes(Paths.get(pcm_path));
                 logger.log(Level.INFO, "[{0}] File found.", pcm_path);
             } catch (IOException e) {
-                logger.log(Level.ERROR, "File not found.{0}", pcm_path);
+                logger.log(Level.ERROR, "File not found. {0}", pcm_path);
                 reg.carry = true;
             }
         }
@@ -2441,7 +2441,7 @@ public class Nax {
                 filebuf = Files.readAllBytes(Paths.get(testPath));
                 logger.log(Level.INFO, "[{0}] File found.", testPath);
             } catch (IOException e) {
-                logger.log(Level.ERROR, "File not found.{0}", testPath);
+                logger.log(Level.ERROR, "File not found. {0}", testPath);
                 reg.carry = true;
             }
         }
