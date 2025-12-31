@@ -234,8 +234,8 @@ public class Nax {
             -(x   : Specify frequency for 86B/WSS-PCM.
             -?    : Display parameter help.
             
-            ★ This music driver can be freely incorporated into commercial software without application.
-            ※ For development environment, please purchase "Muup 98/iv" from Soft Vendor Takeru (3000 yen).""";
+            * This music driver can be freely incorporated into commercial software without application.
+            * For development environment, please purchase "Muup 98/iv" from Soft Vendor Takeru (3000 yen).""";
 
     private String mess_3 = """
             
@@ -270,16 +270,20 @@ public class Nax {
     private byte sflag = 0x00;
     private byte sys_flg = 0x00;
 
-    private int extpcmadr = 0; // Extended PCM address
-    private byte oldmapadr = 0; // EMS page number
-    private byte extmapflg = 0; // b0 = EMS map flag, b1 = usrpcm registration
+    /** Extended PCM address */
+    private int extpcmadr = 0;
+    /** EMS page number */
+    private byte oldmapadr = 0;
+    /** b0 = EMS map flag, b1 = usrpcm registration */
+    private byte extmapflg = 0;
     private byte pcmcnt1 = 0;
     private int pcmcnt2 = 0;
 
     private String[] dspdtop = new String[] {"o", "+", "*", "･"};
     private int dspcnt1 = 0;
     private byte dspcnt2 = 0;
-    private byte pcm_flg = 0; // -P specification flag
+    /** -P specification flag */
+    private byte pcm_flg = 0;
     private String emsName2 = "MUAP_PCM";
     private byte[] sbufbuf = new byte[128];
     private String tone_path = "TONES.DTA";
@@ -386,6 +390,9 @@ public class Nax {
     private String paradta = "FLV?YIOPTMB6Q23(A8";
     private Consumer<String>[] parajmp;
 
+    /**
+     * Parameter jump table initialization
+     */
     private void initParaJump() {
         parajmp = List.<Consumer<String>>of(
                 this::fade_time, this::funvct,
@@ -405,21 +412,33 @@ public class Nax {
         ).toArray(Consumer[]::new);
     }
 
+    /**
+     * Error message suppression
+     */
     private void undisp(String x) {
         sflag |= 1;
     }
 
+    /**
+     * File open error path name display
+     */
     private void patherr(String path) {
         if ((sflag & 1) != 0) return;
         logger.log(Level.ERROR, "%s%s".formatted(path, mess_g2));
     }
 
+    /**
+     * Lowercase to uppercase conversion
+     */
     private char xsmall(char al) {
         if ((byte) al >= 0x61 && (byte) al <= 0x7a)
             return (char) ((byte) al & 0xdf);
         return al;
     }
 
+    /**
+     * Performance buffer allocation
+     */
     private void memget(String arg) {
         Set_buff(arg); // AL = performance buffer capacity/100h
         reg.ah = reg.al;
@@ -427,6 +446,9 @@ public class Nax {
         bufleno[0] = reg.getAx();
     }
 
+    /**
+     * SSGPCM buffer allocation
+     */
     private void ssgpcm_buff(String arg) {
         Set_buff(arg);
         reg.ah = reg.al;
@@ -434,6 +456,9 @@ public class Nax {
         pcmlen = reg.getAx();
     }
 
+    /**
+     * SSGPCM 16KHz specification
+     */
     private void ssgpcm16(String x) {
         m_mode[0] |= 0x80; // Set flag
         play4.intm1 = (byte) 0x9a; // Change timer frequency
@@ -443,6 +468,9 @@ public class Nax {
         intm4 = reg.getAx();
     }
 
+    /**
+     * Read SSGPCM.TBL
+     */
     private void read_ssgpcm(String arg) {
         short bxbk = reg.getBx();
         reg.setAx((short) pcmlen);
@@ -459,6 +487,9 @@ public class Nax {
         }
     }
 
+    /**
+     * Timer A vector user setting
+     */
     private void vector(String arg) {
         m_mode[1] |= 4; // User setting for Timer A vector
         Set_buff(arg); // AL = vector number
@@ -502,6 +533,9 @@ public class Nax {
         funcseg = reg.getAx();
     }
 
+    /**
+     * Automatic assignment of Timer A interrupt number
+     */
     private void autovct() {
         short dxbk = reg.getDx();
         short cxbk = reg.getCx();
@@ -535,6 +569,9 @@ public class Nax {
         reg.setDx(dxbk);
     }
 
+    /**
+     * Output port number specification
+     */
     private void outport(String arg) {
         sys_flg |= 4; // -Y specification
         reg.al = (byte) xsmall(arg.charAt(reg.getBx() & 0xffff));
@@ -553,6 +590,10 @@ public class Nax {
         play4.port7 = reg.getAx() & 0xffff;
     }
 
+    /**
+     * Store port address
+     * entry AX = each port address
+     */
     private void setport1(int ax) {
         // Kuma: Note: Original is self-modifying, so here it's just held as variables
         play4.port1 = ax; // Port number storage address
@@ -574,6 +615,9 @@ public class Nax {
         play4.port37 = ax;
     }
 
+    /**
+     * Acquisition of 4-digit hexadecimal character
+     */
     private void getax(String arg) {
         // Acquired 4-digit hexadecimal
         Set_buff(arg);
@@ -582,6 +626,10 @@ public class Nax {
         reg.ah = dl;
     }
 
+    /**
+     * Acquisition of 2-digit hexadecimal parameter
+     * AL = hex data, AH, CL destroyed
+     */
     private void Set_buff(String arg) {
         int bx = reg.getBx() & 0xffff;
         reg.al = arg.length() > bx ? (byte) arg.charAt(bx) : (byte) 0;
@@ -615,6 +663,9 @@ public class Nax {
         return false;
     }
 
+    /**
+     * Fade out time change
+     */
     private void fade_time(String arg) {
         int bx = reg.getBx() & 0xffff;
         reg.al = arg.length() > bx ? (byte) arg.charAt(bx) : (byte) 0;
@@ -632,6 +683,9 @@ public class Nax {
         play4.fadesave = reg.getAx() & 0xffff;
     }
 
+    /**
+     * Various mode settings
+     */
     private void dis9821pcm(String x) {
         sys_flg |= 2;
     }
@@ -656,20 +710,33 @@ public class Nax {
         extlen = reg.getAx() & 0xffff; // Specify the length of main memory PCM
     }
 
+    /**
+     * PCM data reading specification
+     */
     private void pcm_load(String x) {
         pcm_flg = 1;
     }
 
+    /**
+     * Disable interrupts during performance
+     */
     private void disint(String x) {
         reg.al = (byte) 0x90;
-        play4.stiof1 = reg.al; // Disable interrupts during performance
+        play4.stiof1 = reg.al; // Store NOP in PLAY4's STI
     }
 
+    /**
+     * Check for EMS existence
+     * exit CY = None, Kuma: false = None
+     */
     private boolean check_ems() {
         // Assuming EMS exists
         return true;
     }
 
+    /**
+     * PC-9821 compatible processing
+     */
     private void ena_9821() {
         short dxbk = reg.getDx();
         short bxbk = reg.getBx();
@@ -764,6 +831,10 @@ public class Nax {
         buf[reg.di + 8] = (byte) ((reg.getAx() & 0xffff) >> 8);
     }
 
+    /**
+     * Search for EMS handle
+     * exit CY = Not found (false = none)
+     */
     private boolean check_phandle() {
         reg.setDx((short) 0);
         reg.es = reg.cs;
@@ -790,6 +861,9 @@ public class Nax {
         return true;
     }
 
+    /**
+     * 86B-PCM frequency setting
+     */
     private void pcmfreq(String arg) {
         int bx = reg.getBx() & 0xffff;
         reg.al = arg.length() > bx ? (byte) arg.charAt(bx) : (byte) 0;
@@ -807,6 +881,10 @@ public class Nax {
     }
 
     // PCM frequency table
+    // A:48.00K, B:44.10K, C:37.80K, D:33.08K,
+    // E:32.00K, F:27.42K, G:22.05K, H:18.90K,
+    // I:16.54K, J:16.00K, K:11.03K, L: 9.60K,
+    // M: 8.27K, N: 8.00K, O: 6.62K, P: 5.51K
     private byte[] freq86b = new byte[] {
             0b000, 0b000, 0b001, 0b001,
             0b001, 0b010, 0b010, 0b010,
@@ -826,6 +904,10 @@ public class Nax {
             1220, 1180, 976, 813
     };
 
+    /**
+     * Check extended sound function
+     * exit CY = PCM unusable
+     */
     private boolean chk_sound() {
         reg.setDx((short) 0xa460);
         reg.al = pc98.inportB(reg.getDx() & 0xffff);
@@ -876,6 +958,10 @@ public class Nax {
         ex_sound_set();
     }
 
+    /**
+     * SRN-F PCM sound source permission
+     * exit CY = no sound source (false = none)
+     */
     private boolean check_srn() {
         reg.setDx((short) 0x51e1);
         reg.setCx((short) 8);
@@ -891,7 +977,7 @@ public class Nax {
         }
         if (!fnd) return false; // Keyword C2 was missing
 
-//portchk1:
+// portchk1:
         int dx = reg.getDx() & 0xffff;
         dx &= 0xf;
         reg.di = (short) dx; // Address where C2 was found, lower 4 bits odd
@@ -899,33 +985,36 @@ public class Nax {
         reg.setSi((short) dx); // Address where C2 was found, lower 4 bits even
 
         reg.setDx((short) (0x57e0 + (reg.di & 0xffff)));
-        reg.al = pc98.inportB(reg.getDx() & 0xffff);
+        reg.al = pc98.inportB(reg.getDx() & 0xffff); // DX = 57e1-57ef(odd)
         reg.al &= 0xbf; // Initialize SRN-F
         pc98.outportB(reg.getDx() & 0xffff, reg.al);
 
         reg.setDx((short) (0x56e0 + (reg.di & 0xffff)));
-        reg.al = pc98.inportB(reg.getDx() & 0xffff);
+        reg.al = pc98.inportB(reg.getDx() & 0xffff); // DX = 56e1-56ef(odd)
         reg.al |= 0x51;
         pc98.outportB(reg.getDx() & 0xffff, reg.al);
 
         reg.setDx((short) (0x57e0 + (reg.di & 0xffff)));
-        reg.al = pc98.inportB(reg.getDx() & 0xffff);
+        reg.al = pc98.inportB(reg.getDx() & 0xffff); // DX = 57e1-57ef(odd)
         reg.al |= 0x40; // a460 ID = 71h
         pc98.outportB(reg.getDx() & 0xffff, reg.al);
 
         reg.setDx((short) (0x5be0 + (reg.di & 0xffff)));
-        reg.al = pc98.inportB(reg.getDx() & 0xffff);
+        reg.al = pc98.inportB(reg.getDx() & 0xffff); // DX = 5be1-5bef(odd)
         reg.al |= 0x06;
         pc98.outportB(reg.getDx() & 0xffff, reg.al);
 
         reg.setDx((short) (0x51e0 + (reg.getSi() & 0xffff)));
-        reg.al = pc98.inportB(reg.getDx() & 0xffff);
+        reg.al = pc98.inportB(reg.getDx() & 0xffff); // DX = 51e0-51ee(even)
         reg.al &= 0xfc; // b0 = PCM permit?, b1 = FM sound permit
         pc98.outportB(reg.getDx() & 0xffff, reg.al);
 
         return true;
     }
 
+    /**
+     * DMA channel specification
+     */
     private void set_dmach(String arg) {
         int bx = reg.getBx() & 0xffff;
         reg.al = arg.length() > bx ? (byte) arg.charAt(bx) : (byte) 0;
@@ -942,6 +1031,9 @@ public class Nax {
         pc98.outportB(reg.getDx() & 0xffff, reg.al);
     }
 
+    /**
+     * Initial setting for DMA interrupt
+     */
     private void setup_int_dma() {
         reg.setDx((short) 0x0f40);
         reg.al = pc98.inportB(reg.getDx() & 0xffff);
@@ -1019,6 +1111,9 @@ public class Nax {
         m_mode[3] &= 0xee; // WSS-PCM prohibited
     }
 
+    /**
+     * Initialization of DSP part
+     */
     private void init_86pcm() {
         reg.setAx((short) 0x3e3e);
         play4.sign1 = reg.getAx() & 0xffff; // Change PCM routine for 86-PCM
@@ -1030,6 +1125,9 @@ public class Nax {
         play4.sign4_1 = reg.getAx() & 0xffff;
     }
 
+    /**
+     * Calculation of resident buffer memory capacity based on each parameter
+     */
     private void para0() {
         // Omit processing for calculating resident range (result in dx)
 
@@ -1057,7 +1155,7 @@ public class Nax {
         }
 
         chkfm(); // Check extended sound function
-        wait_port(); // Forced weight setting
+        wait_port(); // Forced wait setting
         autovct(); // Automatic assignment of Timer A interrupt number
         set_pcmtable(); // Store PCM management table
         reg.setDx(dxbk); // Final segment value
@@ -1081,6 +1179,9 @@ public class Nax {
         play4.hadr10 = reg.al & 0xffff;
     }
 
+    /**
+     * File existence check
+     */
     private void check_fopen() {
         reg.setDx((short) 0); // ofs:tone_path
         chksns(tone_path);
@@ -1105,24 +1206,31 @@ public class Nax {
 
         reg.setDx((short) (buf.length >> 16));
         if (reg.getDx() != 0 || buf.length >= pcmlen) {
+//pbuffover:
             reg.setDx((short) 0); // ofs:mes_e3 ; PCM buffer overflowed
             putasciz(mes_e3, 0);
         }
     }
 
+    /**
+     * Specify extended 2203
+     */
     private void ext_2203(String x) {
         play4.outdata4_ = (byte) 0xc3;
         cyon = 0xffb1; // inc cl → mov cl,0ffh
     }
 
+    /**
+     * Identification of YM2608 port
+     */
     private void check_port() {
         int dx = 0x88;
         boolean fnd = false;
         for (int cx = 4; cx >= 0; cx--) {
-            if (fnd = get_port(dx)) break; // Identification of YM2608 port
+            if (fnd = get_port(dx)) break; // found
             dx += 0x100;
         }
-        if (!fnd) return;
+        if (!fnd) return; // ignore if not found
 
         int ax = dx;
         setport1(ax);
@@ -1141,9 +1249,13 @@ public class Nax {
         return false;
     }
 
+    /**
+     * Identification of YM3438 port
+     */
     private void check_extend() {
         int dx = 0x788;
         for (int cx = 8; cx >= 0; cx--) {
+//eport5:
             int f = get_3438(dx);
             if (f == 1) // YM3438 identified
             {
@@ -1158,6 +1270,7 @@ public class Nax {
             }
 
             if (play4.port1 != dx) {
+                // YM2608 port?
                 if (get_port(dx)) // YM2608 identified
                 {
                     m_mode[3] |= 2;
@@ -1172,6 +1285,7 @@ public class Nax {
                 return;
             }
 
+//eport2:
             dx -= 0x100;
         }
     }
@@ -1195,17 +1309,21 @@ public class Nax {
     private void wait_fm() {
     }
 
+    /**
+     * Check status of YM2608/3438
+     */
     private void chkfm() {
         short axbk = reg.getAx();
         short dxbk = reg.getDx();
 
-        reg.setDx((short) play4.port1);
+        reg.setDx((short) play4.port1); // YM2203 I/O address
         reg.al = pc98.inportB(reg.getDx() & 0xffff);
         boolean cf = (reg.al & 0x80) != 0;
         reg.al = (byte) ((reg.al & 0xff) << 1);
         if (!cf) {
             if ((sflag & 1) != 0)
-                putasciz(mess_f1, 0);
+                putasciz(mess_f1, 0); // YM2203 is busy.
+//dispu2:
             reg.al = (byte) 0xc3;
             play4.outdata1_ = reg.al;
             play4.outdata2_ = reg.al;
@@ -1216,10 +1334,12 @@ public class Nax {
             return;
         }
 
+//chk_sound1:
         String msg;
         msg = mes_s0;
 
         if (!get_port(reg.getDx() & 0xffff)) {
+            // YM2203 only
             msg += mes_s2;
             ym2203++;
 
@@ -1234,31 +1354,37 @@ public class Nax {
             return;
         }
 
+//chk_sound2:
+        // Using YM2608
         msg += mes_s3;
         ym2608++;
 
         reg.setAx((short) 0x002d);
-        play4.outdata1();
+        play4.outdata1(); // OPn prescaler init
         reg.setAx((short) 0x8129);
-        play4.outdata1();
+        play4.outdata1(); // Set to OPNA mode
 
         if ((m_mode[3] & 0x02) != 0) {
+            // Alternative YM2608?
             reg.setAx((short) 0x002d);
-            play4.outdata3();
+            play4.outdata3(); // OPn prescaler init
             reg.setAx((short) 0x8129);
-            play4.outdata3();
+            play4.outdata3(); // Set to OPNA mode
 
             msg += mes_s9;
             ym2608++;
         } else {
+//chk_sound7:
             reg.setDx((short) play4.port5);
             reg.al = pc98.inportB(reg.getDx() & 0xffff);
             cf = (reg.al & 0x80) != 0;
             reg.al = (byte) ((reg.al & 0xff) << 1);
             if (cf) {
+//chk_sound3:
                 reg.al = play4.outdata4_;
                 if ((reg.al & 0xff) == 0xc3) {
-                    msg += mes_s4;
+//chk_sound13:
+                    msg += mes_s4; // Using extended YM2203
                     ext_2203("");
                     ym2203++;
                 } else {
@@ -1267,10 +1393,13 @@ public class Nax {
                     cf = (reg.al & 0x80) != 0;
                     reg.al = (byte) ((reg.al & 0xff) << 1);
                     if (!cf) {
-                        msg += mes_s5;
+//chk_sound4:
+                        msg += mes_s5; // Using extended YM3438
                         ym3438++;
                     } else {
-                        msg += mes_s4;
+//chk_sound8:
+//chk_sound13:
+                        msg += mes_s4; // Using extended YM2203
                         ext_2203("");
                         ym2203++;
                     }
@@ -1282,10 +1411,12 @@ public class Nax {
             }
         }
 
+//chk_sound5:
         msg += mes_s8;
         if ((play4.outdata2_ & 0xff) != 0xc3) {
             reg.al = m_mode[3];
             if ((reg.al & 0x10) == 0) {
+//chk_sound9:
                 msg += ((reg.al & 4) == 0) ? mes_s8 : mes_s7;
             } else {
                 msg += ((reg.al & 0x1) == 0) ? mes_s6 : mes_s12;
@@ -1294,10 +1425,14 @@ public class Nax {
         }
 
         logger.log(Level.INFO, msg);
+//chk_sound14:
         reg.setAx(axbk);
         reg.setDx(dxbk);
     }
 
+    /**
+     * PCM data reading
+     */
     private void load_pcm() {
         short axbk = reg.getAx();
         short bxbk = reg.getBx();
@@ -1453,6 +1588,9 @@ public class Nax {
         reg.setSi(sibk);
     }
 
+    /**
+     * ADPCM data transfer end processing
+     */
     private void pcm_finish() {
         if (play4.check_86pcm()) {
             remove_extpcm();
@@ -1479,11 +1617,19 @@ public class Nax {
         return reg.carry; // insufficient buffer
     }
 
+    /**
+     * Check PCM identifier "MP23"
+     * exit [cusbuff] = read string
+     *      CY = timeout
+     */
     private boolean check_mp23() {
         cusbuff = pc98.ReadOpnaPCMMemory(port34, 0, 4);
         return true;
     }
 
+    /**
+     * ADPCM validity check
+     */
     private void check_adpcm() {
         short sibk = reg.getSi();
         short dxbk = reg.getDx();
@@ -1545,7 +1691,8 @@ public class Nax {
             return;
         }
         if (cusbuff[0] == 0x5a) {
-            m_mode[3] |= 4;
+            //adpcm_ready:
+            m_mode[3] |= 4; // Enable ADPCM
         }
 
         reg.setDx((short) port31);
@@ -1570,6 +1717,9 @@ public class Nax {
         reg.setCx(cxbk);
     }
 
+    /**
+     * PCM management table storage
+     */
     private void set_pcmtable() {
         short dxbk = reg.getDx();
         short bxbk = reg.getBx();
@@ -1602,14 +1752,15 @@ public class Nax {
             do {
                 reg.carry = gettxt(cusbuff);
                 if (reg.carry) break;
-                gethex();
+                gethex(); // AL = High byte
                 int adr = (reg.al & 0xff) << 8;
 
                 reg.carry = gettxt(cusbuff);
                 if (reg.carry) break;
-                gethex();
+                gethex(); // AL = Low byte
                 adr |= (reg.al & 0xff);
 
+                // Halve the address value
                 adr >>= 1;
                 play4.pcmtable[reg.di] = (byte) adr;
                 play4.pcmtable[reg.di + 1] = (byte) (adr >> 8);
@@ -1670,6 +1821,12 @@ public class Nax {
         reg.al |= reg.ah;
     }
 
+    /**
+     * Drive sense for parameter file & OPEN
+     * entry DS:DX = path name offset
+     * exit CY = not ready
+     * AX = opened file handle
+     */
     private boolean chksns(String path) {
         short dxbk = reg.getDx();
         short bxbk = reg.getBx();
@@ -1687,6 +1844,9 @@ public class Nax {
         return !reg.carry;
     }
 
+    /**
+     * Separator skip (DS:BX)
+     */
     private boolean skip_bl(String str) {
         if ((reg.getBx() & 0xffff) >= str.length()) return true;
 
@@ -1703,7 +1863,12 @@ public class Nax {
         }
     }
 
+    /**
+     * Routine for setting each interrupt vector
+     */
     private void set_vct() {
+        // Kuma: Vector setting is probably not needed for now
+
         short esbk = reg.es;
         reg.setAx((short) 0);
         reg.es = reg.getAx();
@@ -1718,11 +1883,11 @@ public class Nax {
         reg.setBx((short) funcseg);
 
         if ((m_mode[0] & 2) != 0) {
-            reg.setAx((short) 0);
+            reg.setAx((short) 0); // ofs:int08ent
             reg.setAx(reg.cs);
         }
         if ((m_mode[3] & 1) != 0) {
-            reg.setAx((short) 0);
+            reg.setAx((short) 0); // ofs:int0bent
             reg.setAx(reg.cs);
         }
 
@@ -1786,12 +1951,20 @@ public class Nax {
     public void popems() {
     }
 
+    /**
+     * EMS mapping and restoration of extended PCM
+     * entry BX = Page number (0~31)
+     */
     public void save_extpcm(int[] bx) {
         if ((m_mode[3] & 0x80) != 0)
             return;
         bx[0] = ems.cS4231EMS_GetPageMap.get();
     }
 
+    /**
+     * EMS mapping
+     * entry BX = Logical page number
+     */
     private void setnew_extpcm() {
         reg.carry = false;
         if ((m_mode[3] & 0x80) != 0) {
@@ -1830,6 +2003,56 @@ public class Nax {
         if ((m_mode[3] & 0x80) != 0) return;
     }
 
+    /**
+     * Function interrupt control
+     * entry AH = Function number
+     * <p>
+     * AH = 0 : Get status
+     * exit AL =  0 : No sound board
+     * AL =  1 : Standard sound board
+     * AL =  2 : YM2608 only
+     * AL =  3 : YM2608+2203
+     * AL =  4 : YM2608+2608/3438
+     * AL =  7 : YM2608+ADPCM
+     * AL =  8 : YM2608+ADPCM+2203
+     * AL =  9 : YM2608+ADPCM+2608/3438
+     * AL = 12 : YM2608+86BPCM
+     * AL = 13 : YM2608+86BPCM+2203
+     * AL = 14 : YM2608+86BPCM+2608/3438
+     * AH = 1 : Start performance
+     * entry DX = Performance buffer segment
+     * AH = 2 : Stop performance
+     * AH = 3 : Fade out
+     * AH = 4 : Resume performance
+     * AH = 6 : YM-2203 register direct output
+     * entry DL = Address
+     * DH = Data
+     * AH = 7 : YM-2608 extended part register direct output
+     * entry DL = Address
+     * DH = Data
+     * AH = 8 : Position specified performance resume (BGM is already playing)
+     * entry DL = Number of @stop commands from the beginning
+     * DH = Channel number (1-17)
+     * AH = 9 : Fade out monitoring
+     * exit AL = 0 : Fade out finished or AH=3 not specified
+     * AL = 1 : Fading out
+     * AH = 10 : Read performance file & start performance (-Oxx required)
+     * entry DS:DX = Path name address
+     * exit AL = 0 : Read success
+     * AL = 1 : Performance buffer not specified
+     * AL = 2 : Read failed
+     * AL = 3 : Insufficient performance buffer capacity
+     * AH = 11 : Get offset value during performance
+     * entry AL = Channel number (1-15)
+     * exit DX = Address of the performance buffer currently playing
+     * AX = Beginning of the performance buffer for that channel
+     * AH = 12 : Loop end check
+     * exit AL = 0 : 1 loop not finished
+     * AL = 1 : 1 loop finished (@init,*,** executed)
+     * AH = 13 : Get lyric information
+     * exit ES:DX = Lyric data storage address (NUL=End)
+     * AL = Color change digit position (0~)
+     */
     public void function(byte ah, Object obj) {
         functionList.add(new Tuple<>(ah, obj));
     }
@@ -1838,6 +2061,9 @@ public class Nax {
         jmptbl[tp.getItem1() & 0xff].accept(tp.getItem2());
     }
 
+    /**
+     * Function jump table initialization
+     */
     private void initJmpTbl() {
         jmptbl = new Consumer[] {
                 this::play0, this::play1,
@@ -1847,6 +2073,9 @@ public class Nax {
         };
     }
 
+    /**
+     * Check status
+     */
     private void play0(Object x) {
         byte al = 0;
 
@@ -1862,6 +2091,9 @@ public class Nax {
         reg.setAx((short) (al & 0xff));
     }
 
+    /**
+     * Start performance
+     */
     private void play1(Object obj) {
         objBuf[0] = (MmlDatum[]) obj;
         if (bufleno[0] == 0) {
@@ -1871,6 +2103,9 @@ public class Nax {
         work.setStatus(1);
     }
 
+    /**
+     * Read performance file and start performance
+     */
     private void play10(Object o) {
         short bxbk = reg.getBx();
         short cxbk = reg.getCx();
@@ -1883,15 +2118,15 @@ public class Nax {
             return;
         }
         if (bufleno[0] == 0) {
-            reg.al = 1;
+            reg.al = 1; // Performance buffer undefined
             return;
         }
-        play4.music_stop(null);
+        play4.music_stop(null); // Stop performance
 
         objBuf[0] = oo;
         obj_len = (short) oo.length;
 
-        pcm_check();
+        pcm_check(); // User PCM check
         if (reg.carry) {
             reg.al = 4;
             reg.setDx(dxbk);
@@ -1909,6 +2144,11 @@ public class Nax {
         return;
     }
 
+    /**
+     * Read PCM file
+     * exit CY = Error
+     * DL = Error code
+     */
     private void pcm_check() {
         reg.push(reg.getAx());
         reg.push(reg.getBx());
@@ -1944,8 +2184,9 @@ public class Nax {
             reg.setCx((short) (20 + MAXPCM - 50));
             reg.ah = 0;
 
+//pcmload5:
             do {
-                usrpcmn = reg.ah;
+                usrpcmn = reg.ah; // Save tone number
 
                 reg.push(reg.getAx());
                 reg.push(reg.getCx());
@@ -1958,9 +2199,11 @@ public class Nax {
                     reg.al = (byte) objBuf[0][di].dat;
 
                     int alInt = reg.al & 0xff;
-                    if ((alInt >= 20 && alInt < 50) || alInt > MAXPCM - 1) break;
+//pcmload18:
+                    if ((alInt >= 20 && alInt < 50) || alInt > MAXPCM - 1) break; // Out of specified code?
 
-                    if (reg.al == reg.ah) {
+//pcmload17:
+                    if (reg.al == reg.ah) { // Is it data of corresponding tone number?
                         if (!pcmload3(bxbuf, di, si, bx)) {
                             skipPcmload2 = true;
                             break;
@@ -2017,6 +2260,9 @@ public class Nax {
         return;
     }
 
+    /**
+     * Restore registers for PCM load
+     */
     private void pcmload15() {
         reg.es = reg.pop();
         reg.ds = reg.pop();
@@ -2027,12 +2273,17 @@ public class Nax {
         reg.setAx(reg.pop());
     }
 
+    /**
+     * Compare PCM filename and length
+     */
     private boolean pcmload3(byte[] bxbuf, int di, int si, int bx) {
-        if ((reg.al & 0xff) < 20) usrpcm |= 2;
+        if ((reg.al & 0xff) < 20) usrpcm |= 2; // User PCM (SSGPCM) exists
 
-        di++;
+        di++; // ES:DI = read filename storage address
 
+        // pcmfile ; DS = PCM filename segment
         reg.setCx((short) 11);
+        // Compare with filename in storage buffer
         reg.zero = true;
         for (int i = 0; i < 11; i++) {
             if (objBuf[0][di + i].dat == pcmfileBuf[si + i]) continue;
@@ -2041,14 +2292,17 @@ public class Nax {
         }
         if (!reg.zero) return true;
 
-        reg.setAx((short) ((pcmfileBuf[si + 11] & 0xff) + (pcmfileBuf[si + 12] & 0xff) * 0x100));
-        reg.setAx((short) ((reg.getAx() & 0xffff) ^ ((objBuf[0][di + 11].dat & 0xff) + (objBuf[0][di + 12].dat & 0xff) * 0x100)));
+        // pcmfile
+        reg.setAx((short) ((pcmfileBuf[si + 11] & 0xff) + (pcmfileBuf[si + 12] & 0xff) * 0x100)); // AX = PCM storage start address
+        reg.setAx((short) ((reg.getAx() & 0xffff) ^ ((objBuf[0][di + 11].dat & 0xff) + (objBuf[0][di + 12].dat & 0xff) * 0x100))); // XOR back with volume value
 
-        if ((reg.getAx() & 0xffff) != ((bxbuf[bx] & 0xff) + (bxbuf[bx + 1] & 0xff) * 0x100)) {
+        if ((reg.getAx() & 0xffff) != ((bxbuf[bx] & 0xff) + (bxbuf[bx + 1] & 0xff) * 0x100)) { // Does storage address also match?
+            // If PCM is already loaded, proceed to next
             return true;
         }
-        di = (bxbuf[bx + 2] & 0xff) + (bxbuf[bx + 3] & 0xff) * 0x100;
+        di = (bxbuf[bx + 2] & 0xff) + (bxbuf[bx + 3] & 0xff) * 0x100; // DI = storage end address
 
+        //pcmload23:
         if (bxbuf != play4.ssgtable) {
             pcmbyte = di;
         }
@@ -2056,13 +2310,17 @@ public class Nax {
         return false;
     }
 
+    /**
+     * PCM data transfer initialization
+     */
     private int pcmload6(byte[] bxbuf, int di, int si, int bx) {
         int sibk = si;
         int dsbk = reg.ds;
         reg.setCx((short) 11);
         reg.ds = (short) pcmfile;
+//pcmload8:
         do {
-            reg.al = (byte) objBuf[0][di].dat;
+            reg.al = (byte) objBuf[0][di].dat; // Transfer filename to storage buffer
             pcmfileBuf[si] = reg.al;
             si++;
             di++;
@@ -2070,27 +2328,36 @@ public class Nax {
         } while ((reg.getCx() & 0xffff) > 0);
         reg.ds = (short) dsbk;
         si = sibk;
-        reg.setAx((short) ((objBuf[0][di].dat & 0xff) + (objBuf[0][di + 1].dat & 0xff) * 0x100));
+        reg.setAx((short) ((objBuf[0][di].dat & 0xff) + (objBuf[0][di + 1].dat & 0xff) * 0x100)); // AX = volume data
         voldata = reg.getAx() & 0xffff;
-        reg.setAx((short) ((bxbuf[bx] & 0xff) + (bxbuf[bx + 1] & 0xff) * 0x100));
+        reg.setAx((short) ((bxbuf[bx] & 0xff) + (bxbuf[bx + 1] & 0xff) * 0x100)); // AX = PCM storage address
+        //
+        //  Transfer of PCM data
+        //  entry   AX = start address
+        //          SI = filename storage address
+        //
 
         reg.pushA();
 
         reg.push(reg.es);
-        pcmtbl[11 / 2] = (pcmtbl[11 / 2] & 0x00ff) + (reg.al & 0xff) * 0x200;
+        pcmtbl[11 / 2] = (pcmtbl[11 / 2] & 0x00ff) + (reg.al & 0xff) * 0x200; // Store write start address // Kuma: make it 2x value (presumably NAX bug?)
         pcmtbl[13 / 2] = (pcmtbl[13 / 2] & 0x00ff) + (reg.ah & 0xff) * 0x200;
         reg.push(reg.getAx());
 
         reg.es = reg.cs;
-        reg.setBx((short) 0);
+        reg.setBx((short) 0); // ofs:pcm_path1 ; BX = path for reading user PCM (FDD)
         pcm_path1 = "*.*" + new String(new char[61]);
         String[] tmp = {pcm_path1};
         set_usrpcmfile(tmp);
         pcm_path1 = tmp[0];
 
+        // Kuma: check drive ready is skipped
+
+        // File open
         reg.setDx(reg.getBx());
         reg.carry = false;
 
+        // First check if file exists in specified path
         if (objPath != null && !objPath.isEmpty()) {
             String objPathFn = Paths.get(objPath, pcm_path1).toString();
             if (Files.exists(Paths.get(objPathFn))) {
@@ -2098,7 +2365,7 @@ public class Nax {
                     filebuf = Files.readAllBytes(Paths.get(objPathFn));
                     logger.log(Level.INFO, "[{0}] File found.", objPathFn);
                 } catch (IOException e) {
-                    reg.carry = true;
+                    reg.carry = true; // Not found, proceed to existing process
                 }
             } else reg.carry = true;
         }
@@ -2132,14 +2399,15 @@ public class Nax {
     }
 
     private boolean fdd_notready() {
-        reg.setBx((short) 0);
+        reg.setBx((short) 0); // ofs:pcm_path ; BX = path for reading user PCM
         pcm_path = "*.*" + new String(new char[61]);
         String[] tmp = {pcm_path};
         set_usrpcmfile(tmp);
         pcm_path = tmp[0];
-        reg.di = reg.pop();
+        reg.di = reg.pop(); // DI = PCM write start address
         reg.es = reg.pop();
 
+        // File open
         reg.carry = false;
         if (!Files.exists(Paths.get(pcm_path))) reg.carry = true;
         else {
@@ -2155,6 +2423,7 @@ public class Nax {
             return true;
         }
 
+        // Search subdirectories
         reg.push(reg.es);
         reg.push(reg.di);
         reg.push(reg.getSi());
@@ -2181,17 +2450,28 @@ public class Nax {
             reg.setSi(reg.pop());
             reg.di = reg.pop();
             reg.es = reg.pop();
+//pcmload9n:
             reg.dl = 25;
+            // Not found
             return false;
         }
 
+//subdir4:
+//subdir3:
+//subdir6:
+//subdir5:
+//subdir2:
+//subdir7:
         reg.setBx(reg.pop());
         reg.setSi(reg.pop());
         reg.di = reg.pop();
         reg.es = reg.pop();
 
+        // Restore UsrPCM path to original directory...
+
         return true;
     }
+
 
     private String searchFile(String path, String fn) {
         File folder = new File(path);
@@ -2210,40 +2490,46 @@ public class Nax {
         return null;
     }
 
+    // Reading file into performance buffer
     private int subdir1(byte[] bxbuf, int bx) {
         reg.setBx(reg.getAx());
         if ((usrpcmn & 0xff) > 20) {
-            pcm_init();
+            pcm_init(); // PCM write preparation
         }
 
-        deltax = 127;
+        deltax = 127; // Initialization of work
         reg.setAx((short) 0);
         xdata[0] = reg.al;
         xdata[1] = reg.ah;
         xdata[2] = reg.al;
         xdata[3] = reg.ah;
 
+//pcmload14:
         int fileptr = 0;
         do {
-            reg.setCx((short) bufleno[0]);
-            reg.setDx((short) 0);
+            reg.setCx((short) bufleno[0]); // CX = performance buffer capacity
+            reg.setDx((short) 0); // DX = beginning of spare performance buffer // Kuma: always 0
             if ((reg.getCx() & 0xffff) < 0x8000 || (reg.getDx() & 0xffff) >= 0x6000) {
-                reg.setSi(reg.getDx());
+//adrslim1:
+                reg.setSi(reg.getDx()); // SI,DX = beginning of spare buffer
                 reg.zero = (reg.getCx() == reg.getDx());
-                reg.setCx((short) ((reg.getCx() & 0xffff) - (reg.getDx() & 0xffff)));
+                reg.setCx((short) ((reg.getCx() & 0xffff) - (reg.getDx() & 0xffff))); // CX = spare buffer capacity
                 if (reg.zero) {
                     pcmload16();
                     return 0;
                 }
             } else {
-                reg.setDx((short) 0x0);
+                reg.setDx((short) 0x0); // 0x6000; // Kuma: always 0
                 reg.setSi(reg.getDx());
                 reg.setCx((short) 0x1000);
             }
 
+//adrslim2:
             short dsbk = reg.ds;
+            // DS = performance buffer segment
             reg.ds = reg.es;
 
+            // File read
             cusbuff = new byte[reg.getCx() & 0xffff];
             reg.setAx((short) Math.min((int) (reg.getCx() & 0xffff), filebuf.length - fileptr));
             System.arraycopy(filebuf, fileptr, cusbuff, 0, reg.getAx() & 0xffff);
@@ -2251,21 +2537,22 @@ public class Nax {
 
             reg.ds = dsbk;
             if (reg.getAx() == 0) {
+                // End if no read data
                 pcmload13(bxbuf, bx);
                 return 2;
             }
-            reg.setCx(reg.getAx());
+            reg.setCx(reg.getAx()); // CX = byte count to write
             if ((usrpcmn & 0xff) > 20) {
-                int n = load_userpcm();
+                int n = load_userpcm(); // Transfer to ADPCM/86PCM
                 if (n == 0) return 0;
                 else if (n == 14) continue;
                 break;
             }
             reg.dl = 32;
             if (pcmBuff == null) pcmBuff = new byte[pcmlen];
-            xferpcm(cusbuff, pcmBuff);
+            xferpcm(cusbuff, pcmBuff); // Convert to PCM (for SSGPCM)
             if (reg.carry) {
-                pcmload9();
+                pcmload9(); // Error
                 return 0;
             }
         } while (!reg.carry);
@@ -2273,16 +2560,22 @@ public class Nax {
         return 0;
     }
 
+    /**
+     * Add file name to environment variable path name
+     * entry BX = Path name address
+     *       pcmfile:SI = File name address
+     */
     private void set_usrpcmfile(String[] bxpath) {
         short bxbk = reg.getBx();
         short sibk = reg.getSi();
         reg.setDx(reg.getBx());
-        getpath_main(bxpath[0]);
-        reg.di = 0;
+        getpath_main(bxpath[0]); // Path name analysis
+        reg.di = 0; // path1 DI = Start address of file name part
+        //reg.di++;
         reg.setCx((short) 8);
         short dsbk = reg.ds;
         reg.ds = (short) pcmfile;
-
+        // Transfer file name
         byte[] buf = new byte[255];
         do {
             buf[reg.di] = pcmfileBuf[reg.getSi() & 0xffff];
@@ -2296,6 +2589,7 @@ public class Nax {
         reg.di++;
 
         reg.setCx((short) 3);
+        // Transfer extension
         do {
             buf[reg.di] = pcmfileBuf[reg.getSi() & 0xffff];
             reg.di++;
@@ -2303,11 +2597,12 @@ public class Nax {
             reg.setCx((short) ((reg.getCx() & 0xffff) - 1));
         } while ((reg.getCx() & 0xffff) > 0);
 
+        // Add NUL
         reg.al = 0;
         buf[reg.di] = reg.al;
         reg.di++;
 
-        String text = new String(buf, myEnc);
+        String text = new String(buf, 0, reg.di - 1, myEnc); // Ensure correct string conversion
         String sub = bxpath[0].substring(0, path1 + (path1 == 0 ? 0 : 1)) + text;
         int limit = (reg.di & 0xffff) + path1 - (path1 == 0 ? 1 : 0);
         if (sub.length() > limit) sub = sub.substring(0, limit);
@@ -2317,9 +2612,17 @@ public class Nax {
         reg.setBx(bxbk);
     }
 
+    /**
+     * Conversion: ADPCM 16KHz -> PCM8 8KHz
+     * entry ES:SI = address of ADPCM data
+     *       pcmseg:DI = address of PCM storage
+     *       CX = ADPCM byte count
+     * exit  CY = error
+     */
     private void xferpcm(byte[] siBuf, byte[] diBuf) {
         reg.setAx((short) 0);
         if ((reg.getAx() & 0xffff) == pcmlen) {
+            // Is SSGPCM usable?
             reg.carry = true;
             return;
         }
@@ -2330,7 +2633,9 @@ public class Nax {
             reg.carry = true;
             return;
         }
+//intm4:
         if (intm4 != 0) {
+            // Twice the data for 16KHz
             ans = ans + (long) (reg.getCx() & 0xffff);
             reg.setAx((short) ans);
             if (ans > 0xffff) {
@@ -2338,7 +2643,9 @@ public class Nax {
                 return;
             }
         }
+//skip8khz:
         if ((reg.getAx() & 0xffff) >= pcmlen) {
+            // Check buffer capacity too
             reg.carry = true;
             return;
         }
@@ -2348,13 +2655,14 @@ public class Nax {
         reg.push(reg.getBx());
         reg.push(reg.getAx());
 
+//_calc3:
         do {
             reg.push(reg.getCx());
             int si = reg.getSi() & 0xffff;
             siBuf[si] = reg.ror(siBuf[si], 4);
-            calc_nextxy(siBuf, diBuf);
+            calc_nextxy(siBuf, diBuf); // Convert to 16-bit PCM and store
             if (intm3 == 0) {
-                reg.di = (short) ((reg.di & 0xffff) - 1);
+                reg.di = (short) ((reg.di & 0xffff) - 1); // Cut for 8KHz frequency division
             }
             si = reg.getSi() & 0xffff;
             siBuf[si] = reg.ror(siBuf[si], 4);
@@ -2372,100 +2680,136 @@ public class Nax {
         reg.carry = false;
     }
 
+    /**
+     * Data transfer to ADPCM memory
+     * entry ES:SI = Data storage address
+     *       CX,AX = Data byte count
+     *       DI = PCM write address
+     *
+     * 0: Failure
+     * 14: Continue reading (by subdir1)
+     */
     private int load_userpcm() {
-        reg.setAx((short) ((reg.getAx() & 0xffff) >> 3));
-        reg.carry = ((reg.di & 0xffff) + (reg.getAx() & 0xffff)) > 0xffff;
-        reg.di = (short) ((reg.di & 0xffff) + (reg.getAx() & 0xffff));
-        usrbyte = reg.di & 0xffff;
+        reg.setAx((short) ((reg.getAx() & 0xffff) >> 3)); // ADPCM address -> Management address conversion (512KB -> 64KB)
+        reg.carry = (reg.di + (reg.getAx() & 0xffff)) > 0xffff;
+        reg.di += (reg.getAx() & 0xffff); // DI = PCM address after writing
+        usrbyte = reg.di; // Used bytes
         reg.dl = 27;
 
-        if (reg.carry
-                || (((m_mode[2] & 0x80) == 0) && ((reg.di & 0xffff) > 0x8000))
+        if (reg.carry // Range check
+                || (((m_mode[2] & 0x80) == 0) // PCM 1MB?
+                && (reg.di > 0x8000) // 512KB range check
+        )
         ) {
             pcmload9();
             return 0;
         }
 
-        if (play4.check_86pcm()) {
+//pcm_1mb:
+        if (play4.check_86pcm()) { // Extended 86PCM?
             return extpcm_write1();
         }
 
         return pcmload10();
     }
 
+    /**
+     * ADPCM data transfer
+     */
     private int pcmload10() {
         do {
+            //      cli
             reg.setAx((short) 0x1810);
             outdata2pcm();
             reg.setAx((short) 0x1010);
             outdata2pcm();
-            reg.ah = cusbuff[reg.getSi() & 0xffff];
+            reg.ah = cusbuff[reg.getSi() & 0xffff]; // AH = data
             reg.setSi((short) ((reg.getSi() & 0xffff) + 1));
             reg.al = 8;
             outdata2pcm();
-
+            //      sti
             reg.push(reg.getCx());
             reg.setCx((short) 0x200);
+//pcmload11:
             while (true) {
                 reg.setDx((short) play4.port37);
-                reg.al = pc98.inportB(reg.getDx() & 0xffff);
+                reg.al = pc98.inportB(reg.getDx() & 0xffff); // AL = status
                 reg.setCx((short) ((reg.getCx() & 0xffff) - 1));
                 if ((reg.getCx() & 0xffff) != 0) {
-                    reg.test(reg.al, (byte) 8);
-                    if (reg.zero) continue;
+                    reg.test(reg.al, (byte) 8); // Check BRDY flag
+                    if (reg.zero) continue; // pcmload11
                 }
+                // Timeout
                 break;
             }
+//pcmload12:
             reg.setCx(reg.pop());
             reg.setCx((short) ((reg.getCx() & 0xffff) - 1));
         } while ((reg.getCx() & 0xffff) != 0);
 
-        return 14;
+        return 14; // jmp pcmload14
     }
 
+    /**
+     * PCM data transfer end
+     */
     private void pcmload13(byte[] bxbuf, int bx) {
         reg.ah = 0x3e;
+        // File close not required
         reg.setAx((short) 0);
-        play4.outdata2();
+        play4.outdata2(); // End sequence
         reg.setAx((short) 0x8010);
         play4.outdata2();
-        if (play4.check_86pcm()) {
-            remove_extpcm();
+        if (play4.check_86pcm()) { // Extended 86PCM?
+            remove_extpcm(); // Detach extended PCM EMS
         }
-        extmapflg &= 0xfe;
+        extmapflg &= 0xfe; // Restored map
         reg.setAx(reg.pop());
         reg.push(reg.di);
-        reg.popA();
-        reg.setAx((short) ((bxbuf[bx] & 0xff) + (bxbuf[bx + 1] & 0xff) * 0x100));
+        reg.popA(); // DI = PCM write end address
+        //reg.pushA(); // Kuma: unique code!!
+        reg.setAx((short) ((bxbuf[bx] & 0xff) + (bxbuf[bx + 1] & 0xff) * 0x100)); // AX = save start address
         bxbuf[bx + 2] = (byte) reg.di;
-        bxbuf[bx + 3] = (byte) ((reg.di & 0xffff) >> 8);
+        bxbuf[bx + 3] = (byte) ((reg.di & 0xffff) >> 8); // Store end address
         reg.setAx((short) ((reg.getAx() & 0xffff) ^ voldata));
         reg.push(reg.ds);
         reg.ds = (short) pcmfile;
         int si = reg.getSi() & 0xffff;
         pcmfileBuf[si + 11] = reg.al;
-        pcmfileBuf[si + 12] = reg.ah;
+        pcmfileBuf[si + 12] = reg.ah; // Store after XORing with volume value
         reg.ds = reg.pop();
+//pcmload23:
         if (bxbuf == play4.ssgtable) {
             pcmbyte = reg.di & 0xffff;
         }
     }
 
+    /**
+     * Set error code 26
+     */
     private void pcmload16() {
         reg.dl = 26;
         pcmload9();
     }
 
+    /**
+     * File close not required because it's read in one go
+     */
     private void pcmload9() {
         pcmload9s();
     }
 
+    /**
+     * Processing for PCM data reading failure
+     */
     private void pcmload9s() {
         if ((extmapflg & 1) != 0) {
-            remove_extpcm();
+            remove_extpcm(); // Detach extended PCM EMS
         }
-        extmapflg &= 0xfe;
+        extmapflg &= 0xfe; // Restored map
 
+        // Error in PCM definition (popa, pop di, si, cx, ax)
+        // for popA
         reg.pop();
         reg.pop();
         reg.pop();
@@ -2473,33 +2817,36 @@ public class Nax {
         reg.pop();
         reg.pop();
         reg.pop();
-        reg.pop();
-        reg.pop();
-        reg.pop();
-        reg.pop();
+        reg.pop(); // di
+        reg.pop(); // si
+        reg.pop(); // cx
+        reg.pop(); // ax
 
         reg.carry = true;
         pcmload15();
     }
 
+    /**
+     * Initialization for writing to extended PCM
+     */
     private int extpcm_write1() {
         reg.push(reg.di);
         reg.push(reg.getCx());
         reg.push(reg.getBx());
         reg.push(reg.getAx());
 
-        reg.di = (short) ((reg.di & 0xffff) - (reg.getAx() & 0xffff));
+        reg.di = (short) ((reg.di & 0xffff) - (reg.getAx() & 0xffff)); // DI = Write start ADPCM address
         reg.setAx(reg.di);
         pcmcnt2 = reg.getAx() & 0xffff;
         pcmcnt1 = 0;
 
         play4.calc_extpcmadr();
 
-        extpcmadr = reg.di & 0xffff;
-        oldmapadr = reg.cl;
+        extpcmadr = reg.di & 0xffff; // PCM address (0 to 3FFFh)
+        oldmapadr = reg.cl; // EMS page (0 to 31)
 
         reg.setBx(reg.getCx());
-        setnew_extpcm();
+        setnew_extpcm(); // EMS mapping
 
         reg.setAx(reg.pop());
         reg.setBx(reg.pop());
@@ -2521,6 +2868,9 @@ public class Nax {
         return 14;
     }
 
+    /**
+     * Analyze path name
+     */
     private void getpath_main(String bxpath) {
         char dxChar;
         int bx = reg.getBx() & 0xffff;
@@ -2539,6 +2889,12 @@ public class Nax {
         flength = (reg.getBx() & 0xffff) - path1;
     }
 
+    /**
+     * Data transfer to ADPCM memory (main)
+     * entry CX = byte count to write
+     *       SI = ADPCM data address
+     * exit  CY = buffer insufficient
+     */
     private void extpcm_write_main(byte[] siBuf) {
         short dibk = reg.di;
         short dxbk = reg.getDx();
@@ -2626,6 +2982,9 @@ public class Nax {
         reg.di = dibk;
     }
 
+    /**
+     * Calculate and store Xn+1
+     */
     private void calc_nextxy(byte[] siBuf, byte[] diBuf) {
         reg.al = siBuf[reg.getSi() & 0xffff];
         reg.setDx((short) deltax);
@@ -2683,6 +3042,11 @@ public class Nax {
         deltax = reg.getAx() & 0xffff;
     }
 
+    /**
+     * entry AL = L3 to L1 data
+     *       DX = Δn
+     * exit  AX = Δn+1
+     */
     private void calcdn() {
         reg.al &= 7;
         reg.cl = reg.al;
@@ -2706,6 +3070,11 @@ public class Nax {
         else if ((reg.getAx() & 0xffff) >= 24576) reg.setAx((short) 24576);
     }
 
+    /**
+     * entry AL = L4 to L1 data
+     *       DX = Δn
+     * exit  DXAX = current difference value
+     */
     private void calcgx() {
         if ((reg.al & 8) == 0) {
             calcgx_main();
@@ -2734,6 +3103,9 @@ public class Nax {
         reg.setAx((short) (((reg.getAx() & 0xffff) >> 3) | n));
     }
 
+    /**
+     * PCM initialization
+     */
     private boolean pcm_init() {
         if (play4.check_86pcm()) {
             extpcm_init();
@@ -2753,6 +3125,9 @@ public class Nax {
         return true;
     }
 
+    /**
+     * Extended PCM initialization
+     */
     private void extpcm_init() {
         short bxbk = reg.getBx();
         voldata = 256;
@@ -2772,16 +3147,27 @@ public class Nax {
         reg.setBx(bxbk);
     }
 
+    /**
+     * Drive sense V1.4 (DL = drive number)
+     */
     private void drv_sense() {
+        // Kuma: Presumably checking if a floppy or similar is inserted.
+        // Always successful.
         reg.carry = false;
     }
 
+    /**
+     * YM2608 output for PCM only
+     * entry AL = adrs
+     *       AH = data
+     */
     private void outdata2pcm() {
         short dxbk = reg.getDx();
         short axbk = reg.getAx();
 
-        reg.setDx((short) 0x18c);
+        reg.setDx((short) 0x18c); // port36;
         pc98.outportB(reg.getDx() & 0xffff, reg.al);
+        // jmp $+2
         reg.setDx((short) ((reg.getDx() & 0xffff) + 2));
         reg.al = reg.ah;
         pc98.outportB(reg.getDx() & 0xffff, reg.al);

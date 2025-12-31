@@ -22,6 +22,7 @@ public class Pc98 {
     private int lastPort = 0;
     private int lastData = 0;
 
+    // private byte IMR = 0;
     private int cs4231dmaInt = 0;
     private int cs4231IdxAdr = 0;
     private int cs4231IdxDat = 0;
@@ -43,12 +44,12 @@ public class Pc98 {
     private int[][] connectFMDevice = new int[][] {
             new int[] {
                     0, // 0x088~ None
-                    4, // 0x188~ 98CanBe(YM2608+WSS)
+                    4, // 0x188~ 98CanBe(YM2608+WSS) (OPNA series (3,4,5) must be defined here (0x188))
                     2  // 0x288~ YM3438
             },
             new int[] {
                     0, // 0x088~ None
-                    3, // 0x188~ Otomi-chan(YM2608+ADPCM)
+                    3, // 0x188~ Otomi-chan(YM2608+ADPCM) (OPNA series (3,4,5) must be defined here (0x188))
                     2  // 0x288~ YM3438
             }
     };
@@ -88,7 +89,10 @@ public class Pc98 {
 
         if (m == 0) {
             if (l == 0x42) {
-                // Status port (bit 5: 1=8MHz machine, 0=5/10MHz)
+                // Status port
+                //  bit 5: MOD      System clock
+                // 1 = 8MHz (Timer clock 2.0MHz)
+                // 0 = 5 / 10MHz (Timer clock 2.5MHz)
                 return 0x20; // 8MHz machine
             }
         }
@@ -108,7 +112,7 @@ public class Pc98 {
         // CS4231 related
         if (m == 0x0f) {
             if (l == 0x40) return readCS4231.apply((byte) 4);
-            if (l == 0x44) return readCS4231.apply((byte) 0); // bit7: 1=Initializing
+            if (l == 0x44) return readCS4231.apply((byte) 0); // bit7: 1=Initializing 0=Initialization complete
             if (l == 0x45) return readCS4231.apply((byte) 1);
             if (l == 0x46) return readCS4231.apply((byte) 2);
         }
@@ -122,7 +126,10 @@ public class Pc98 {
                 }
             } else if (connectFMDevice[sdm][m] == 2) { // YM3438
                 if (l == 0x88) return (byte) 0xff;
-                if (l == 0x8a) return 0;
+                if (l == 0x8a) {
+                    // SSG cannot be read
+                    return 0;
+                }
             } else if (connectFMDevice[sdm][m] == 3 || connectFMDevice[sdm][m] == 4 || connectFMDevice[sdm][m] == 5) { // YM2608 series
                 if (l == 0x88) {
                     return (byte) (work.timerOPNA1.statReg | 0x80);
@@ -147,9 +154,11 @@ public class Pc98 {
 
         if (m == 0x00) {
             if (dx == 0x00) {
+                // Interrupt controller
                 // EOI if al == 0x20
                 return;
             } else if (dx == 0x02) {
+                // Interrupt controller
                 ChipDatum cd = new ChipDatum(1, 2, al & 0xff, 0, work.crntMmlDatum);
                 writeCS4231.accept(cd); // IMR
                 return;
@@ -157,7 +166,11 @@ public class Pc98 {
                 ChipDatum cd = new ChipDatum(1, l, al & 0xff, 0, work.crntMmlDatum);
                 writeCS4231.accept(cd);
                 return;
-            } else if (dx == 0x15 || dx == 0x17 || dx == 0x19 || dx == 0x5f) {
+            } else if (dx == 0x15 || dx == 0x17 || dx == 0x19) {
+                // DMA related
+                return;
+            } else if (dx == 0x5f) {
+                // Probably wait
                 return;
             } else if (dx >= 0x71 && dx <= 0x77) {
                 write8253.apply((byte) dx, al);
@@ -181,8 +194,17 @@ public class Pc98 {
         }
 
         if (m == 0xa4) {
-            if (l == 0x60) return;
-            else if (l == 0x6c) {
+            if (l == 0x60) {
+                // bit 1: YM2608(OPNA) mask setting
+                //        0 = Do not mask YM2608(OPNA)
+                //        1 = Mask YM2608(OPNA)
+                //        * Setting 1 will disconnect OPNA
+                // bit 0: YM2608(OPNA) extended part function
+                //        0 = Use only YM2203(OPN) equivalent part
+                //        1 = Use YM2608(OPNA) extended part as well
+                return;
+            } else if (l == 0x6c) {
+                // 86PCM FIFO I/O
                 _86PcmFifo = al & 0xff;
                 return;
             }
@@ -279,7 +301,7 @@ public class Pc98 {
     }
 
     //
-    // Open File(実際は存在確認のみ)
+    // Open File (actually only checking existence)
     //
     public void Int21_3d(String path) {
         logger.log(Level.DEBUG, "INT21H AH:0x3d Open File: {0}", path);

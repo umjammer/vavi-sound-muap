@@ -62,7 +62,7 @@ public class Program {
 
         int fnIndex = analyzeOption(args);
         if (args == null || args.length != fnIndex + 1) {
-            logger.log(Level.ERROR, "I need one argument (.o/.oy file).");
+            logger.log(Level.ERROR, "I need one argument (.o/.oy file)."); // I need one argument (.o/.oy file).
             System.exit(-1);
         }
         if (!Files.exists(Paths.get(args[fnIndex]))) {

@@ -1,17 +1,30 @@
 package muap.console;
 
-import java.io.File;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ResourceBundle;
 
+import dotnet4j.io.BufferedStream;
+import dotnet4j.io.File;
+import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
+import dotnet4j.io.FileShare;
 import dotnet4j.io.FileStream;
+import dotnet4j.io.IOException;
+import dotnet4j.io.MemoryStream;
+import dotnet4j.io.Path;
+import dotnet4j.io.Stream;
 import groovy.lang.Tuple;
 import muap.compiler.Compiler;
 import musicDriverInterface.MmlDatum;
+import org.apache.tools.ant.types.LogLevel;
+import vavi.util.ByteUtil;
+import vavi.util.serdes.Serdes;
 
 
 /**
@@ -38,17 +51,10 @@ public class Program {
         }
 
         try {
-            // Note: System.Text.Encoding.RegisterProvider equivalent is handled
-            // by ensuring the JVM supports the required charsets (like Shift-JIS).
-
             compile(args[fnIndex], (args.length > fnIndex + 1 ? args[fnIndex + 1] : null));
 
         } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage());
-            // Get stack trace as string for logging
-            StringWriter sw = new StringWriter();
-            ex.printStackTrace(new PrintWriter(sw));
-            logger.log(Level.ERROR, sw.toString());
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -60,40 +66,75 @@ public class Program {
      */
     private static void compile(String srcFile, String destFile) {
         try {
-            File file = new File(srcFile);
-            if (!file.exists()) {
-                logger.log(Level.ERROR, "File not found [%s]".formatted(srcFile));
-                return;
-            }
+            if (Path.getExtension(srcFile).isEmpty() && !File.exists(srcFile))
+                srcFile = Path.combine(
+                        Path.getDirectoryName(Path.getFullPath(srcFile)),
+                        "%s.mus".formatted(Path.getFileNameWithoutExtension(srcFile))
+                );
 
-            // Implementation of the compilation logic based on compiler.java
+            srcFile = Path.combine(Path.getDirectoryName(Path.getFullPath(srcFile)), srcFile);
+
+            Program.srcFile = srcFile;
             Compiler compiler = new Compiler();
             compiler.init();
 
-            // Set source filename in compiler work context
-            compiler.setCompileSwitch(new Tuple<>("SOURCEFILENAME", srcFile));
+            //compiler.SetCompileSwitch("IDE");
+            //compiler.SetCompileSwitch("SkipPoint=R19:C30");
 
-            try (FileStream fis = new FileStream(srcFile, FileMode.Create)) {
+            String destFileName = Path.combine(Path.getDirectoryName(Path.getFullPath(srcFile)), "%s.o".formatted(Path.getFileNameWithoutExtension(srcFile)));
+            if (destFile != null) {
+                destFileName = destFile;
+            }
 
-                MmlDatum[] results = compiler.compile(fis, (name) -> {
-                    return new FileStream(name, FileMode.Create);
-                });
+            if (!File.exists(srcFile)) {
+                logger.log(Level.ERROR, rb.getString("E0601").formatted(srcFile));
+                return;
+            }
 
-                if (results != null && destFile != null) {
-                    try (FileStream fos = new FileStream(destFile, FileMode.Create)) {
-                        for (MmlDatum md : results) {
-                            if (md == null) {
-                                fos.writeByte((byte) 0);
-                            } else {
-                                fos.writeByte((byte) md.dat);
-                            }
+            boolean isSuccess = false;
+            try (
+                    FileStream sourceMML = new FileStream(srcFile, FileMode.Open);
+                    MemoryStream destCompiledBin = new MemoryStream();
+                    BufferedStream bufferedDestStream = new BufferedStream(destCompiledBin)
+            ) {
+
+                if (isSeli) {
+                    // T.B.D: Serialize Mode
+                    logger.log(Level.INFO, "Serialize Mode");
+                    MmlDatum[] mmlData = compiler.compile(sourceMML, Program::appendFileReaderCallback);
+                    if (mmlData != null && destFileName != null) {
+                        try (FileStream fos = new FileStream(destFileName + ".seli", FileMode.Create)) {
+                            Serdes.Util.serialize(mmlData, fos);
                         }
                     }
+                } else
+                    isSuccess = compiler.compile(sourceMML, bufferedDestStream, Program::appendFileReaderCallback);
+
+                if (isSuccess) {
+                    bufferedDestStream.flush();
+                    byte[] destbuf = destCompiledBin.toArray();
+                    File.writeAllBytes(destFileName, destbuf);
                 }
             }
         } catch (Exception ex) {
             logger.log(Level.ERROR, "Compilation failed: " + ex.getMessage());
         }
+    }
+
+    private static Stream appendFileReaderCallback(String arg) {
+
+        String fn = Path.combine(Path.getDirectoryName(srcFile), arg);
+
+        if (!File.exists(fn)) return null;
+
+        FileStream strm;
+        try {
+            strm = new FileStream(fn, FileMode.Open, FileAccess.Read, FileShare.Read);
+        } catch (IOException e) {
+            strm = null;
+        }
+
+        return strm;
     }
 
     /**

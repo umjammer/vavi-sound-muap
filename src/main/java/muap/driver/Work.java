@@ -62,6 +62,8 @@ public class Work {
      * The MML command currently being processed.
      */
     public MmlDatum crntMmlDatum = null;
+    //public DMA dma=null;
+    //public CS4231 cs4231 = null;
 
     /** Full compiled MML data set */
     public MmlDatum[] mData = null;

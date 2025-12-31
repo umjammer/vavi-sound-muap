@@ -169,6 +169,7 @@ public class Driver implements IDriver {
 
     @Override
     public void startMusic(int musicNumber) {
+        //String opt = "/f0 /L1A /V0b /Y0288,0388 /I /OFF /P /T /M2 /BFF /6 /Q /2 /3 /(A /A8 /8";
         String opt = "/F0 /L60 /V0B             /I /OFF /P    /M2 /BFF /Q       /(A     /8 ";
         logger.log(Level.INFO, "Regist NAX3 (option:%s)".formatted(opt));
         X86Register reg = new X86Register();

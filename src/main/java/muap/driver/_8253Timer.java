@@ -106,7 +106,7 @@ public class _8253Timer {
                 if (c == 0) return false; // Count latch command not supported
                 int m = (data & 0b0000_1110) >> 1;
                 if (m > 5) m -= 4;
-                if (m != 3) return false; // Only mode 3 supported
+                if (m != 3) return false; // Only mode 3 supported (Square Wave Generator)
                 int b = (data & 1);
                 if (b != 0) return false; // Only binary count supported
                 ch[sc].c = c;

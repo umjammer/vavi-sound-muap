@@ -7,20 +7,20 @@ package muap.driver;
 public class FMTimer {
 
     /** Timer A overflow setting value. */
-    public int timerA;
+    public int timerA; // Timer A overflow set value
     /** Current counter value for Timer A. */
-    protected double timerACounter;
+    protected double timerACounter; // Timer A counter value
     /** Timer B overflow setting value. */
-    public int timerB;
+    public int timerB; // Timer B overflow set value
     /** Current counter value for Timer B. */
-    protected double timerBCounter;
+    protected double timerBCounter; // Timer B counter value
     /** Timer control register (lower 4 bits + bit 7). */
-    public int timerReg;
+    public int timerReg; // Timer control register (lower 4 bits + bit 7)
     /** The amount to increment the counters per step. */
     public double step;
 
     /** Status register (lower 2 bits representing timer overflows). */
-    public int statReg;
+    public int statReg; // Status register (lower 2 bits)
     /** Callback for Composite Sine Mode (CSM) Key On events. */
     public Runnable csmKeyOn;
 

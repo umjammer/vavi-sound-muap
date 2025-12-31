@@ -28,20 +28,20 @@ public class Muap98 {
     /** Buffer for source MML data */
     public byte[] sourceBuf = null;
     /** Buffer for text data; note: TONEOFS buffer is defined separately */
-    public int text = 0xa800;
+    public int text = 0xa800; // Kuma: TONEOFS buffer is defined separately
     public byte[] text_Buf = new byte[0x8000];
     /** Segment for tone data buffer ($124) */
-    public int tone = 0;
+    public int tone = 0; // $124 tone data buffer segment
     /** Buffer for storing tone data */
-    public byte[] toneBuff = null;
+    public byte[] toneBuff = null; // Kuma: Buffer for storing tone data
     /** Buffer length for source data ($126) */
-    public int buflens = 0x8000;
+    public int buflens = 0x8000; // $126 buffer length (source)
     /** Buffer length for object data ($128) */
-    public int bufleno = 0x8000;
+    public int bufleno = 0x8000; // $128 buffer length (object)
     /** Source data length ($12c) */
-    public int sor_len = 0;
+    public int sor_len = 0; // $12c source data length
     /** Object data length ($12e) */
-    public int obj_len = 0;
+    public int obj_len = 0; // $12e object data length
     public byte[] bufbuf = new byte[128];
     private X86Register r;
 
@@ -86,7 +86,7 @@ public class Muap98 {
             r.carry = true;
             return;
         }
-        // call_add(); // TBD
+        // call_add(); // Kuma: TBD
         r.carry = false;
     }
 }
