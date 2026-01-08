@@ -5,6 +5,8 @@
 
 # vavi-sound-muap
 
+<img alt="logo" src="src/test/resources/duke_ewi.png" width="160" />
+
 🪕 Java version of Muap.
 
 this is a fork of [muapDotNET](https://github.com/kuma4649/muapDotNET)
@@ -141,3 +143,7 @@ Thank you very much.
  * muap98iv
  * Visual Studio Community 2022
  * Sakura Editor
+
+---
+
+<sub>image designed by @umjammer, drawn by nano banana</sub>
