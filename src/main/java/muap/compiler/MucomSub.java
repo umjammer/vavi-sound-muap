@@ -8,6 +8,7 @@ package muap.compiler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
 import muap.common.X86Register;
@@ -24,12 +25,12 @@ import musicDriverInterface.Tag;
  */
 public class MucomSub {
 
-    private X86Register r;
-    public Mucom2 mucom2;
-    public Muap98 muap98;
+    private final X86Register r;
+    public final Mucom2 mucom2;
+    public final Muap98 muap98;
     /** Area to save label addresses (40 labels x 17 channels) */
-    public short[] labelAdrs = new short[40 * 17];
-    private Work work;
+    public final short[] labelAdrs = new short[40 * 17];
+    private final Work work;
 
     public MucomSub(X86Register r, Mucom2 mucom2, Muap98 muap98, Work work) {
         this.r = r;
@@ -167,7 +168,7 @@ public class MucomSub {
                 this::detune_shift, this::sinit, this::macro_small, this::macro_large, // 68
                 this::macro_exit, this::comstepin, this::comstepout, this::comstepcut, // 72
                 this::slide_set, this::slide, this::clear_mode, this::freq_add, // 76
-                this::freq_sub, this::key_maskset, this::key_maskreset, this::ifch1, // 80
+                this::freq_sub, this::key_maskset, this::key_maskreset, MucomSub::ifch1, // 80
                 this::sysdetune, this::if_abort, this::fade_out, this::acc_vol, // 84
                 this::down_vol, this::ssgmode, this::pcmmode, this::subratio, // 88
                 this::channel, this::last_set, this::reverve, // 92
@@ -232,7 +233,7 @@ public class MucomSub {
             linePos.chipNumber = 0;
             linePos.ch = (byte) work.crntChannel;
             linePos.part = work.crntPart;
-            MmlDatum md = new MmlDatum(r.al, MMLType.Instrument, linePos, new Object[] {0, (int) (r.ah & 0xff)});
+            MmlDatum md = new MmlDatum(r.al, MMLType.Instrument, linePos, 0, (int) (r.ah & 0xff));
             md = work.FlashLstMd(md);
             muap98.objectBuf.set(r.di, md);
 
@@ -1030,7 +1031,7 @@ public class MucomSub {
         return;
     }
 
-    private void ifch1() {
+    private static void ifch1() {
         return;
     }
 
@@ -1131,7 +1132,7 @@ public class MucomSub {
         get_val2();
         r.push(r.getSi());
         int labelIdx = (r.al & 0xff) + ((r.ch & 0xff) - 1) * 40;
-        labelAdrs[labelIdx] = (short) r.di; // Save label address
+        labelAdrs[labelIdx] = r.di; // Save label address
         int bxIdx = (r.al & 0xff) * 2;
         muap98.bufbuf[bxIdx] = (byte) r.di; // Store start address
         muap98.bufbuf[bxIdx + 1] = (byte) (r.di >> 8);
@@ -1252,7 +1253,7 @@ public class MucomSub {
             r.carry = true;
             return;
         }
-        r.al = (byte) muap98.sourceBuf[r.getBx() & 0xffff];
+        r.al = muap98.sourceBuf[r.getBx() & 0xffff];
         r.setBx((short) ((r.getBx() & 0xffff) + 1));
         if (muap98.sourceBuf[(r.getBx() & 0xffff) - 2] >= (byte) 'a') {
             // Was the previous character lowercase?
@@ -1316,7 +1317,7 @@ public class MucomSub {
             lp.chip = work.crntChip;
             lp.ch = (byte) work.crntChannel;
             lp.part = work.crntPart;
-            MmlDatum md = new MmlDatum(r.al, MMLType.Pan, lp, new Object[] {(int) (r.ah & 0xff)});
+            MmlDatum md = new MmlDatum(r.al, MMLType.Pan, lp, (int) (r.ah & 0xff));
             md = work.FlashLstMd(md);
             muap98.objectBuf.set(r.di++, md); // Store rest
             muap98.objectBuf.set(r.di++, new MmlDatum(r.ah));
@@ -1342,7 +1343,7 @@ public class MucomSub {
             }
         }
 //srpan1:
-        mucom2.opt_rhy = (short) r.getAx(); // Store set pan
+        mucom2.opt_rhy = r.getAx(); // Store set pan
         mucom2.optimiz |= 8;
         r.push(r.getAx());
         r.al = (byte) 0xee;
@@ -1595,7 +1596,7 @@ public class MucomSub {
     // @_D- Transposition key signature set
     //
     private void set_flat() {
-        r.al = (byte) muap98.sourceBuf[r.getBx() & 0xffff];
+        r.al = muap98.sourceBuf[r.getBx() & 0xffff];
         r.setBx((short) ((r.getBx() & 0xffff) + 1));
         xsmall(); // AL uppercase conversion
         if (r.al == (byte) 'I') {
@@ -1741,7 +1742,7 @@ public class MucomSub {
             return;
         }
 
-        r.al = (byte) muap98.sourceBuf[r.getBx() & 0xffff]; // Check next code
+        r.al = muap98.sourceBuf[r.getBx() & 0xffff]; // Check next code
         r.setBx((short) ((r.getBx() & 0xffff) + 1));
         r.dh = (byte) 0xff; // Initial flat
         if (r.al == (byte) '-') {
@@ -1823,7 +1824,7 @@ public class MucomSub {
         r.dl = 1; // Amount of volume increase
 //cres2:
         do {
-            r.al = (byte) muap98.sourceBuf[r.getBx() & 0xffff];
+            r.al = muap98.sourceBuf[r.getBx() & 0xffff];
             if (r.al != r.ah) {
                 break;
             }
@@ -1962,10 +1963,10 @@ public class MucomSub {
     }
 
     private void accel1() {
-        mucom2.tmpdata = (short) r.getAx();
+        mucom2.tmpdata = r.getAx();
         chkcm(); // Comma check
         mucom2.tnelnm(); // AX = note length period (max=65535)
-        mucom2.tmplen = (short) r.getAx();
+        mucom2.tmplen = r.getAx();
         r.setAx((short) mucom2.tempos);
         mucom2.tmpstt = (short) (r.getAx() & 0xffff); // Save tempo at start
         r.setAx((short) 0);
@@ -2051,15 +2052,15 @@ public class MucomSub {
             return;
         }
 
-        short a = (short) r.getAx();
+        short a = r.getAx();
         short b = (short) mucom2.tmpdata;
         int ans = a * b;
         r.setDx((short) (ans >> 16));
         r.setAx((short) (ans & 0xffff));
-        short quo = (short) (ans / (short) r.getCx());
-        short re = (short) (ans % (short) r.getCx());
-        r.setAx((short) quo);
-        r.setDx((short) re); // AX = current tempo shift value
+        short quo = (short) (ans / r.getCx());
+        short re = (short) (ans % r.getCx());
+        r.setAx(quo);
+        r.setDx(re); // AX = current tempo shift value
         r.setCx(r.getAx());
         r.setDx(r.pop());
         r.carry = false;
@@ -2420,7 +2421,7 @@ public class MucomSub {
         mucom2.porta2 = r.getAx() & 0xffff; // Save end frequency
         mucom2.tnelnmx(); // Acquisition of note length data (AL)
         mucom2.add_tlen();
-        mucom2.por_end = (short) r.di; // End address
+        mucom2.por_end = r.di; // End address
         r.di = r.pop();
         r.setDx(r.pop());
 
@@ -2475,8 +2476,8 @@ public class MucomSub {
         pre_por();
         r.setAx((short) mucom2.porta1);
         calc_exp1(); // Expand start frequency
-        mucom2.freqsv1 = (short) r.getAx();
-        mucom2.freqsv2 = (short) r.getDx();
+        mucom2.freqsv1 = r.getAx();
+        mucom2.freqsv2 = r.getDx();
         r.setAx((short) mucom2.porta2);
         calc_exp1(); // Expand end frequency
         r.carry = (r.getAx() & 0xffff) < (mucom2.freqsv1 & 0xffff);
@@ -2625,7 +2626,7 @@ public class MucomSub {
      */
     private void after_por() {
         after_por_main();
-        r.setAx((short) r.di);
+        r.setAx(r.di);
         r.di = (short) mucom2.por_end; // Restore to last address
     }
 
@@ -2915,7 +2916,7 @@ public class MucomSub {
         if (work.md == null) {
             mucom2.stoswObjBufAX2DI();
         } else {
-            work.md.args.set(work.mdArgsStep + 0, (int) (r.ah & 0xff));
+            work.md.args.set(work.mdArgsStep + 0, r.ah & 0xff);
             work.md.args.set(work.mdArgsStep + 1, work.otoLength);
             mucom2.stoswObjBufAX2DI(work.md);
         }
@@ -3196,7 +3197,7 @@ public class MucomSub {
         muap98.objectBuf.set(r.di++, new MmlDatum(r.al)); // E0 : clear loop counter
         r.setAx(r.pop());
         int bxIdx = (r.getAx() & 0xffff) << 2;
-        mucom2.stttbl[bxIdx / 2] = (short) r.di; // Store address where "(" started
+        mucom2.stttbl[bxIdx / 2] = r.di; // Store address where "(" started
         mucom2.stttbl[(bxIdx + 2) / 2] = 0;
         r.setBx(r.pop());
         r.al = mucom2.chglen; // Set previous note length and ratio
@@ -4908,7 +4909,7 @@ public class MucomSub {
         mucom2.dtdata[r.getSi() & 0xffff] = r.al;
 
         work.md.args.add("D"); // Normal detune
-        work.md.args.add((int) (byte) r.al); // Detune value (int)
+        work.md.args.add((int) r.al); // Detune value (int)
         // Kuma: Since @DT is managed by the compiler, information is entrusted to the next command
         work.lstMd.add(work.copy(work.md, -1));
 
@@ -5063,7 +5064,7 @@ public class MucomSub {
             return;
         }
 
-        r.setAx((short) ((short) r.getAx() >> (r.cl & 0xff))); // sar ax,cl
+        r.setAx((short) (r.getAx() >> (r.cl & 0xff))); // sar ax,cl
     }
 
     /**
@@ -5316,7 +5317,7 @@ autotie0: {
         if (work.md == null) muap98.objectBuf.set(r.di++, new MmlDatum(r.al));
         else {
             work.md.dat = r.al;
-            work.md.args.set(work.mdArgsStep + 0, (int) (work.ontei + work.oct * 12));
+            work.md.args.set(work.mdArgsStep + 0, work.ontei + work.oct * 12);
             work.md.args.set(work.mdArgsStep + 1, work.otoLength);
             work.md.linePos.chip = work.crntChip;
             work.md.linePos.ch = (byte) work.crntChannel;
@@ -5405,7 +5406,7 @@ autotie0: {
         if (work.md == null) muap98.objectBuf.set(r.di++, new MmlDatum(r.al));
         else {
             work.md.dat = r.al;
-            work.md.args.set(work.mdArgsStep + 0, (int) (work.ontei + work.oct * 12));
+            work.md.args.set(work.mdArgsStep + 0, work.ontei + work.oct * 12);
             work.md.args.set(work.mdArgsStep + 1, work.otoLength);
             work.md.linePos.chip = work.crntChip;
             work.md.linePos.ch = (byte) work.crntChannel;
@@ -5445,7 +5446,7 @@ autotie0: {
         if (work.md == null) muap98.objectBuf.set(r.di++, new MmlDatum(r.al));
         else {
             work.md.dat = r.al;
-            work.md.args.set(work.mdArgsStep + 0, (int) (work.ontei + work.oct * 12));
+            work.md.args.set(work.mdArgsStep + 0, work.ontei + work.oct * 12);
             work.md.args.set(work.mdArgsStep + 1, work.otoLength);
             work.md.linePos.chip = work.crntChip;
             work.md.linePos.ch = (byte) work.crntChannel;
@@ -5573,11 +5574,11 @@ autotie0: {
      */
     private void ExcmdJump() {
         // Mark skip position as next note or rest
-        work.lstMd.add(new MmlDatum(MMLType.SkipPlay, new ArrayList<>(Arrays.asList(1)), null, -1));
+        work.lstMd.add(new MmlDatum(MMLType.SkipPlay, new ArrayList<>(List.of(1)), null, -1));
 
         // Indicate jump instruction at start of performance data
-        if (muap98.objectBuf.size() > 0) {
-            MmlDatum md = muap98.objectBuf.get(0);
+        if (!muap98.objectBuf.isEmpty()) {
+            MmlDatum md = muap98.objectBuf.getFirst();
             if (md.args == null) md.args = new ArrayList<>();
             md.args.add(new MmlDatum(MMLType.SkipPlay, null, null, -1));
         }

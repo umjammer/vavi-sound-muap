@@ -32,25 +32,25 @@ public class Nax {
         }
     }
 
-    private Work work;
+    private final Work work;
     private final Map<String, String> envVars;
-    public Pc98 pc98;
-    public Ems ems;
-    public X86Register reg;
+    public final Pc98 pc98;
+    public final Ems ems;
+    public final X86Register reg;
     private final String arg;
-    public Play4 play4;
-    public Charset myEnc;
+    public final Play4 play4;
+    public final Charset myEnc;
     private byte[] filebuf;
-    public String objPath;
+    public final String objPath;
 
     // For self-modification detection
-    private int port11 = 0x188;
+    private static final int port11 = 0x188;
     /** OPNA portB */
-    private int port31 = 0x18c;
+    private static final int port31 = 0x18c;
     /** OPNA portB */
-    private int port32 = 0x18c;
+    private static final int port32 = 0x18c;
     /** OPNA portB */
-    private int port34 = 0x18c;
+    private static final int port34 = 0x18c;
     /** Self-modifying mov wpr cyon,0ffb1h ; inc cl → mov cl,0ffh */
     private int cyon = 0xffb1;
     /** PLAY4 IMR operation */
@@ -68,19 +68,19 @@ public class Nax {
     private int segad2 = 0;
 
     // From MUAP.INC
-    public static int MAXPCM = 100;
-    public static int MAXBUF = 18;
-    public static int FIFO_SIZE = 128;
+    public static final int MAXPCM = 100;
+    public static final int MAXBUF = 18;
+    public static final int FIFO_SIZE = 128;
 
     // Address reference
     private int setnew_extpcm2 = 0;
-    private byte[] toneBuffFromOutside;
-    private int[] pcmtbl = new int[] {
+    private final byte[] toneBuffFromOutside;
+    private final int[] pcmtbl = new int[] {
             0x0100, 0x1010, 0x8010, 0x6000,
             0xc001, 0x0002, 0x0003, 0xff04, 0xff05,
             0xff0c, 0xff0d, 0xffff
     };
-    public List<Tuple<Byte, Object>> functionList = new ArrayList<>();
+    public final List<Tuple<Byte, Object>> functionList = new ArrayList<>();
     private Consumer<Object>[] jmptbl;
 
     public byte comlength;
@@ -128,7 +128,7 @@ public class Nax {
     private int tboff = 0x50;
     /** $116 */
     private int tbseg = 0x52;
-    public byte[] m_mode = new byte[] {
+    public final byte[] m_mode = new byte[] {
             0x00,       // $118 b1 = SSGPCM
             0x00,       //      b2 = -V
             0x00,       //      b7 = PCM 1MB
@@ -137,11 +137,11 @@ public class Nax {
     };
 
     /** $11c object buffer segment */
-    public int[] _object = new int[] {0, 0, 0};
+    public final int[] _object = new int[] {0, 0, 0};
     /** Kuma: Performance data goes here */
-    public MmlDatum[][] objBuf = new MmlDatum[3][];
+    public final MmlDatum[][] objBuf = new MmlDatum[3][];
     /** $122 tone data buffer segment */
-    public int tone = 0;
+    public static final int tone = 0;
     /** Kuma: Tone storage buffer */
     public byte[] toneBuff = null;
     /** $124 86/wss pcm segment */
@@ -149,7 +149,7 @@ public class Nax {
     /** $126 86/wss pcm length(*16) */
     private int extlen = 0x1000;
     /** $128 object buffer length */
-    private int[] bufleno = new int[] {0, 0, 0};
+    private final int[] bufleno = new int[] {0, 0, 0};
     /** $12e object data length */
     private int obj_len = 0;
 //    /** $132 Offset of the performance work */
@@ -176,7 +176,7 @@ public class Nax {
     private int pcmbyte = 0;
     /** $144 User PCM file name segment */
     private int pcmfile = 0;
-    private byte[] pcmfileBuf = new byte[(20 + MAXPCM - 50) * 13 + 1];
+    private final byte[] pcmfileBuf = new byte[(20 + MAXPCM - 50) * 13 + 1];
     /** EMS handle for PCM */
     public int phandle = 0xffff;
     /** For EMS map info storage */
@@ -198,7 +198,7 @@ public class Nax {
     /**
      * Note (type is byte)
      */
-    private byte[] xdata = new byte[4];
+    private final byte[] xdata = new byte[4];
     private byte[] bufbuf = new byte[128];
     /** usrpcm search */
     private String pcm_path = "*.*";
@@ -207,13 +207,13 @@ public class Nax {
     /** Read buffer for PCM.TBL , TONE.DTA */
     private byte[] cusbuff;
     /** Number of bytes read */
-    private static int MAXCUS = 512;
+    private static final int MAXCUS = 512;
 
     //
     // Routines used only during installation
     //
 
-    private String mess_2 = """
+    private static final String mess_2 = """
             
             -Ax   : Do not use EMS for PCM buffer. x is capacity (1~8)*32KB.
             -Bxx  : Specify SSGPCM buffer capacity.
@@ -237,7 +237,7 @@ public class Nax {
             * This music driver can be freely incorporated into commercial software without application.
             * For development environment, please purchase "Muup 98/iv" from Soft Vendor Takeru (3000 yen).""";
 
-    private String mess_3 = """
+    private static final String mess_3 = """
             
              NAXⅢ DSP  Version 6.34
              copyright (c)1990-96 by Packen Software.
@@ -245,27 +245,27 @@ public class Nax {
              Public copy & use free.
             """;
 
-    private String mess_5b = "Resident process cancelled due to invalid option settings";
-    private String mes_e3 = "SSGPCM.DTA exceeded PCM buffer";
-    private String mes_e10 = "WSS interrupt to INT0";
-    private String mes_e11 = "DMA is";
-    private String mess_f1 = "The sound board is not connected to the specified port, so BGM use will be stopped";
-    private String mess_g2 = " not found";
-    private String mess_p1 = "ADPCM data transfering";
-    private String mess_p2 = "Cancelled due to timeout";
+    private static final String mess_5b = "Resident process cancelled due to invalid option settings";
+    private static final String mes_e3 = "SSGPCM.DTA exceeded PCM buffer";
+    private static final String mes_e10 = "WSS interrupt to INT0";
+    private static final String mes_e11 = "DMA is";
+    private static final String mess_f1 = "The sound board is not connected to the specified port, so BGM use will be stopped";
+    private static final String mess_g2 = " not found";
+    private static final String mess_p1 = "ADPCM data transfering";
+    private static final String mess_p2 = "Cancelled due to timeout";
     private String mess_p3 = " User Aborted.";
-    private String mess_p4 = "Insufficient PCM buffer capacity";
-    private String mes_s0 = " Using device(s) = YM";
-    private String mes_s4 = " + 2203";
-    private String mes_s2 = "2203";
-    private String mes_s9 = " + 2608";
-    private String mes_s3 = "2608";
-    private String mes_s5 = " + 3438";
-    private String mes_s6 = " + 86B<17ch>DSP-";
-    private String mes_s12 = " + WSS<17ch>DSP-";
-    private String mes_s7 = " + ADPCM";
-    private String mes_s13 = "PCM";
-    private String mes_s8 = "";
+    private static final String mess_p4 = "Insufficient PCM buffer capacity";
+    private static final String mes_s0 = " Using device(s) = YM";
+    private static final String mes_s4 = " + 2203";
+    private static final String mes_s2 = "2203";
+    private static final String mes_s9 = " + 2608";
+    private static final String mes_s3 = "2608";
+    private static final String mes_s5 = " + 3438";
+    private static final String mes_s6 = " + 86B<17ch>DSP-";
+    private static final String mes_s12 = " + WSS<17ch>DSP-";
+    private static final String mes_s7 = " + ADPCM";
+    private static final String mes_s13 = "PCM";
+    private static final String mes_s8 = "";
 
     private byte sflag = 0x00;
     private byte sys_flg = 0x00;
@@ -279,19 +279,19 @@ public class Nax {
     private byte pcmcnt1 = 0;
     private int pcmcnt2 = 0;
 
-    private String[] dspdtop = new String[] {"o", "+", "*", "･"};
+    private final String[] dspdtop = new String[] {"o", "+", "*", "･"};
     private int dspcnt1 = 0;
     private byte dspcnt2 = 0;
     /** -P specification flag */
     private byte pcm_flg = 0;
-    private String emsName2 = "MUAP_PCM";
+    private static final String emsName2 = "MUAP_PCM";
     private byte[] sbufbuf = new byte[128];
     private String tone_path = "TONES.DTA";
     private String pcmt_path = "PCM.TBL";
     private String pcmd_path = "PCM.DTA";
     private String ssg1_path = "SSGPCM.DTA";
     private String ssg2_path = "SSGPCM.TBL";
-    public byte[] dma_ch_data = new byte[] {
+    public final byte[] dma_ch_data = new byte[] {
             0x01, 0x01, 0x03, 0x27,
             0x02, 0x05, 0x07, 0x21,
             0x07, 0x00, 0x00, 0x00,
@@ -318,12 +318,12 @@ public class Nax {
         }
     }
 
-    private void dsp_end(Level llv, String msg) throws NAXException {
+    private static void dsp_end(Level llv, String msg) throws NAXException {
         logger.log(llv, msg);
         throw new NAXException("Resident processing failure");
     }
 
-    private void err_param() {
+    private static void err_param() {
         String dx = mess_5b; // Display invalid parameters
         try {
             dsp_end(Level.ERROR, dx);
@@ -338,7 +338,7 @@ public class Nax {
         throw new NAXException("Exit without becoming resident");
     }
 
-    private void putasciz(String mes, int sw) {
+    private static void putasciz(String mes, int sw) {
         if (sw == 0)
             logger.log(Level.INFO, mes + ".");
         else if (sw == 1)
@@ -387,7 +387,7 @@ public class Nax {
         para0(); // parameter end
     }
 
-    private String paradta = "FLV?YIOPTMB6Q23(A8";
+    private static final String paradta = "FLV?YIOPTMB6Q23(A8";
     private Consumer<String>[] parajmp;
 
     /**
@@ -430,7 +430,7 @@ public class Nax {
     /**
      * Lowercase to uppercase conversion
      */
-    private char xsmall(char al) {
+    private static char xsmall(char al) {
         if ((byte) al >= 0x61 && (byte) al <= 0x7a)
             return (char) ((byte) al & 0xdf);
         return al;
@@ -729,7 +729,7 @@ public class Nax {
      * Check for EMS existence
      * exit CY = None, Kuma: false = None
      */
-    private boolean check_ems() {
+    private static boolean check_ems() {
         // Assuming EMS exists
         return true;
     }
@@ -849,7 +849,7 @@ public class Nax {
             reg.setDx((short) (reg.getDx() + 1)); // To the next handle
             if (reg.getDx() == 0) return false;
 
-        } while (!sbuf.equals(emsName2));
+        } while (!sbuf[0].equals(emsName2));
         reg.setDx((short) (reg.getDx() - 1));
         phandle = reg.getDx() & 0xffff;
         m_mode[2] &= 0x7f;
@@ -885,19 +885,19 @@ public class Nax {
     // E:32.00K, F:27.42K, G:22.05K, H:18.90K,
     // I:16.54K, J:16.00K, K:11.03K, L: 9.60K,
     // M: 8.27K, N: 8.00K, O: 6.62K, P: 5.51K
-    private byte[] freq86b = new byte[] {
+    private final byte[] freq86b = new byte[] {
             0b000, 0b000, 0b001, 0b001,
             0b001, 0b010, 0b010, 0b010,
             0b011, 0b011, 0b100, 0b100,
             0b101, 0b101, 0b110, 0b110
     };
-    private byte[] freqwss = new byte[] {
+    private final byte[] freqwss = new byte[] {
             0b1100, 0b1011, 0b1001, 0b1101,
             0b0110, 0b0100, 0b0111, 0b0101,
             0b0010, 0b0010, 0b0011, 0b1110,
             0b0010, 0b0000, 0b1111, 0b0001
     };
-    private int[] freqtbl = new int[] {
+    private final int[] freqtbl = new int[] {
             7078, 6503, 5574, 4877,
             4719, 4043, 3251, 2787,
             2439, 2359, 1626, 1416,
@@ -1711,7 +1711,7 @@ public class Nax {
             reg.setDx((short) port32);
             reg.al = pc98.inportB(reg.getDx() & 0xffff);
             reg.setCx((short) ((reg.getCx() & 0xffff) - 1));
-            if ((short) reg.getCx() >= 0) break;
+            if (reg.getCx() >= 0) break;
             if ((reg.al & 0x8) == 0) break;
         }
         reg.setCx(cxbk);
@@ -2473,7 +2473,7 @@ public class Nax {
     }
 
 
-    private String searchFile(String path, String fn) {
+    private static String searchFile(String path, String fn) {
         File folder = new File(path);
         File[] listOfFiles = folder.listFiles();
         if (listOfFiles == null) return null;
@@ -2531,7 +2531,7 @@ public class Nax {
 
             // File read
             cusbuff = new byte[reg.getCx() & 0xffff];
-            reg.setAx((short) Math.min((int) (reg.getCx() & 0xffff), filebuf.length - fileptr));
+            reg.setAx((short) Math.min(reg.getCx() & 0xffff, filebuf.length - fileptr));
             System.arraycopy(filebuf, fileptr, cusbuff, 0, reg.getAx() & 0xffff);
             fileptr += (reg.getAx() & 0xffff);
 
@@ -3098,7 +3098,7 @@ public class Nax {
         reg.setAx((short) ans);
         reg.setDx((short) (ans >> 16));
 
-        int n = (int) (((reg.getDx() & 0xffff) & 7) << 13);
+        int n = ((reg.getDx() & 0xffff) & 7) << 13;
         reg.setDx((short) ((reg.getDx() & 0xffff) >> 3));
         reg.setAx((short) (((reg.getAx() & 0xffff) >> 3) | n));
     }

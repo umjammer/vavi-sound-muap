@@ -41,13 +41,13 @@ public class Program {
 
     private static int device = 0;
     private static int loop = 0;
-    private static int latency = 1000;
+    private static final int latency = 1000;
     private static MDSound mds = null;
-    private static short[] emuRenderBuf = new short[2];
-    private static int SamplingRate = 55467;
-    private static int samplingBuffer = 1024;
+    private static final short[] emuRenderBuf = new short[2];
+    private static final int SamplingRate = 55467;
+    private static final int samplingBuffer = 1024;
     private static SourceDataLine audioOutput = null;
-    private static long opnaMasterClock = 7987200;
+    private static final long opnaMasterClock = 7987200;
 
     private static final int MAXBUF = 18;
     private static final int FIFO_SIZE = 128;
@@ -132,8 +132,7 @@ public class Program {
         lca.add(new MuapChipAction(Program::cs4231Write, null, null));
 
         drv = new Driver();
-        drv.init(lca, blary, null, new Object[] {
-                (Function<Byte, Byte>) Program::cs4231Read,
+        drv.init(lca, blary, null, (Function<Byte, Byte>) Program::cs4231Read,
                 (Supplier<byte[]>) Program::cs4231EMS_GetCrntMapBuf,
                 (EMS_Map) Program::cs4231EMS_Map,
                 (Supplier<Integer>) Program::cs4231EMS_GetPageMap,
@@ -143,8 +142,7 @@ public class Program {
                 null,
                 0,
                 null,
-                objPath
-        });
+                objPath);
 
         logger.log(Level.INFO, "Press any key to exit.");
 
@@ -229,8 +227,8 @@ public class Program {
             for (int i = 0; i < bufCnt; i++) {
                 mds.update(emuRenderBuf, 0, 2, Program::oneFrame);
 
-                emuRenderBuf[0] = (short) Math.min(Math.max(emuRenderBuf[0] + drv.sound[0], Short.MIN_VALUE), Short.MAX_VALUE);
-                emuRenderBuf[1] = (short) Math.min(Math.max(emuRenderBuf[1] + drv.sound[1], Short.MIN_VALUE), Short.MAX_VALUE);
+                emuRenderBuf[0] = (short) Math.clamp(emuRenderBuf[0] + drv.sound[0], Short.MIN_VALUE, Short.MAX_VALUE);
+                emuRenderBuf[1] = (short) Math.clamp(emuRenderBuf[1] + drv.sound[1], Short.MIN_VALUE, Short.MAX_VALUE);
 
                 buffer[offset + i * 2 + 0] = emuRenderBuf[0];
                 buffer[offset + i * 2 + 1] = emuRenderBuf[1];

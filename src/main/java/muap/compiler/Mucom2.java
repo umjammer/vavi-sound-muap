@@ -23,10 +23,10 @@ public class Mucom2 {
     private static final Logger logger = System.getLogger(Mucom2.class.getName());
 
     public X86Register r = null;
-    public Menu menu;
-    public Muap98 muap98;
+    public final Menu menu;
+    public final Muap98 muap98;
     public MucomSub mucomsub;
-    public Work work;
+    public final Work work;
 
     public Mucom2(X86Register r, Menu menu, Muap98 muap98, MucomSub mucomsub, Work work) {
         this.r = r;
@@ -43,8 +43,8 @@ public class Mucom2 {
 
     private short getSourceData(int adr) {
         return (short) (
-                (byte) (adr >= muap98.sourceBuf.length ? 0 : muap98.sourceBuf[adr]) & 0xff
-                        | ((byte) (adr + 1 >= muap98.sourceBuf.length ? 0 : muap98.sourceBuf[adr + 1]) & 0xff) << 8
+                (adr >= muap98.sourceBuf.length ? 0 : muap98.sourceBuf[adr]) & 0xff
+                        | ((adr + 1 >= muap98.sourceBuf.length ? 0 : muap98.sourceBuf[adr + 1]) & 0xff) << 8
         );
     }
 
@@ -95,23 +95,23 @@ public class Mucom2 {
     private void setText() {
     }
 
-    private void putword(String msg) {
+    private static void putword(String msg) {
         int idx = msg.indexOf("$");
         String m = idx != -1 ? msg.substring(0, idx) : msg;
         logger.log(Level.INFO, m);
     }
 
-    private void putchr(byte c) {
+    private static void putchr(byte c) {
         logger.log(Level.INFO, String.valueOf((char) c));
     }
 
-    private void putchrs(byte[] c) {
+    private static void putchrs(byte[] c) {
         StringBuilder sb = new StringBuilder();
         for (byte b : c) sb.append((char) b);
         logger.log(Level.INFO, sb.toString());
     }
 
-    private void putstr(String fmt, Object... prm) {
+    private static void putstr(String fmt, Object... prm) {
         logger.log(Level.INFO, String.format(fmt, prm));
     }
 
@@ -251,25 +251,25 @@ public class Mucom2 {
     private static final int OTAME = 0; // Trial version
     private static final int CSEG = 0x8600; // EMS swap execution segment
     private static final int FIFO_SIZE = 128;
-    public int MAXBUF = 18;
+    public static final int MAXBUF = 18;
     private static final int OBJTOP = 0x2a;
     private static final int MXPOS = 7;
     private static final int MYPOS = 12;
     private static final int MXSIZE = 57;
     private static final int MYSIZE = 7;
     public static final int TONEOFS = (MXSIZE + 4) * (MYSIZE + 2) * 3; // Tone number replacement buffer address (256 bytes)
-    public byte[] TONEOFSbuf = new byte[256];
+    public final byte[] TONEOFSbuf = new byte[256];
     public static final int IFSTACK = TONEOFS + 256; // Stack for if then/exit (128 bytes)
-    public byte[] IFSTACKbuf = new byte[128];
+    public final byte[] IFSTACKbuf = new byte[128];
     public static final int MACACHE = IFSTACK + 128; // 1-character macro cache (52 bytes)
-    public byte[] MACACHEbuf = new byte[52];
+    public final byte[] MACACHEbuf = new byte[52];
     // private static final int VOLBASE = 80; // Internal volume of V1 (+3)
     private static final int SYMDTA = 0x22; // object:[22h] Presence of symbolic information
     public static final int MAXPCM = 100;
 
     // PLAY4.ASM
-    private short[] maxlen = new short[] {0, 0};
-    private byte[] skipbyte = new byte[] {
+    private final short[] maxlen = new short[] {0, 0};
+    private final byte[] skipbyte = new byte[] {
             0, 0, 0, 0, 0, 8, 0, 3, // FF-F8 Number of bytes of control code - 1
             3, 1, 2, 2, 0, 3, 2, 1, // F7-F0
             1, 2, 1, 1, 1, 2, 2, 0, // EF-E8
@@ -290,15 +290,15 @@ public class Mucom2 {
         r.push(r.getDx());
         r.setDx((short) ((r.getDx() & 0xffff) >> 4));
         r.al = r.ah;
-        r.setAx((short) (byte) r.al);
-        int ans = (short) r.getAx() * (short) r.getDx();
+        r.setAx(r.al);
+        int ans = r.getAx() * r.getDx();
         r.setDx((short) (ans >> 16));
         r.setAx((short) ans);
 
 //freq_lfo1:
         do {
             r.carry = (r.getDx() & 1) != 0;
-            r.setDx((short) ((short) r.getDx() >> 1));
+            r.setDx((short) (r.getDx() >> 1));
             r.setAx(r.rcr(r.getAx(), 1));
             r.setCx((short) ((r.getCx() & 0xffff) - 1));
         } while (r.getCx() != 0);
@@ -501,10 +501,10 @@ public class Mucom2 {
     private static final String mess_10 = "Debug$";
     private static final String mess_11 = "Info Output$";
 
-    public int VOLBASE = 80; // Internal volume of V1 (+3)
-    private int srctop = 0; // Source start address
+    public static final int VOLBASE = 80; // Internal volume of V1 (+3)
+    private static final int srctop = 0; // Source start address
     public byte mmlver = 0x30; // MML version
-    public byte[] mode = new byte[] {0, 0}; // b0=Tuplet mode, b1=Scale outputted?, b2=Chord @+@%@-
+    public final byte[] mode = new byte[] {0, 0}; // b0=Tuplet mode, b1=Scale outputted?, b2=Chord @+@%@-
     // b3=&Auto-tie prohibited, b4=Clear accidental on newline, b5=Z inversion mode
     // b6='F3 non-output, b7=Auto-tie request
     // db 0 ; b0=[] Converting, b1=1-character macro
@@ -522,8 +522,8 @@ public class Mucom2 {
     private int bef_len = 0; // End address of previous channel
     public byte cal_num = 0; // $xx$ calling number
     public byte symbol2 = 0; // b0=Debug info output flag, b1=No macro internal
-    public byte[] wordbuf = new byte[32];
-    public byte[] rhyvol = new byte[] {31, 31, 31, 31, 31, 31};
+    public final byte[] wordbuf = new byte[32];
+    public final byte[] rhyvol = new byte[] {31, 31, 31, 31, 31, 31};
     // waitadd dw ? ; Previous WAIT command address
     public byte from_no = 0; // Copy source tone number
     public byte to_no = 0; // Copy destination tone number
@@ -591,8 +591,8 @@ public class Mucom2 {
     public int tmpdata = 0; // Value of @ACC,@RIT (signed)
     public int tmplen = 0; // Its length
     public int tmpcnt = 0;
-    public byte[] dtdata = new byte[4]; // Detune value
-    public byte[] dtshift = new byte[4]; // Detune shift value (attached with dtdata)
+    public final byte[] dtdata = new byte[4]; // Detune value
+    public final byte[] dtshift = new byte[4]; // Detune shift value (attached with dtdata)
     public byte rhydata = 0; // Rhythm tone
     public byte jumpnes = 0; // Nest value
     public byte ichosav = 0; // Transposition data (_C)
@@ -611,22 +611,22 @@ public class Mucom2 {
     public byte onpucnt = 0; // Counter for number of notes in tuplet
     public byte ifflag = 0; // Execution flag for @if then etc.
 
-    public int[] alllen = new int[64]; // Total length + length between loop exits
+    public final int[] alllen = new int[64]; // Total length + length between loop exits
     // Length for nested parts in loop
-    public int[] macrov = new int[18]; // Macro variable buffer
+    public final int[] macrov = new int[18]; // Macro variable buffer
     // Its text start address
     public int macroflg = 0; // Variable specification flag
-    public byte[] pandata = new byte[17]; // Auto-pan data
-    public byte[] rhythmdta = new byte[44]; // Rhythm performance pattern
-    public byte[] flatdata = new byte[7]; // ABCDEFG +- accidental
-    public byte[] flatdata2 = new byte[54]; // Accidental valid for only 1 measure (o1-o8, o9)
-    public int[] stttbl = new int[30]; // Start address of () n command, @ifexit address
+    public final byte[] pandata = new byte[17]; // Auto-pan data
+    public final byte[] rhythmdta = new byte[44]; // Rhythm performance pattern
+    public final byte[] flatdata = new byte[7]; // ABCDEFG +- accidental
+    public final byte[] flatdata2 = new byte[54]; // Accidental valid for only 1 measure (o1-o8, o9)
+    public final int[] stttbl = new int[30]; // Start address of () n command, @ifexit address
 
-    public byte[] ichodta = new byte[] {(byte) 0xfd, (byte) 0xff, 0, 2, 4, 5, (byte) 0xfb};
-    public byte[] musdata = new byte[] {9, 11, 0, 2, 4, 5, 7};
-    public byte[] data1 = new byte[] {0x6a, 0x2, (byte) 0x8f, 0x2, (byte) 0xb6, 0x2, (byte) 0xdf, 0x2, 0x0b, 0x3, 0x39, 0x3, 0x6a, 0x3, (byte) 0x9e, 0x3, (byte) 0xde, 0x3, 0x10, 0x4, 0x4e, 0x4, (byte) 0x8f, 0x4};
-    public byte[] data2 = new byte[] {(byte) 0xe8, 0xe, 0x12, 0xe, 0x48, 0xd, (byte) 0x89, 0xc, (byte) 0xd5, 0xb, 0x2b, 0xb, (byte) 0x8a, 0xa, (byte) 0xf3, 0x9, 0x64, 0x9, (byte) 0xdd, 0x8, 0x5e, 0x8, (byte) 0xe6, 0x7};
-    public byte[] data3 = new byte[] {(byte) 0xbc, 0x49, 0x1e, 0x4e, (byte) 0xc4, 0x52, (byte) 0xaf, 0x57, (byte) 0xe6, 0x5c, 0x6c, 0x62, 0x47, 0x68, 0x7a, 0x6e, 0x0c, 0x75, 0x02, 0x7c, 0x61, (byte) 0x83, 0x31, (byte) 0x8b};
+    public final byte[] ichodta = new byte[] {(byte) 0xfd, (byte) 0xff, 0, 2, 4, 5, (byte) 0xfb};
+    public final byte[] musdata = new byte[] {9, 11, 0, 2, 4, 5, 7};
+    public final byte[] data1 = new byte[] {0x6a, 0x2, (byte) 0x8f, 0x2, (byte) 0xb6, 0x2, (byte) 0xdf, 0x2, 0x0b, 0x3, 0x39, 0x3, 0x6a, 0x3, (byte) 0x9e, 0x3, (byte) 0xde, 0x3, 0x10, 0x4, 0x4e, 0x4, (byte) 0x8f, 0x4};
+    public final byte[] data2 = new byte[] {(byte) 0xe8, 0xe, 0x12, 0xe, 0x48, 0xd, (byte) 0x89, 0xc, (byte) 0xd5, 0xb, 0x2b, 0xb, (byte) 0x8a, 0xa, (byte) 0xf3, 0x9, 0x64, 0x9, (byte) 0xdd, 0x8, 0x5e, 0x8, (byte) 0xe6, 0x7};
+    public final byte[] data3 = new byte[] {(byte) 0xbc, 0x49, 0x1e, 0x4e, (byte) 0xc4, 0x52, (byte) 0xaf, 0x57, (byte) 0xe6, 0x5c, 0x6c, 0x62, 0x47, 0x68, 0x7a, 0x6e, 0x0c, 0x75, 0x02, 0x7c, 0x61, (byte) 0x83, 0x31, (byte) 0x8b};
 
     //
     // Work area initialization
@@ -1696,7 +1696,7 @@ public class Mucom2 {
             get_arprest();
         }
 //set_hon1:
-        r.push((short) octdata);
+        r.push(octdata);
         get_harm();
         r.push(r.getAx());
         r.al = muap98.sourceBuf[r.getBx() & 0xffff];
@@ -1716,7 +1716,7 @@ public class Mucom2 {
      *       DL = [arpharm]
      */
     private void arp_press0() {
-        r.push((short) octdata);
+        r.push(octdata);
         r.push(r.getAx());
         if (arpp6() != 0) arpp4();
     }
@@ -1735,7 +1735,7 @@ public class Mucom2 {
 
     private void arpp4() {
         while (true) {
-            r.push((short) octdata);
+            r.push(octdata);
             get_harm();
             r.push(r.getAx());
             r.al = muap98.sourceBuf[r.getBx() & 0xffff];
@@ -1778,7 +1778,7 @@ public class Mucom2 {
             } else if (r.al == '@') {
                 r.push(r.getDx());
                 r.push((short) prevDi);
-                r.push((short) octdata);
+                r.push(octdata);
                 mode[0] |= 4;
                 mucomsub.exp_cmd();
                 octdata = (byte) r.pop();
@@ -1877,7 +1877,7 @@ public class Mucom2 {
                     continue;
                 }
                 r.push(r.getDx());
-                r.push((short) octdata);
+                r.push(octdata);
                 mode[0] |= 4;
                 mucomsub.exp_cmd();
                 octdata = (byte) r.pop();
@@ -1989,8 +1989,8 @@ public class Mucom2 {
         r.setDx(r.pop());
     }
 
-    private String codedta = "m:6:m6:7:m7:M7:mM7:sus4:7sus4:(+5):(-5):7(+5):7(-5):m7(-5):dim:add9:madd9:69:m69:7(+9):7(-9):9:m9:9(+5):9(-5):M9:mM9:11:m11:9(+11):13:";
-    private byte[] codetne = new byte[] {0x00, 0x04, 0x07, (byte) 0xff, 0x00, 0x03, 0x07, (byte) 0xff, 0x00, 0x04, 0x07, 0x09, 0x00, 0x03, 0x07, 0x09, 0x00, 0x04, 0x07, 0x0a, 0x00, 0x03, 0x07, 0x0a, 0x00, 0x04, 0x07, 0x0b, 0x00, 0x03, 0x07, 0x0b, 0x00, 0x05, 0x07, (byte) 0xff, 0x00, 0x05, 0x07, 0x0a, 0x00, 0x04, 0x08, (byte) 0xff, 0x00, 0x04, 0x06, (byte) 0xff, 0x00, 0x04, 0x08, 0x0a, 0x00, 0x04, 0x06, 0x0a, 0x00, 0x03, 0x06, 0x0a, 0x00, 0x03, 0x06, 0x09, 0x00, 0x04, 0x07, 0x0e, 0x00, 0x03, 0x07, 0x0e, 0x04, 0x09, 0x0e, (byte) 0xff, 0x03, 0x09, 0x0e, (byte) 0xff, 0x04, 0x0a, 0x0f, (byte) 0xff, 0x04, 0x0a, 0x0d, (byte) 0xff, 0x04, 0x0a, 0x0e, (byte) 0xff, 0x03, 0x0a, 0x0e, (byte) 0xff, 0x04, 0x08, 0x0a, 0x0e, 0x04, 0x06, 0x0a, 0x0e, 0x04, 0x07, 0x0b, 0x0e, 0x03, 0x07, 0x0b, 0x0e, 0x0a, 0x10, 0x11, (byte) 0xff, 0x0a, 0x0f, 0x11, (byte) 0xff, 0x04, 0x06, 0x0a, 0x0e, 0x04, 0x09, 0x0a, 0x0e};
+    private static final String codedta = "m:6:m6:7:m7:M7:mM7:sus4:7sus4:(+5):(-5):7(+5):7(-5):m7(-5):dim:add9:madd9:69:m69:7(+9):7(-9):9:m9:9(+5):9(-5):M9:mM9:11:m11:9(+11):13:";
+    private final byte[] codetne = new byte[] {0x00, 0x04, 0x07, (byte) 0xff, 0x00, 0x03, 0x07, (byte) 0xff, 0x00, 0x04, 0x07, 0x09, 0x00, 0x03, 0x07, 0x09, 0x00, 0x04, 0x07, 0x0a, 0x00, 0x03, 0x07, 0x0a, 0x00, 0x04, 0x07, 0x0b, 0x00, 0x03, 0x07, 0x0b, 0x00, 0x05, 0x07, (byte) 0xff, 0x00, 0x05, 0x07, 0x0a, 0x00, 0x04, 0x08, (byte) 0xff, 0x00, 0x04, 0x06, (byte) 0xff, 0x00, 0x04, 0x08, 0x0a, 0x00, 0x04, 0x06, 0x0a, 0x00, 0x03, 0x06, 0x0a, 0x00, 0x03, 0x06, 0x09, 0x00, 0x04, 0x07, 0x0e, 0x00, 0x03, 0x07, 0x0e, 0x04, 0x09, 0x0e, (byte) 0xff, 0x03, 0x09, 0x0e, (byte) 0xff, 0x04, 0x0a, 0x0f, (byte) 0xff, 0x04, 0x0a, 0x0d, (byte) 0xff, 0x04, 0x0a, 0x0e, (byte) 0xff, 0x03, 0x0a, 0x0e, (byte) 0xff, 0x04, 0x08, 0x0a, 0x0e, 0x04, 0x06, 0x0a, 0x0e, 0x04, 0x07, 0x0b, 0x0e, 0x03, 0x07, 0x0b, 0x0e, 0x0a, 0x10, 0x11, (byte) 0xff, 0x0a, 0x0f, 0x11, (byte) 0xff, 0x04, 0x06, 0x0a, 0x0e, 0x04, 0x09, 0x0a, 0x0e};
 
     /**
      * Processing after chord analysis.
@@ -2675,7 +2675,7 @@ public class Mucom2 {
         r.setDx((short) 1);
         move_obj();
         if (r.carry) return;
-        r.push((short) r.di);
+        r.push(r.di);
         r.di = r.getAx();
         r.al = (byte) 0xdf;
         stosbObjBufAL2DI(); // Put slur command in the gap
@@ -2733,7 +2733,7 @@ public class Mucom2 {
             r.push(r.getDx());
             move_obj(); // Free 2 bytes of performance data
             if (r.carry) return;
-            r.push((short) r.di);
+            r.push(r.di);
             r.di = r.getAx();
             byte savedQ = ratdata; // Save Q value
             r.al = r.dl;
@@ -2898,7 +2898,7 @@ public class Mucom2 {
 
         rednums(); // Read digit from text
 
-        work.md.args.add((int) (byte) r.al); // Gate time value (int)
+        work.md.args.add((int) r.al); // Gate time value (int)
 
         r.cl = 6; // Range check
         if ((r.al & 0xff) >= 9) {
@@ -3047,7 +3047,7 @@ public class Mucom2 {
         lp.chipNumber = 0;
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
-        MmlDatum md = new MmlDatum((byte) 0xff, MMLType.Rest, lp, new Object[] {work.otoLength});
+        MmlDatum md = new MmlDatum((byte) 0xff, MMLType.Rest, lp, work.otoLength);
         md = work.FlashLstMd(md);
         muap98.objectBuf.set(r.di++, md); // Store rest
         disave2 = r.di; // Save last address
@@ -3377,7 +3377,7 @@ public class Mucom2 {
         lp.chipNumber = 0;
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
-        MmlDatum md = new MmlDatum(r.al, MMLType.Volume, lp, new Object[] {(int) (r.ah & 0xff), (byte) 2});
+        MmlDatum md = new MmlDatum(r.al, MMLType.Volume, lp, (int) (r.ah & 0xff), (byte) 2);
         md = work.FlashLstMd(md);
         muap98.objectBuf.set(r.di, md);
         muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah));
@@ -3397,7 +3397,7 @@ public class Mucom2 {
         lp.chipNumber = 0;
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
-        MmlDatum md = new MmlDatum(r.al, MMLType.VolumeUp, lp, new Object[] {(int) (r.ah & 0xff)});
+        MmlDatum md = new MmlDatum(r.al, MMLType.VolumeUp, lp, (int) (r.ah & 0xff));
         md = work.FlashLstMd(md);
         muap98.objectBuf.set(r.di, md);
         muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah));
@@ -3414,7 +3414,7 @@ public class Mucom2 {
         lp.chipNumber = 0;
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
-        MmlDatum md = new MmlDatum(r.al, MMLType.VolumeDown, lp, new Object[] {(int) (r.ah & 0xff)});
+        MmlDatum md = new MmlDatum(r.al, MMLType.VolumeDown, lp, (int) (r.ah & 0xff));
         md = work.FlashLstMd(md);
         muap98.objectBuf.set(r.di, md);
         muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah));
@@ -3440,21 +3440,21 @@ public class Mucom2 {
             return;
         }
 
-        for (int i = 0; i < volcheck.length; i++) {
+        for (Tuple<String, Byte> stringByteTuple : volcheck) {
             r.push(r.getBx());
             boolean fnd = true;
-            for (int j = 0; j < volcheck[i].getItem1().length(); j++) {
+            for (int j = 0; j < stringByteTuple.getItem1().length(); j++) {
                 byte b = muap98.sourceBuf[r.getBx() & 0xffff];
                 r.setBx((short) ((r.getBx() & 0xffff) + 1));
                 b = (byte) ((b & 0xff) - (byte) ' ');
-                if ((byte) (volcheck[i].getItem1().charAt(j) - ' ') != b) {
+                if ((byte) (stringByteTuple.getItem1().charAt(j) - ' ') != b) {
                     fnd = false;
                     break;
                 }
             }
             if (fnd) {
                 r.setDx(r.pop()); // BX = next source address
-                r.al = volcheck[i].getItem2(); // AL = vol data (0-15)
+                r.al = stringByteTuple.getItem2(); // AL = vol data (0-15)
                 retvol();
                 return;
             }
@@ -3467,9 +3467,9 @@ public class Mucom2 {
         error();
     }
 
-    private Tuple<String, Byte>[] volcheck = new Tuple[] {
+    private final Tuple<String, Byte>[] volcheck = new Tuple[] {
             new Tuple<>("PPP:", (byte) 7), new Tuple<>("PP:", (byte) 8),
-            new Tuple<String, Byte>("P:", (byte) 9), new Tuple<>("MP:", (byte) 10),
+            new Tuple<>("P:", (byte) 9), new Tuple<>("MP:", (byte) 10),
             new Tuple<>(":", (byte) 11), new Tuple<>("MF:", (byte) 12),
             new Tuple<>("F:", (byte) 13), new Tuple<>("FF:", (byte) 14),
             new Tuple<>("FFF:", (byte) 15)
@@ -3634,7 +3634,7 @@ public class Mucom2 {
             r.carry = ans > 0xffff;
             alllen[(r.getBx() - 8) / 2] = (int) (ans & 0xffff); // Add to previous nest
             dxVal = alllen[(r.getBx() + 6) / 2];
-            alllen[(r.getBx() + 6) / 2] = (int) ((dxVal & 0xffff) + (r.carry ? 1 : 0));
+            alllen[(r.getBx() + 6) / 2] = (dxVal & 0xffff) + (r.carry ? 1 : 0);
             r.al--;
         }
 //looplen1:
@@ -3647,7 +3647,7 @@ public class Mucom2 {
         ans = (alllen[(r.getBx() - 8) / 2] & 0xffff) + (r.getAx() & 0xffff);
         r.carry = ans > 0xffff;
         alllen[(r.getBx() - 8) / 2] = (int) (ans & 0xffff); // Add to previous nest
-        alllen[(r.getBx() - 6) / 2] += (int) ((r.getDx() & 0xffff) + (r.carry ? 1 : 0));
+        alllen[(r.getBx() - 6) / 2] += (r.getDx() & 0xffff) + (r.carry ? 1 : 0);
         r.setAx(r.pop());
         dxVal = alllen[(r.getBx() + 2) / 2];
         mulAns = (long) (r.getAx() & 0xff) * (dxVal & 0xffff);

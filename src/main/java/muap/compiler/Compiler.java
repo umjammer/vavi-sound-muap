@@ -69,7 +69,7 @@ public class Compiler implements ICompiler {
             mc2.compile();
 
             AutoExtendList<MmlDatum> obj = muap98.objectBuf;
-            if (obj.size() > 0 && obj.get(0) != null) {
+            if (!obj.isEmpty() && obj.getFirst() != null) {
                 // Check labels
                 boolean fnd = false;
                 for (int i = 0; i < mc2.mucomsub.labelAdrs.length; i++) {
@@ -79,9 +79,9 @@ public class Compiler implements ICompiler {
                     }
                 }
                 // Add tone information
-                if (obj.get(0).args == null) obj.get(0).args = new ArrayList<Object>();
-                obj.get(0).args.add(muap98.toneBuff);
-                obj.get(0).args.add(fnd ? mc2.mucomsub.labelAdrs : null);
+                if (obj.getFirst().args == null) obj.getFirst().args = new ArrayList<>();
+                obj.getFirst().args.add(muap98.toneBuff);
+                obj.getFirst().args.add(fnd ? mc2.mucomsub.labelAdrs : null);
             }
 
             return obj.toArray(new MmlDatum[0]);
@@ -158,7 +158,7 @@ public class Compiler implements ICompiler {
     /**
      * Read binary data in bulk from a stream.
      */
-    private byte[] ReadAllBytes(Stream stream) {
+    private static byte[] ReadAllBytes(Stream stream) {
         if (stream == null) return null;
 
         byte[] buf = new byte[8192];
@@ -179,7 +179,7 @@ public class Compiler implements ICompiler {
     /**
      * Read text from stream and convert to Shift-JIS array format.
      */
-    private byte[] readAllBytesFromText(Stream stream) {
+    private static byte[] readAllBytesFromText(Stream stream) {
         if (stream == null) return null;
 
         try (BufferedReader sr = new BufferedReader(new InputStreamReader(new StreamInputStream(stream), Charset.forName("Windows-31J")))) {

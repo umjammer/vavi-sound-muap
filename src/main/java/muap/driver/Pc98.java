@@ -29,18 +29,18 @@ public class Pc98 {
     private byte[] cs4231_Reg = new byte[32];
     private int _86PcmFifo = 0;
 
-    private Work work;
-    private X86Register reg;
-    private Consumer<ChipDatum> writeOPNAP;
-    private Consumer<ChipDatum> writeOPN2P;
-    private Consumer<ChipDatum> writeCS4231;
-    private Function<Byte, Byte> readCS4231;
-    private BiFunction<Byte, Byte, Boolean> write8253;
+    private final Work work;
+    private final X86Register reg;
+    private final Consumer<ChipDatum> writeOPNAP;
+    private final Consumer<ChipDatum> writeOPN2P;
+    private final Consumer<ChipDatum> writeCS4231;
+    private final Function<Byte, Byte> readCS4231;
+    private final BiFunction<Byte, Byte, Boolean> write8253;
     private int sdm = 0;
 
     // FM sound source connection state
     // 0: None, 1: YM2203, 2: YM3438, 3: YM2608+ADPCM, 4: YM2608+WSS, 5: YM2608+86B
-    private int[][] connectFMDevice = new int[][] {
+    private final int[][] connectFMDevice = new int[][] {
             new int[] {
                     0, // 0x088~ None
                     4, // 0x188~ 98CanBe(YM2608+WSS) (OPNA series (3,4,5) must be defined here (0x188))
@@ -53,8 +53,8 @@ public class Pc98 {
             }
     };
 
-    private byte[] fmAdr = new byte[6];
-    private byte[][] fmReg = new byte[6][];
+    private final byte[] fmAdr = new byte[6];
+    private final byte[][] fmReg = new byte[6][];
 
     public Pc98(Work work, X86Register reg,
                 Consumer<ChipDatum> writeOPNAP,

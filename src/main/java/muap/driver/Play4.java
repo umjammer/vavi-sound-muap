@@ -2,6 +2,7 @@ package muap.driver;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.Arrays;
 import java.util.List;
 
 import muap.common.X86Register;
@@ -19,7 +20,7 @@ public class Play4 {
     public X86Register r = null;
     public Work work = null;
     public int[] labelPtr = null; // new ushort[40 * 17];
-    public int[] labelPassCnt = new int[40 * 17];
+    public final int[] labelPassCnt = new int[40 * 17];
 
     public Play4(Nax nax, Work work, int[] labelPtr) {
         this.nax = nax;
@@ -29,9 +30,7 @@ public class Play4 {
         setJumpTable3();
         this.work = work;
         this.labelPtr = labelPtr;
-        for (int i = 0; i < labelPassCnt.length; i++) {
-            labelPassCnt[i] = -1;
-        }
+        Arrays.fill(labelPassCnt, -1);
     }
 
     // Self-modifying
@@ -41,8 +40,8 @@ public class Play4 {
     public byte freq1 = 0b011;
     public int freq2 = 0x987;
     public byte freq3 = 0b0010;
-    public byte[] naxad1 = new byte[9];
-    public byte[] naxad2 = new byte[9];
+    public final byte[] naxad1 = new byte[9];
+    public final byte[] naxad2 = new byte[9];
     public int port1 = 0x88; // OPNA portA 
     public int port11 = 0x88; // OPNA portA 
     public int port12 = 0x88; // OPNA portA 
@@ -118,7 +117,7 @@ public class Play4 {
 
     // ; Performance work area
 
-    private byte[] chtbl2 = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}; // Channels to be changed by @ch command (1-17)
+    private final byte[] chtbl2 = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}; // Channels to be changed by @ch command (1-17)
     private int fadedata = 320; // Fade-out addition value
     private short spsave1 = 0;
     private short sssave1 = 0;
@@ -131,13 +130,13 @@ public class Play4 {
      * b7 = Timer re-entry
      */
     private byte mapflag = 0;
-    private byte[] maxlen = new byte[] {0, 0, 0, 0}; // Max length
-    private byte[] con_data = new byte[] {8, 8, 8, 8, 10, 14, 14, 15}; // Bit values of output operators by FM connection
-    private byte[] out_data = new byte[] {0, 8, 4, 12}; // FM address and operator order
+    private final byte[] maxlen = new byte[] {0, 0, 0, 0}; // Max length
+    private final byte[] con_data = new byte[] {8, 8, 8, 8, 10, 14, 14, 15}; // Bit values of output operators by FM connection
+    private final byte[] out_data = new byte[] {0, 8, 4, 12}; // FM address and operator order
     private byte realch = 0; // Actual channel number
     private byte fifo_exec = 0;
     // even
-    public byte[] pcmtable = new byte[(Nax.MAXPCM + 1) * 2]; // PCM tone management table (@0-99) // Kuma: Probably 99 instead of 89 typo
+    public final byte[] pcmtable = new byte[(Nax.MAXPCM + 1) * 2]; // PCM tone management table (@0-99) // Kuma: Probably 99 instead of 89 typo
     public byte[] ssgtable = new byte[21 * 2]; // SSGPCM tone management table (@0-19)
 
     // fadesave dw 160 ; For saving fade-out counter
@@ -167,7 +166,7 @@ public class Play4 {
     // VisualPlay Work 1
 
     // even
-    private byte[] data_buff = { // Buffer for work area, initialized in logic
+    private final byte[] data_buff = { // Buffer for work area, initialized in logic
             48, 0, 48, 0, 48, 0, 48, 0,
             48, 0, 48, 0, 48, 0, 48, 0,
             48, 0, 48, 0, 48, 0, 48, 0,
@@ -357,13 +356,13 @@ public class Play4 {
     /** #3 noise frequency */
     private byte noisef = 0;
     /** #4 tempo timer value */
-    private byte[] tempo = new byte[] {0x00, 0x02, 0x00, 0x02};
+    private final byte[] tempo = new byte[] {0x00, 0x02, 0x00, 0x02};
     //dw 200h ; Dummy
 
     /** #8 rhythm table */
-    private byte[] rhytbl = new byte[] {0, 0, 0, 0, 0, 0};
+    private final byte[] rhytbl = new byte[] {0, 0, 0, 0, 0, 0};
     /** #14 played length */
-    private int[] playlen = new int[] {0, 0};
+    private final int[] playlen = new int[] {0, 0};
     /** #18 total loop count */
     private byte playcont = 0;
     /** #19 channel stop flag (b0 to b16) */
@@ -417,18 +416,18 @@ public class Play4 {
     private static class Pcm0work {
 
         /** Extended PCM start address, EMS page */
-        public int[] pcm0adrs = new int[] {0, 0};
+        public final int[] pcm0adrs = new int[] {0, 0};
         /** Decr counter for performance * 4 */
-        public int[] pcm0cnt = new int[] {0, 0};
+        public final int[] pcm0cnt = new int[] {0, 0};
         /** Frequency */
-        public int[] pcm0freq = new int[] {0, 0};
+        public final int[] pcm0freq = new int[] {0, 0};
         /** right+left pan and data (0/FFFF) */
-        public int[] pcm0pan = new int[] {0, 0};
+        public final int[] pcm0pan = new int[] {0, 0};
         /** Volume */
-        public int[] pcm0vol = new int[] {0, 0};
+        public final int[] pcm0vol = new int[] {0, 0};
     }
 
-    private Pcm0work[] pcm0work = new Pcm0work[] {
+    private final Pcm0work[] pcm0work = new Pcm0work[] {
             new Pcm0work(), new Pcm0work(), new Pcm0work(), new Pcm0work(),
             new Pcm0work(), new Pcm0work(), new Pcm0work(), new Pcm0work(),
             new Pcm0work(), new Pcm0work(), new Pcm0work(), new Pcm0work(),
@@ -453,7 +452,7 @@ public class Play4 {
 
     //pcmrseg    dw 0               ; PCM recording data storage segment
     // SSGPCM play start address, end address, frequency
-    private int[] pcmNadrs = new int[] {
+    private final int[] pcmNadrs = new int[] {
             0, 0, 0, // ch1
             0, 0, 0, // ch2
             0, 0, 0  // ch3
@@ -570,7 +569,7 @@ public class Play4 {
                 fifo_start();
             }
 //pt1:
-            r.al = (byte) nax.pc98.inportB(0xa); // read IMR
+            r.al = nax.pc98.inportB(0xa); // read IMR
 //setand:
             r.al &= 0xef; // clear IR12 mask
 //pt2:
@@ -592,8 +591,7 @@ public class Play4 {
 
         // jumpcommand valid check
         jumpMode = false;
-        if (nax.objBuf[0][0].args != null && nax.objBuf[0][0].args.size() > 0 && nax.objBuf[0][0].args.get(0) instanceof MmlDatum) {
-            MmlDatum md = (MmlDatum) nax.objBuf[0][0].args.get(0);
+        if (nax.objBuf[0][0].args != null && !nax.objBuf[0][0].args.isEmpty() && nax.objBuf[0][0].args.getFirst() instanceof MmlDatum md) {
             if (md.type == MMLType.SkipPlay) {
                 jumpMode = true;
             }
@@ -671,7 +669,7 @@ public class Play4 {
         program_dma();
         dma_data = Nax.FIFO_SIZE * 2;
         change_buffer();
-        r.al = (byte) nax.pc98.inportB(2);
+        r.al = nax.pc98.inportB(2);
         r.al &= 0xf7; // INT0B interrupt permitted
         nax.pc98.outportB(2, r.al); // write IMR
         pcm_start();
@@ -717,7 +715,7 @@ public class Play4 {
 
 //read_stat_lop:
         do {
-            byte al = (byte) nax.pc98.inportB(dx);
+            byte al = nax.pc98.inportB(dx);
             if ((al & 0x80) == 0) break;
             cx--;
         } while (cx > 0);
@@ -745,7 +743,7 @@ public class Play4 {
         if (intm1 != 0) {
             dl = (byte) 0x9a;
         }
-        byte al = (byte) nax.pc98.inportB(0x42);
+        byte al = nax.pc98.inportB(0x42);
         if ((al & 0x20) != 0) // System clock is 10MHz?
         {
 //intm2:
@@ -783,11 +781,11 @@ public class Play4 {
         if ((r.getSi() & 0xffff) < (pcmNadrs[1] & 0xffff)) {
             r.setAx((short) pcmNadrs[2]); // AX = PCM counter
             r.setAx((short) (r.getAx() + 0x1dd)); // Add SSG O4C value
-            if ((short) r.getAx() >= 0) {
+            if (r.getAx() >= 0) {
                 r.setDx((short) ((data_buff[FD + 6] & 0xff) + (data_buff[FD + 7] & 0xff) * 0x100));
                 if (r.getDx() != 0) {
 //pcm1inc:
-                    int ans = (short) r.getAx();
+                    int ans = r.getAx();
                     int dx = r.getDx() & 0xffff;
                     do {
                         r.setSi((short) ((r.getSi() & 0xffff) + 1));
@@ -800,7 +798,7 @@ public class Play4 {
 //pcm1skip:
             pcmNadrs[2] = r.getAx() & 0xffff; // Save PCM counter
             r.al = nax.pcmBuff[r.getSi() & 0xffff]; // AL = PCM data
-            r.setAx((short) (byte) r.al);
+            r.setAx(r.al);
 
             r.setDx(r.getAx()); // DX = PCM data
         }
@@ -811,7 +809,7 @@ public class Play4 {
             r.al = nax.pcmBuff[r.getSi() & 0xffff];
             r.setSi((short) ((r.getSi() & 0xffff) + 1));
             pcmNadrs[3 + 0] = r.getSi() & 0xffff;
-            r.setAx((short) (byte) r.al);
+            r.setAx(r.al);
             r.setDx((short) (r.getDx() + r.getAx()));
         }
 
@@ -822,7 +820,7 @@ pcm_exit: {
             r.al = nax.pcmBuff[r.getSi() & 0xffff];
             r.setSi((short) ((r.getSi() & 0xffff) + 1));
             pcmNadrs[6 + 0] = r.getSi() & 0xffff;
-            r.setAx((short) (byte) r.al);
+            r.setAx(r.al);
             r.setDx((short) (r.getDx() + r.getAx()));
         } else {
 //pcm3end:
@@ -930,7 +928,7 @@ pcm_exit: {
 
         stop_intimer(); // built-in timer interrupt prohibit
         r.setDx((short) 0x6000); // return to 10ms unit
-        r.al = (byte) nax.pc98.inportB(0x42);
+        r.al = nax.pc98.inportB(0x42);
         if ((r.al & 0x20) != 0) // System clock is 10MHz?
         {
             r.setDx((short) 0x4e00);
@@ -952,13 +950,13 @@ pcm_exit: {
     }
 
     private void start_intimer() {
-        r.al = (byte) nax.pc98.inportB(2);
+        r.al = nax.pc98.inportB(2);
         r.al &= 0xfe; // built-in timer interrupt permit
         nax.pc98.outportB(2, r.al);
     }
 
     private void stop_intimer() {
-        r.al = (byte) nax.pc98.inportB(2);
+        r.al = nax.pc98.inportB(2);
         r.al |= 1; // built-in timer interrupt prohibit
         nax.pc98.outportB(2, r.al);
     }
@@ -1521,7 +1519,7 @@ pcm_exit: {
         do {
             cnt--;
             if (cnt == 0) break;
-            r.al = (byte) nax.pc98.inportB(r.getDx() & 0xffff); // Check BUSY
+            r.al = nax.pc98.inportB(r.getDx() & 0xffff); // Check BUSY
         } while ((r.al & 0x80) == 0);
     }
 
@@ -1651,7 +1649,7 @@ pcm_exit: {
                 r.setDx((short) port18); // check for FM interrupt
             }
 
-            r.al = (byte) nax.pc98.inportB(r.getDx() & 0xffff);
+            r.al = nax.pc98.inportB(r.getDx() & 0xffff);
             if ((r.al & 0b0000_0001) == 0) {
                 skipEOI = false;
                 break;
@@ -1701,7 +1699,7 @@ pcm_exit: {
         if (check_wsspcm()) return true; // WSS-PCM?
 
         r.setDx((short) 0xa468);
-        r.al = (byte) nax.pc98.inportB(r.getDx() & 0xffff);
+        r.al = nax.pc98.inportB(r.getDx() & 0xffff);
         if ((r.al & 0b0001_0000) == 0) return true;
         else if (!check_86pcm()) return true; // Extended 86PCM?
         return false;
@@ -1729,7 +1727,7 @@ pcm_exit: {
             nax.pc98.outportB(8, r.al);
             r.al = 0x0b; // read slave ISR
             nax.pc98.outportB(8, r.al);
-            r.al = (byte) nax.pc98.inportB(8);
+            r.al = nax.pc98.inportB(8);
             if (r.al == 0) // more processing?
             {
                 r.al = 0x20; // EOI to master
@@ -1804,7 +1802,7 @@ pcm_exit: {
 //fifo_lop1:
             do {
                 byte al = emsMem[bp];
-                int tmp_ax = (byte) al * (byte) pcm0work[si].pcm0vol[0];
+                int tmp_ax = al * (byte) pcm0work[si].pcm0vol[0];
                 tmp_ax <<= 2;
                 byte cur_al = (byte) (tmp_ax >> 8);
                 byte ah_val = (byte) (tmp_ax >> 8);
@@ -1914,7 +1912,7 @@ pcm_exit: {
                         al -= 0x80;
                         ah -= 0x80;
                         int val_dx = ah;
-                        int val_ax = (byte) al;
+                        int val_ax = al;
                         int tmp = val_ax;
                         val_ax = val_dx;
                         val_dx = tmp;
@@ -1939,7 +1937,7 @@ pcm_exit: {
                         byte al = (byte) ((byte) tmp_ax - (byte) (tmp_ax >> 8));
 //level2:
                         byte ah = level2_;
-                        int val_ax = (byte) al * (byte) ah;
+                        int val_ax = al * ah;
                         work.fifoBuf[di + 1] += (byte) (val_ax >> 8);
                         work.fifoBuf[di] -= (byte) (val_ax >> 8);
                         di += 2;
@@ -1956,7 +1954,7 @@ pcm_exit: {
                         al -= 0x80;
 //level3:
                         byte ah = level3_;
-                        int val_ax = (byte) al * (byte) ah;
+                        int val_ax = al * ah;
                         val_ax <<= 1;
                         work.fifoBuf[di] -= (byte) (val_ax >> 8);
                         di++;
@@ -1991,7 +1989,7 @@ pcm_exit: {
         nax.pc98.outportB(0x17, al); // ModeReg.
 
         int ax = nax.fifoseg; // DMA segment
-        long eax = (long) ((ax << 4) + fifoptr1);
+        long eax = (ax << 4) + fifoptr1;
 
 //progdma_sub:
         nax.pc98.outportB(0x19, (byte) eax); // ClearByteF/F
@@ -2056,10 +2054,10 @@ pcm_exit: {
             nax.pc98.outportB(0x0f46, (byte) 0xfe); // Write to R2
             return;
         }
-        byte al = (byte) nax.pc98.inportB(0xa468);
+        byte al = nax.pc98.inportB(0xa468);
         al &= 0b1110_1111;
         nax.pc98.outportB(0xa468, al);
-        al = (byte) nax.pc98.inportB(0xa468);
+        al = nax.pc98.inportB(0xa468);
         al |= 0b0001_0000;
         nax.pc98.outportB(0xa468, al);
     }
@@ -2070,7 +2068,7 @@ pcm_exit: {
     private void fifo_int_off() {
         if (!check_wsspcm()) {
             r.setDx((short) 0xa468);
-            r.al = (byte) nax.pc98.inportB(r.getDx() & 0xffff);
+            r.al = nax.pc98.inportB(r.getDx() & 0xffff);
             r.al &= 0b1101_1111;
             nax.pc98.outportB(r.getDx() & 0xffff, r.al);
             return;
@@ -2086,7 +2084,7 @@ pcm_exit: {
     private void fifo_int_on() {
         if (!check_wsspcm()) {
             r.setDx((short) 0xa468);
-            r.al = (byte) nax.pc98.inportB(r.getDx() & 0xffff);
+            r.al = nax.pc98.inportB(r.getDx() & 0xffff);
             r.al |= 0b0010_0000;
             nax.pc98.outportB(r.getDx() & 0xffff, r.al);
             return;
@@ -2114,7 +2112,7 @@ pcm_exit: {
             return;
         }
         r.setDx((short) 0xa468);
-        r.al = (byte) nax.pc98.inportB(r.getDx() & 0xffff);
+        r.al = nax.pc98.inportB(r.getDx() & 0xffff);
         r.al |= 0b1000_0000;
         nax.pc98.outportB(r.getDx() & 0xffff, r.al);
     }
@@ -2125,7 +2123,7 @@ pcm_exit: {
     private void pcm_stop() {
         if (!check_wsspcm()) {
             r.setDx((short) 0xa468);
-            r.al = (byte) nax.pc98.inportB(r.getDx() & 0xffff);
+            r.al = nax.pc98.inportB(r.getDx() & 0xffff);
             r.al &= 0b0111_1111;
             nax.pc98.outportB(r.getDx() & 0xffff, r.al);
             fifo_exec &= 0xfe;
@@ -2702,7 +2700,7 @@ pcm_exit: {
         if (val_ax > 127) val_ax = 127;
         r.al = (byte) val_ax; // AL,CL = level value
         r.cl = r.al;
-        val_ax = (short) ((byte) r.al * (byte) data_buff[(r.getSi() & 0xffff) + LF]);
+        val_ax = (short) (r.al * data_buff[(r.getSi() & 0xffff) + LF]);
         short cxbk2 = r.getCx();
         r.cl = (byte) (data_buff[(r.getSi() & 0xffff) + LB] & 3); // CL = speed base
         r.sign = (r.cl - 1) < 0;
@@ -2721,9 +2719,9 @@ pcm_exit: {
         r.setDx((short) ((data_buff[(r.getSi() & 0xffff) + FC] & 0xff) + (data_buff[(r.getSi() & 0xffff) + FC + 1] & 0xff) * 0x100));
         if ((data_buff[(r.getSi() & 0xffff) + TI] & 0x10) == 0) { // Adding or subtracting?
 //clfo_add:
-            val_ax += (short) r.getDx();
+            val_ax += r.getDx();
         } else {
-            val_ax = (short) r.getDx() - (short) val_ax;
+            val_ax = r.getDx() - (short) val_ax;
         }
         r.setAx((short) val_ax);
 
@@ -2792,14 +2790,14 @@ pcm_exit: {
         r.push(r.getDx());
         r.setDx((short) ((r.getDx() & 0xffff) >> 4));
         r.al = r.ah;
-        r.setAx((short) (byte) r.al);
-        int ans = (short) r.getAx() * (short) r.getDx();
+        r.setAx(r.al);
+        int ans = r.getAx() * r.getDx();
         r.setDx((short) (ans >> 16));
         r.setAx((short) (ans & 0xffff));
 //freq_lfo1:
         do {
             r.carry = (r.getDx() & 1) != 0;
-            r.setDx((short) ((short) r.getDx() >> 1));
+            r.setDx((short) (r.getDx() >> 1));
             r.setAx(r.rcr(r.getAx(), (byte) 1));
             r.setCx((short) ((r.getCx() & 0xffff) - 1));
         } while ((r.getCx() & 0xffff) > 0);
@@ -2956,7 +2954,7 @@ pcm_exit: {
                 || md.args.isEmpty()
                 || !(md.args.getFirst() instanceof List)
                 || ((List<MmlDatum>) md.args.getFirst()).isEmpty()
-            || ((MmlDatum)((List<MmlDatum>)md.args.getFirst()).getFirst()).type != MMLType.SkipPlay
+            || ((List<MmlDatum>)md.args.getFirst()).getFirst().type != MMLType.SkipPlay
                 ) return;
 
         jumpMode = false;
@@ -3001,7 +2999,7 @@ pcm_exit: {
         short axbk = r.getAx();
         r.al = (byte) ~(r.al & 0xff);
         r.al = (byte) ((r.al & 0xff) * 2);
-        r.setAx((short) (byte) r.al);
+        r.setAx(r.al);
         r.di += r.getAx();
         r.setAx(axbk);
     }
@@ -4931,7 +4929,7 @@ pcm_exit: {
         r.push(r.di);
         r.di = 0; // ofs:comdata ; DI = storage address
 //comment3:
-        for (int i = 0; i < comdataBuf.length; i++) comdataBuf[i] = 0;
+        Arrays.fill(comdataBuf, (byte) 0);
         int len = r.al & 0xff;
         while (len > 0) {
             r.ah = (byte) nax.objBuf[0][r.getBx() & 0xffff].dat;

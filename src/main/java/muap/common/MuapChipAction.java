@@ -14,11 +14,11 @@ import musicDriverInterface.ChipDatum;
 public class MuapChipAction implements ChipAction {
 
     /** Functional interface equivalent to Action<ChipDatum> */
-    private Consumer<ChipDatum> write;
+    private final Consumer<ChipDatum> write;
     /** Functional interface for PCM data writing logic */
-    private TriConsumer<byte[], Integer, Integer> writePcmData;
+    private final TriConsumer<byte[], Integer, Integer> writePcmData;
     /** Functional interface for wait/send logic */
-    private BiConsumer<Long, Integer> waitSend;
+    private final BiConsumer<Long, Integer> waitSend;
 
     /**
      * Constructor for muapChipAction.

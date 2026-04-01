@@ -44,14 +44,14 @@ public class Driver implements IDriver {
     public EMS_AllocMemory cs4231EMS_AllocMemory;
 
     private BiFunction<Byte, Byte, Boolean> write8253;
-    private Map<String, String> envVars = Map.of(
+    private final Map<String, String> envVars = Map.of(
             "DTA", System.getProperty("muap.dir.dta", System.getProperty("user.dir")),
             "PCM", System.getProperty("muap.dir.pcm", System.getProperty("user.dir")),
             "UDP", System.getProperty("muap.dir.udp", System.getProperty("user.dir")),
             "SUD", System.getProperty("muap.dir.sud", System.getProperty("user.dir"))
     ); // TODO env
     private Nax nax;
-    public Work work = new Work();
+    public final Work work = new Work();
     private int renderingFreq = 44100;
     private int opnaMasterClock = (int) cOPNAMasterClock;
     private MmlDatum[] musicData;
@@ -60,7 +60,7 @@ public class Driver implements IDriver {
     private String objPath = null;
     private int sdm = 0;
 
-    public short[] sound = new short[] {0, 0};
+    public final short[] sound = new short[] {0, 0};
 
     public Driver() {
         work.sound = sound;
@@ -198,8 +198,8 @@ public class Driver implements IDriver {
 
         try {
             if (!nax.functionList.isEmpty()) {
-                nax.functionF(nax.functionList.get(0));
-                nax.functionList.remove(0);
+                nax.functionF(nax.functionList.getFirst());
+                nax.functionList.removeFirst();
             }
 
             synchronized (work.systemInterrupt) {
@@ -214,11 +214,10 @@ public class Driver implements IDriver {
                     if (nax != null) nax.Int08Entry();
                 }
 
-                switch (work.currentTimer) {
-                    case 0:
-                        flg = (work.timerOPNA1.statReg & 3) != 0;
-                        break;
-                }
+                flg = switch (work.currentTimer) {
+                    case 0 -> (work.timerOPNA1.statReg & 3) != 0;
+                    default -> flg;
+                };
                 if (flg) {
                     if (nax != null) nax.TimerEntry();
                 }
@@ -245,8 +244,9 @@ public class Driver implements IDriver {
         throw new UnsupportedOperationException();
     }
 
+    @SafeVarargs
     @Override
-    public void startRendering(int renderingFreq, Tuple<String, Integer>... chipMasterClocks) {
+    public final void startRendering(int renderingFreq, Tuple<String, Integer>... chipMasterClocks) {
         synchronized (work.systemInterrupt) {
             work.timeCounter = 0L;
             this.renderingFreq = renderingFreq <= 0 ? 44100 : renderingFreq;
