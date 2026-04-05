@@ -11,8 +11,8 @@ import muap.common.MusException;
 import muap.common.X86Register;
 import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.LinePos;
-import musicDriverInterface.MMLType;
 import musicDriverInterface.MmlDatum;
+import musicDriverInterface.MmlDatum.MMLType;
 
 
 /**

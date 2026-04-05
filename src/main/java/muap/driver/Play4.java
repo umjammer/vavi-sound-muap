@@ -6,8 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import muap.common.X86Register;
-import musicDriverInterface.MMLType;
 import musicDriverInterface.MmlDatum;
+import musicDriverInterface.MmlDatum.MMLType;
 
 
 public class Play4 {

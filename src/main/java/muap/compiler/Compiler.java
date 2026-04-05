@@ -21,7 +21,7 @@ import dotnet4j.util.compat.Tuple3;
 import muap.common.MusException;
 import muap.common.X86Register;
 import musicDriverInterface.CompilerInfo;
-import musicDriverInterface.GD3Tag;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.MmlDatum;
 import musicDriverInterface.common.AutoExtendList;
@@ -127,14 +127,14 @@ public class Compiler implements ICompiler {
     }
 
     @Override
-    public GD3Tag getGD3TagInfo(byte[] srcBuf) {
+    public MetaData getGD3TagInfo(byte[] srcBuf) {
         if (work == null
                 || work.compilerInfo == null
-                || !(work.compilerInfo.additionalInfo instanceof GD3Tag)) {
+                || !(work.compilerInfo.additionalInfo instanceof MetaData)) {
             return null;
         }
 
-        return (GD3Tag) work.compilerInfo.additionalInfo;
+        return (MetaData) work.compilerInfo.additionalInfo;
     }
 
     @Override

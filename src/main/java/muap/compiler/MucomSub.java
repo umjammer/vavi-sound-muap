@@ -13,11 +13,11 @@ import java.util.List;
 import dotnet4j.util.compat.Tuple;
 import muap.common.X86Register;
 import musicDriverInterface.CompilerInfo;
-import musicDriverInterface.GD3Tag;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.LinePos;
-import musicDriverInterface.MMLType;
+import musicDriverInterface.MetaData.Tag;
 import musicDriverInterface.MmlDatum;
-import musicDriverInterface.Tag;
+import musicDriverInterface.MmlDatum.MMLType;
 
 
 /**
@@ -1523,9 +1523,9 @@ public class MucomSub {
         r.cl = 33; // Lyric data error
 
         if (work.compilerInfo == null) work.compilerInfo = new CompilerInfo();
-        if (work.compilerInfo.additionalInfo == null) work.compilerInfo.additionalInfo = new GD3Tag();
-        GD3Tag tag = (GD3Tag) work.compilerInfo.additionalInfo;
-        if (!tag.items.containsKey(Tag.Lyric)) tag.items.put(Tag.Lyric, new String[] {"MUS:UseLyric"}); // Set lyric use flag
+        if (work.compilerInfo.additionalInfo == null) work.compilerInfo.additionalInfo = new MetaData();
+        MetaData tag = (MetaData) work.compilerInfo.additionalInfo;
+        tag.add(Tag.Lyric, "MUS:UseLyric"); // Set lyric use flag
 
 //comment4:
         do {

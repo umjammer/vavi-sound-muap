@@ -19,7 +19,7 @@ import muap.driver.Ems.EMS_Map;
 import muap.driver.Ems.EMS_SetHandleName;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
-import musicDriverInterface.GD3Tag;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.IDriver;
 import musicDriverInterface.MmlDatum;
 
@@ -79,7 +79,7 @@ public class Driver implements IDriver {
     }
 
     @Override
-    public GD3Tag getGD3TagInfo(byte[] srcBuf) {
+    public MetaData getGD3TagInfo(byte[] srcBuf) {
         throw new UnsupportedOperationException();
     }
 
