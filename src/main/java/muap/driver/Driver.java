@@ -79,7 +79,7 @@ public class Driver implements IDriver {
     }
 
     @Override
-    public MetaData getGD3TagInfo(byte[] srcBuf) {
+    public MetaData getMetaData(byte[] srcBuf) {
         throw new UnsupportedOperationException();
     }
 

@@ -127,7 +127,7 @@ public class Compiler implements ICompiler {
     }
 
     @Override
-    public MetaData getGD3TagInfo(byte[] srcBuf) {
+    public MetaData getMetaData(byte[] srcBuf) {
         if (work == null
                 || work.compilerInfo == null
                 || !(work.compilerInfo.additionalInfo instanceof MetaData)) {
