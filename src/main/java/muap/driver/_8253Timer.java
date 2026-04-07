@@ -36,7 +36,7 @@ public class _8253Timer {
         public double step = 0.0;
     }
 
-    private Ch[] ch = new Ch[] {new Ch(), new Ch(), new Ch()};
+    private final Ch[] ch = new Ch[] {new Ch(), new Ch(), new Ch()};
 
     public int getCh0Stat() {
         return ch[0].getStat();

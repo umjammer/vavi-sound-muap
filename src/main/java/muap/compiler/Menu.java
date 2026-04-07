@@ -5,8 +5,8 @@ import muap.common.X86Register;
 
 public class Menu {
 
-    private X86Register r;
-    private Muap98 muap98;
+    private final X86Register r;
+    private final Muap98 muap98;
 
     public Menu(X86Register reg, Muap98 muap98) {
         this.r = reg;

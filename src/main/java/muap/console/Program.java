@@ -1,10 +1,5 @@
 package muap.console;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ResourceBundle;
@@ -19,11 +14,8 @@ import dotnet4j.io.IOException;
 import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
-import groovy.lang.Tuple;
 import muap.compiler.Compiler;
 import musicDriverInterface.MmlDatum;
-import org.apache.tools.ant.types.LogLevel;
-import vavi.util.ByteUtil;
 import vavi.util.serdes.Serdes;
 
 
@@ -151,6 +143,7 @@ public class Program {
             if (op.equals("S")) {
                 // Request output via serialization
                 isSeli = true;
+                break;
             }
 
             i++;

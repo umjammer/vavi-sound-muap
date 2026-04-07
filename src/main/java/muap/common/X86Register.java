@@ -254,7 +254,7 @@ public class X86Register {
         carry = ((a & 0xffff) < (b & 0xffff));
     }
 
-    private Stack<Byte> stackMem = new Stack<Byte>();
+    private final Stack<Byte> stackMem = new Stack<>();
 
     public void push(short v) {
         sp = (short) ((sp & 0xffff) - 2);

@@ -33,7 +33,7 @@ public class Work {
     public String crntPart;
 
     // Data structures for building compiled output
-    public List<MmlDatum> lstMd = new ArrayList<>();
+    public final List<MmlDatum> lstMd = new ArrayList<>();
     public int mdArgsStep = 0;
 
     /**
