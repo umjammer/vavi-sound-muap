@@ -31,7 +31,7 @@ public class Program {
     private static String srcFile;
     private static boolean isSeli = false;
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
 
         logger.log(Level.INFO, "Hello, muapDotNET!");
 

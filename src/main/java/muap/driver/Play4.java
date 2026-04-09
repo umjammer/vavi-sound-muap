@@ -458,7 +458,7 @@ public class Play4 {
             0, 0, 0  // ch3
     };
     /** X value*10nest + 17ch 6nest. */
-    public byte[] loopcnt = new byte[17 * 16 + 0xff];
+    public final byte[] loopcnt = new byte[17 * 16 + 0xff];
 
     /**
      * Performance start routine
@@ -3859,7 +3859,7 @@ pcm_exit: {
     private byte[] tone_adrs() {
         // AL = tone number
         r.setBx((short) (25 * (r.al & 0xff)));
-        r.ds = (short) nax.tone;
+        r.ds = (short) Nax.tone;
         return nax.toneBuff;
     }
 

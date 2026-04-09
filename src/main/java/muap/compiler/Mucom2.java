@@ -120,7 +120,7 @@ public class Mucom2 {
 
     // MUTRACE.ASM simulation
     private byte saples = 0;
-    private byte zero = 0;
+    private static final byte zero = 0;
     private byte stamode = 0;
 
     private void dsp2dec() {
@@ -310,7 +310,7 @@ public class Mucom2 {
     public byte[] tone_adrs() {
         // AL = Tone number
         r.setBx((short) (25 * (r.al & 0xff)));
-        r.ds = (short) muap98.tone;
+        r.ds = (short) Muap98.tone;
         return muap98.toneBuff;
     }
 
@@ -751,7 +751,7 @@ public class Mucom2 {
             r.setCx((short) ((r.getCx() & 0xffff) - 1));
         } while (r.getCx() != 0);
 
-        r.es = (short) muap98.text;
+        r.es = (short) Muap98.text;
         r.di = 0; // TONEOFS
         r.setAx((short) 0);
 
@@ -844,7 +844,7 @@ public class Mucom2 {
         tempos = 120; // Tempo value (T120)
         mode[0] = 0;
         debug = 0; // Clear debug flag
-        r.es = (short) muap98.object_;
+        r.es = (short) Muap98.object_;
         r.di = OBJTOP; // DI = performance data storage area start address
         bef_len = r.di;
         disave = 0; // disave = Music performance data pointer storage start address
@@ -854,7 +854,7 @@ public class Mucom2 {
         muap98.objectBuf.set(0x25, new MmlDatum(r.bh));
         r.ch = 1; // CH = channel number (1-17)
         spsave = r.sp;
-        r.ds = (short) muap98.source; // DS = Source SEG, ES = Performance SEG
+        r.ds = (short) Muap98.source; // DS = Source SEG, ES = Performance SEG
 
         ver_check();
 
@@ -1106,7 +1106,7 @@ public class Mucom2 {
             r.ch = sendch; // Output channel number
             com_main(); // Assemble main routine
             r.push(r.getAx());
-            r.setAx((short) (muap98.bufleno - 0x10)); // Will performance buffer capacity be exceeded?
+            r.setAx((short) (Muap98.bufleno - 0x10)); // Will performance buffer capacity be exceeded?
             r.carry = ((r.di & 0xffff) < (r.getAx() & 0xffff));
             r.cl = 2; // Error code
             r.setAx(r.pop());
@@ -3377,7 +3377,7 @@ public class Mucom2 {
         lp.chipNumber = 0;
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
-        MmlDatum md = new MmlDatum(r.al, MMLType.Volume, lp, (int) (r.ah & 0xff), (byte) 2);
+        MmlDatum md = new MmlDatum(r.al, MMLType.Volume, lp, r.ah & 0xff, (byte) 2);
         md = work.FlashLstMd(md);
         muap98.objectBuf.set(r.di, md);
         muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah));
@@ -3397,7 +3397,7 @@ public class Mucom2 {
         lp.chipNumber = 0;
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
-        MmlDatum md = new MmlDatum(r.al, MMLType.VolumeUp, lp, (int) (r.ah & 0xff));
+        MmlDatum md = new MmlDatum(r.al, MMLType.VolumeUp, lp, r.ah & 0xff);
         md = work.FlashLstMd(md);
         muap98.objectBuf.set(r.di, md);
         muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah));
@@ -3414,7 +3414,7 @@ public class Mucom2 {
         lp.chipNumber = 0;
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
-        MmlDatum md = new MmlDatum(r.al, MMLType.VolumeDown, lp, (int) (r.ah & 0xff));
+        MmlDatum md = new MmlDatum(r.al, MMLType.VolumeDown, lp, r.ah & 0xff);
         md = work.FlashLstMd(md);
         muap98.objectBuf.set(r.di, md);
         muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah));

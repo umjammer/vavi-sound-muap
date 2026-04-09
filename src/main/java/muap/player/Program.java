@@ -51,7 +51,7 @@ public class Program {
 
     private static final int MAXBUF = 18;
     private static final int FIFO_SIZE = 128;
-    private static byte[] fifoBuf = new byte[FIFO_SIZE * MAXBUF * 2];
+    private static final byte[] fifoBuf = new byte[FIFO_SIZE * MAXBUF * 2];
 
     private static Driver drv;
     private static Cs4231Inst cS4231;
@@ -121,7 +121,7 @@ public class Program {
             lstChips.add(chip);
         }
 
-        mds = new MDSound(SamplingRate, samplingBuffer, lstChips);
+        mds = new MDSound();
 
         mds.inst(Ym2608Inst.class).setVolume("PSG", -10, 0);
         mds.inst(Ym2608Inst.class).setVolume("Rhythm", 5, 0);

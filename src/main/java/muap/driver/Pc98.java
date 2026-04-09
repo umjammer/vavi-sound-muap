@@ -26,7 +26,7 @@ public class Pc98 {
     private int cs4231IdxAdr = 0;
     private int cs4231IdxDat = 0;
     private int cs4231INTRst = 0;
-    private byte[] cs4231_Reg = new byte[32];
+    private final byte[] cs4231_Reg = new byte[32];
     private int _86PcmFifo = 0;
 
     private final Work work;
