@@ -180,7 +180,7 @@ public class Nax {
     /** EMS handle for PCM */
     public int phandle = 0xffff;
     /** For EMS map info storage */
-    private byte[] pemsbuf = new byte[32];
+    private final byte[] pemsbuf = new byte[32];
 
     /** Beginning of the file name (including \) // Kuma: Position of filename */
     private int path1 = 0;
@@ -199,7 +199,7 @@ public class Nax {
      * Note (type is byte)
      */
     private final byte[] xdata = new byte[4];
-    private byte[] bufbuf = new byte[128];
+    private final byte[] bufbuf = new byte[128];
     /** usrpcm search */
     private String pcm_path = "*.*";
     /** sub-usrpcm search */
@@ -253,7 +253,7 @@ public class Nax {
     private static final String mess_g2 = " not found";
     private static final String mess_p1 = "ADPCM data transfering";
     private static final String mess_p2 = "Cancelled due to timeout";
-    private String mess_p3 = " User Aborted.";
+    private static final String mess_p3 = " User Aborted.";
     private static final String mess_p4 = "Insufficient PCM buffer capacity";
     private static final String mes_s0 = " Using device(s) = YM";
     private static final String mes_s4 = " + 2203";
@@ -285,7 +285,7 @@ public class Nax {
     /** -P specification flag */
     private byte pcm_flg = 0;
     private static final String emsName2 = "MUAP_PCM";
-    private byte[] sbufbuf = new byte[128];
+    private final byte[] sbufbuf = new byte[128];
     private String tone_path = "TONES.DTA";
     private String pcmt_path = "PCM.TBL";
     private String pcmd_path = "PCM.DTA";
@@ -1456,10 +1456,10 @@ public class Nax {
         }
 
         reg.setBx(reg.getAx());
-        String msg = mess_p1;
+        StringBuilder msg = new StringBuilder(mess_p1);
         reg.setDx((short) 0); // ofs:mess_p1
         boolean ret = play4.check_86pcm();
-        if (ret) msg = msg.substring(2);
+        if (ret) msg = new StringBuilder(msg.substring(2));
 
         pcm_init();
 
@@ -1479,7 +1479,7 @@ public class Nax {
                 reg.setDx((short) dspcnt1);
                 reg.setDx((short) (reg.getDx() + 1));
                 if ((reg.getDx() & 0xffff) == dspdtop.length) {
-                    msg += dspdtop[(reg.getDx() & 0xffff) - 1];
+                    msg.append(dspdtop[(reg.getDx() & 0xffff) - 1]);
                     reg.setDx((short) 0);
                 }
                 dspcnt1 = reg.getDx() & 0xffff;

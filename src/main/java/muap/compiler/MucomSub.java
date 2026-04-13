@@ -233,7 +233,7 @@ public class MucomSub {
             linePos.chipNumber = 0;
             linePos.ch = (byte) work.crntChannel;
             linePos.part = work.crntPart;
-            MmlDatum md = new MmlDatum(r.al, MMLType.Instrument, linePos, 0, (int) (r.ah & 0xff));
+            MmlDatum md = new MmlDatum(r.al, MMLType.Instrument, linePos, 0, r.ah & 0xff);
             md = work.FlashLstMd(md);
             muap98.objectBuf.set(r.di, md);
 
@@ -277,7 +277,7 @@ public class MucomSub {
     private void xchg_tone() {
         r.push(r.ds);
         r.push(r.getSi());
-        r.ds = (short) muap98.text;
+        r.ds = (short) Muap98.text;
         r.setSi((short) 0); // TONEOFS // DS:SI = address of tone replacement table
         r.dh = 0;
         r.setSi((short) ((r.getSi() & 0xffff) + (r.getDx() & 0xffff)));
@@ -299,7 +299,7 @@ public class MucomSub {
         mucom2.rednums(); // AL = Destination tone number
         r.push(r.ds);
         r.push(r.getSi());
-        r.ds = (short) muap98.text;
+        r.ds = (short) Muap98.text;
         r.setSi((short) 0); // DS:SI = address of tone replacement table
         r.dh = 0;
         r.setSi((short) ((r.getSi() & 0xffff) + (r.getDx() & 0xffff))); // SI = Address of the corresponding tone
@@ -388,7 +388,7 @@ public class MucomSub {
         r.dl = 127;
         read_check(); // Level
         chkcm();
-        r.dl = (byte) (mucom2.MAXBUF - 2);
+        r.dl = (byte) (Mucom2.MAXBUF - 2);
         read_check(); // Delay time
     }
 
@@ -1317,7 +1317,7 @@ public class MucomSub {
             lp.chip = work.crntChip;
             lp.ch = (byte) work.crntChannel;
             lp.part = work.crntPart;
-            MmlDatum md = new MmlDatum(r.al, MMLType.Pan, lp, (int) (r.ah & 0xff));
+            MmlDatum md = new MmlDatum(r.al, MMLType.Pan, lp, r.ah & 0xff);
             md = work.FlashLstMd(md);
             muap98.objectBuf.set(r.di++, md); // Store rest
             muap98.objectBuf.set(r.di++, new MmlDatum(r.ah));
@@ -3265,7 +3265,7 @@ public class MucomSub {
         r.setBx(r.getAx());
         r.setBx((short) ((r.getBx() & 0xffff) << 2));
         r.setBx((short) ((r.getBx() + 0) & 0xffff));// MUCOM2.IFSTACK;
-        r.ds = (short) muap98.text; // mov ds,text ; DS:BX = address of IF stack
+        r.ds = (short) Muap98.text; // mov ds,text ; DS:BX = address of IF stack
         r.setAx((short) ((mucom2.IFSTACKbuf[r.getBx() & 0xffff] & 0xff) | ((mucom2.IFSTACKbuf[(r.getBx() + 1) & 0xffff] & 0xff) << 8)));
         if (r.al == r.dl) {
             boolean flg = false;
@@ -4020,7 +4020,7 @@ public class MucomSub {
             while (dlVal != 0) {
                 r.al = muap98.sourceBuf[r.getBx() & 0xffff];
                 r.setBx((short) ((r.getBx() & 0xffff) + 1));
-                if ((r.al & 0xff) == 0xff || (r.getBx() & 0xffff) >= muap98.buflens) {
+                if ((r.al & 0xff) == 0xff || (r.getBx() & 0xffff) >= Muap98.buflens) {
                     // EOF? or source buffer exceeded?
                     chk_err0();
                     return;
@@ -4085,7 +4085,7 @@ public class MucomSub {
             mucom2.macroflg = r.pop();
 
             r.push(r.getAx());
-            r.setAx((short) (muap98.bufleno - 0x10)); // is performance buffer exceeded?
+            r.setAx((short) (Muap98.bufleno - 0x10)); // is performance buffer exceeded?
             r.carry = (r.di < (r.getAx() & 0xffff));
             r.cl = 2;
             r.setAx(r.pop());
@@ -4141,7 +4141,7 @@ public class MucomSub {
      */
     private void chkcall() {
         while (true) {
-            if ((r.getBx() & 0xffff) >= muap98.buflens) {
+            if ((r.getBx() & 0xffff) >= Muap98.buflens) {
                 // source buffer END?
                 chk_err0();
                 return;
