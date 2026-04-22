@@ -9,7 +9,6 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 
@@ -21,20 +20,23 @@ import dotnet4j.util.compat.Tuple3;
 import muap.common.MusException;
 import muap.common.X86Register;
 import musicDriverInterface.CompilerInfo;
-import musicDriverInterface.MetaData;
 import musicDriverInterface.ICompiler;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
 import musicDriverInterface.common.AutoExtendList;
 
 
 /**
- * Main compiler class for muapDotNET implementing the iCompiler interface.
+ * Main compiler class for muap implementing the iCompiler interface.
+ * <p></p>
+ * system. property
+ * <li>{@code muap.dir.dta} ... {@code tones.dta} file path</li>
  */
 public class Compiler implements ICompiler {
 
     private static final Logger logger = System.getLogger(Compiler.class.getName());
 
-    private static final ResourceBundle rb = ResourceBundle.getBundle("messages");
+    private static final ResourceBundle rb = ResourceBundle.getBundle("muap/message");
 
     private byte[] srcBuf = null;
     private Work work = null;
@@ -43,6 +45,9 @@ public class Compiler implements ICompiler {
     public Compiler() {
     }
 
+    /**
+     * @return null compile error
+     */
     @Override
     public MmlDatum[] compile(Stream sourceMML, Function<String, Stream> appendFileReaderCallback) {
         Muap98 muap98 = null;
@@ -54,9 +59,9 @@ public class Compiler implements ICompiler {
             X86Register r = new X86Register();
 
             // Get environment variables to check for DTA path
-            Map<String, String> envVars = System.getenv();
-            if (envVars.containsKey("DTA")) {
-                tone_path = new File(envVars.get("DTA"), tone_path).getPath();
+            String dta = System.getProperty("muap.dir.dta");
+            if (dta != null) {
+                tone_path = new File(dta, tone_path).getPath();
             }
 
             muap98 = new Muap98(srcBuf, r, tone_path, work);
@@ -87,14 +92,25 @@ public class Compiler implements ICompiler {
             return obj.toArray(new MmlDatum[0]);
         } catch (MusException me) {
             // Log known compiler exceptions
+            logger.log(Level.TRACE, me.getMessage(), me);
             logger.log(Level.ERROR, me.getMessage());
         } catch (Exception e) {
             if (work.compilerInfo == null) work.compilerInfo = new CompilerInfo();
             work.compilerInfo.errorList.add(new Tuple3<>(-1, -1, e.getMessage()));
-            logger.log(Level.ERROR, String.format(rb.getString("E0000"), e.getMessage()), e);
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
 
-        // Removed Debug block containing hex dump for brevity
+//#if DEBUG
+//        if (muap98 != null) {
+//            for (int j = 0; j < 16 * 16; j++) {
+//                StringBuilder hex = new StringBuilder(String.format("%02X: ", j * 16));
+//                for (int i = 0; i < 16; i++) {
+//                    hex.append(String.format("%02X ", muap98.objectBuf.get(i + j * 16).dat));
+//                }
+//                logger.log(Level.TRACE, hex.toString());
+//            }
+//        }
+//#endif
 
         return null;
     }

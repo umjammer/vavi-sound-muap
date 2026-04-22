@@ -37,7 +37,7 @@ public class Mucom2 {
     }
 
     public void init() {
-        InitJpdata();
+        initJpData();
         InitCalltbl();
     }
 
@@ -55,9 +55,9 @@ public class Mucom2 {
 
     public void stosbObjBufAL2DI(MmlDatum md) {
         if (md == null)
-            muap98.objectBuf.set(r.di++, new MmlDatum(r.al));
+            muap98.objectBuf.set(r.di++, new MmlDatum(r.al & 0xff));
         else {
-            MmlDatum md2 = new MmlDatum(md.type, md.args, md.linePos, r.al);
+            MmlDatum md2 = new MmlDatum(md.type, md.args, md.linePos, r.al & 0xff);
             muap98.objectBuf.set(r.di++, md2);
         }
     }
@@ -68,12 +68,12 @@ public class Mucom2 {
 
     public void stoswObjBufAX2DI(MmlDatum md) {
         if (md == null)
-            muap98.objectBuf.set(r.di++, new MmlDatum(r.al));
+            muap98.objectBuf.set(r.di++, new MmlDatum(r.al & 0xff));
         else {
-            MmlDatum md2 = new MmlDatum(md.type, md.args, md.linePos, r.al);
+            MmlDatum md2 = new MmlDatum(md.type, md.args, md.linePos, r.al & 0xff);
             muap98.objectBuf.set(r.di++, md2);
         }
-        muap98.objectBuf.set(r.di++, new MmlDatum(r.ah));
+        muap98.objectBuf.set(r.di++, new MmlDatum(r.ah & 0xff));
     }
 
     public void stoswObjBufAX2DI() {
@@ -290,7 +290,7 @@ public class Mucom2 {
         r.push(r.getDx());
         r.setDx((short) ((r.getDx() & 0xffff) >> 4));
         r.al = r.ah;
-        r.setAx(r.al);
+        r.setAx(/* sigend */ r.al);
         int ans = r.getAx() * r.getDx();
         r.setDx((short) (ans >> 16));
         r.setAx((short) ans);
@@ -657,7 +657,7 @@ public class Mucom2 {
         mucomsub.pan_init(); // Initialize auto-pan
         r.setSi(r.pop());
         r.setAx((short) 0);
-        if (r.ch < 10 || r.ch > 11) {
+        if ((r.ch & 0xff) < 10 || (r.ch & 0xff) > 11) {
 //winit2:
             r.setAx((short) ((r.getAx() & 0xffff) + 1));
         }
@@ -828,7 +828,7 @@ public class Mucom2 {
 //dspch2:
         for (int i = 0; i < 4; i++) {
             locatex = MXPOS + 12; // Display channel number
-            putstr("+{0,2:D}", curNum);
+            putstr("%+02d", curNum);
             curNum += 5;
             locatey++;
         }
@@ -848,10 +848,10 @@ public class Mucom2 {
         r.di = OBJTOP; // DI = performance data storage area start address
         bef_len = r.di;
         disave = 0; // disave = Music performance data pointer storage start address
-        muap98.objectBuf.set(0, new MmlDatum((byte) r.di)); // Set start position for channel 1 data storage
-        muap98.objectBuf.set(1, new MmlDatum((byte) (r.di >> 8)));
-        muap98.objectBuf.set(0x24, new MmlDatum(r.bl)); // Initialize user PCM offset
-        muap98.objectBuf.set(0x25, new MmlDatum(r.bh));
+        muap98.objectBuf.set(0, new MmlDatum(r.di & 0xff)); // Set start position for channel 1 data storage
+        muap98.objectBuf.set(1, new MmlDatum((r.di >> 8) & 0xff));
+        muap98.objectBuf.set(0x24, new MmlDatum(r.bl & 0xff)); // Initialize user PCM offset
+        muap98.objectBuf.set(0x25, new MmlDatum(r.bh & 0xff));
         r.ch = 1; // CH = channel number (1-17)
         spsave = r.sp;
         r.ds = (short) Muap98.source; // DS = Source SEG, ES = Performance SEG
@@ -860,9 +860,9 @@ public class Mucom2 {
 
 //recov8_:
         while (true) {
-            work.crntChip = r.ch < 12 ? "YM2608" : "YM3438";
+            work.crntChip = (r.ch & 0xff) < 12 ? "YM2608" : "YM3438";
             work.crntChannel = (r.ch - 1);
-            work.crntPart = r.ch < 4 ? "FM" : r.ch < 7 ? "SSG" : r.ch == 10 ? "RHYTHM" : r.ch == 11 ? "ADPCM" : "FM";
+            work.crntPart = (r.ch & 0xff) < 4 ? "FM" : (r.ch & 0xff) < 7 ? "SSG" : r.ch == 10 ? "RHYTHM" : r.ch == 11 ? "ADPCM" : "FM";
             try {
                 recov8();
             } catch (MusCompileEndException mcee) {
@@ -961,10 +961,10 @@ public class Mucom2 {
 //abort3:
                     // Make it unplayable
                     for (int i = 0; i < 34; i += 2) {
-                        muap98.objectBuf.set(i, new MmlDatum(r.al));
-                        muap98.objectBuf.set(i + 1, new MmlDatum(r.ah));
+                        muap98.objectBuf.set(i, new MmlDatum(r.al & 0xff));
+                        muap98.objectBuf.set(i + 1, new MmlDatum(r.ah & 0xff));
                     }
-                    muap98.objectBuf.set(OBJTOP, new MmlDatum((byte) 0xfc));
+                    muap98.objectBuf.set(OBJTOP, new MmlDatum(0xfc));
                     r.ds = r.cs;
                     r.cl = 1; // Make it an error
                 }
@@ -993,13 +993,13 @@ public class Mucom2 {
             r.ch = ope_no; // Search channel number
             if (chkpart()) return true; // Acquire 1 character of source content in AL
 //skip_num:
-            if (r.al >= '1' && r.al <= '9') break;
+            if ((r.al & 0xff) >= '1' && (r.al & 0xff) <= '9') break;
         }
         boolean s = true;
         r.dl = (byte) (r.al - '0'); // AL = 1-9
         if (r.dl == 1) { // Channel 1 or 10-17
             if (chkpart()) return true; // Check for 10-17
-            if (r.al < '0' || r.al > '7') s = false;
+            if ((r.al & 0xff) < '0' || (r.al & 0xff) > '7') s = false;
             else r.dl = (byte) (r.al - 38); // AL = 10-17
         }
         if (s) {
@@ -1061,11 +1061,11 @@ public class Mucom2 {
         if ((r.dl & 0xff) > (r.ch & 0xff)) return 0; // Compare start channel number with current
         r.dh = r.dl; // Start channel number
         chkpart(); // Check if next of - is a number
-        if (r.al < '1' || r.al > '9') return 0; // Not a number
+        if ((r.al & 0xff) < '1' || (r.al & 0xff) > '9') return 0; // Not a number
         r.dl = (byte) (r.al - '0'); // AL = 1-9
         if (r.dl == 1) { // Channel 1 or 10-17
             chkpart();
-            if (r.al >= '0' && r.al <= '7') r.dl = (byte) (r.al - 38); // Check for 10-17
+            if ((r.al & 0xff) >= '0' && (r.al & 0xff) <= '7') r.dl = (byte) (r.al - 38); // Check for 10-17
         }
 
 //skip_chk2:
@@ -1220,24 +1220,47 @@ public class Mucom2 {
         }
 
         r.al = (byte) 0xfc; // Store stop code
-        muap98.objectBuf.set(r.di++, new MmlDatum(r.al));
+        muap98.objectBuf.set(r.di++, new MmlDatum(r.al & 0xff));
 
         check_calplay(); // cal* call?
         if (r.zero) {
             // Display object amount
             r.push((short) (locatex | (locatey << 8)));
-            r.setAx((short) (r.ch - 1));
+            r.setAx((short) ((r.ch & 0xff) - 1));
             r.div((byte) 5); // AL = Vertical position, AH = Horizontal position
-            locatey = (byte) (r.al + MYPOS + 1); // Set vertical position
-            locatex = (byte) ((r.ah << 3) + MXPOS + 16);
+            locatey = (byte) ((r.al & 0xff) + MYPOS + 1); // Set vertical position
+            locatex = (byte) (((r.ah & 0xff) << 3) + MXPOS + 16);
             int dataLen = (r.di & 0xffff) - bef_len; // Difference in data amount from previous channel
             bef_len = r.di & 0xffff;
             attr = (byte) 0xe1;
             if ((ifflag & 1) != 0) attr = (byte) 0x81; // When executed @if then etc.
 
-            // totalen etc. (logic omitted but follows original)
+//exeif1:
+            // Update maxlen[] if alllen[] is greater
+            int alllenHi = alllen[1] & 0xffff;
+            int alllenLo = alllen[0] & 0xffff;
+            int maxlenHi = maxlen[1] & 0xffff;
+            int maxlenLo = maxlen[0] & 0xffff;
+            r.zero = (alllenHi == maxlenHi);
+            r.carry = (alllenHi < maxlenHi);
+            if (!r.carry) {
+                boolean flg1 = false;
+                if (r.zero) {
+                    if (alllenLo <= maxlenLo) {
+                        flg1 = true;
+                    }
+                }
+                if (!flg1) {
+//maxchk2:
+                    maxlen[0] = (short) alllenLo;
+                    maxlen[1] = (short) alllenHi;
+                }
+            }
+//maxchk1:
+            // Skip the divsafe display logic (no terminal output);
+            // still record per-channel total length for compilerInfo.
             if (work.compilerInfo.totalCount == null) work.compilerInfo.totalCount = new ArrayList<>();
-            work.compilerInfo.totalCount.add((alllen[1] << 16) | alllen[0]);
+            work.compilerInfo.totalCount.add((alllenHi << 16) | alllenLo);
 
             short ans = r.pop();
             locatex = (byte) ans;
@@ -1245,15 +1268,17 @@ public class Mucom2 {
         }
 
 //selcal4:
+        r.push(r.getCx()); // Save CX (CH = channel number to be restored after pass 2)
         int startAdr = (muap98.objectBuf.get(disave).dat & 0xff) | ((muap98.objectBuf.get(disave + 1).dat & 0xff) << 8); // First address of performance data of this channel
         r.setBx((short) startAdr);
         r.ch = 0; // Local label specification
         set_labeladrs(); // Execute pass 2
+        r.setCx(r.pop()); // Restore CX (CH = original channel number)
         r.ch++; // To next channel
         if ((r.ch & 0xff) > 17) throw new MusCompileEndException();
         disave += 2; // Set next performance storage address
-        muap98.objectBuf.set(disave, new MmlDatum((byte) r.di));
-        muap98.objectBuf.set(disave + 1, new MmlDatum((byte) (r.di >> 8)));
+        muap98.objectBuf.set(disave, new MmlDatum(r.di & 0xff));
+        muap98.objectBuf.set(disave + 1, new MmlDatum((r.di >> 8) & 0xff));
         throw new MusRecov8Exception();
     }
 
@@ -1333,8 +1358,10 @@ public class Mucom2 {
                 continue;
             }
 
-            int skip = skipbyte[0x100 - opcode] & 0xff;
-            r.setBx((short) ((r.getBx() & 0xffff) + skip));
+            // C# uses (sbyte)al sign-extended into si and `si = 0xffff - si`,
+            // so for control codes 0xCE-0xFF this becomes index 0xff - opcode.
+            int skip = skipbyte[0xff - opcode] & 0xff;
+            r.setBx((short) ((r.getBx() & 0xffff) + skip)); // Add the skip count
         }
     }
 
@@ -1357,8 +1384,8 @@ public class Mucom2 {
             error();
             return;
         }
-        muap98.objectBuf.set(r.getBx() & 0xffff, new MmlDatum((byte) offset));
-        muap98.objectBuf.set((r.getBx() & 0xffff) + 1, new MmlDatum((byte) (offset >> 8)));
+        muap98.objectBuf.set(r.getBx() & 0xffff, new MmlDatum(offset & 0xff));
+        muap98.objectBuf.set((r.getBx() & 0xffff) + 1, new MmlDatum((offset >> 8) & 0xff));
 //local2:
         r.setBx((short) ((r.getBx() & 0xffff) + 2));
     }
@@ -1367,13 +1394,13 @@ public class Mucom2 {
      * Setting the jump destination address of the branch instruction.
      */
     private void find_then() {
-        muap98.objectBuf.set((r.getBx() & 0xffff) - 1, new MmlDatum((byte) 0xe4));
+        muap98.objectBuf.set((r.getBx() & 0xffff) - 1, new MmlDatum(0xe4));
 //set_jump:
         r.setBx((short) ((r.getBx() & 0xffff) + 4));
     }
 
     private void find_exit() {
-        muap98.objectBuf.set((r.getBx() & 0xffff) - 1, new MmlDatum((byte) 0xd3));
+        muap98.objectBuf.set((r.getBx() & 0xffff) - 1, new MmlDatum(0xd3));
 //set_jump:
         r.setBx((short) ((r.getBx() & 0xffff) + 4));
     }
@@ -1410,12 +1437,12 @@ public class Mucom2 {
                         // if (r.zero) { error(); return; }
                         // Java find_jp:
                         // int offset = adr - (r.getBx() & 0xffff) + 1;
-                        // muap98.objectBuf.set(r.getBx() & 0xffff, new MmlDatum((byte) offset));
+                        // muap98.objectBuf.set(r.getBx() & 0xffff, new MmlDatum(offset & 0xff));
                         // It seems Java missed the offset check logic too. But instruction is "only edit comment blocks".
                         // I will stick to comments.
                     }
-                    muap98.objectBuf.set(r.getBx() & 0xffff, new MmlDatum((byte) offset));
-                    muap98.objectBuf.set((r.getBx() & 0xffff) + 1, new MmlDatum((byte) (offset >> 8)));
+                    muap98.objectBuf.set(r.getBx() & 0xffff, new MmlDatum(offset & 0xff));
+                    muap98.objectBuf.set((r.getBx() & 0xffff) + 1, new MmlDatum((offset >> 8) & 0xff));
                 }
             }
 //local2:
@@ -1446,22 +1473,28 @@ public class Mucom2 {
         r.ch = 1;
         set_labeladrs();
         r.ds = r.cs;
-        muap98.obj_len = r.di;
-        muap98.objectBuf.set(SYMDTA, new MmlDatum(symbol2));
-        muap98.objectBuf.set(0x26, new MmlDatum((byte) maxlen[0]));
-        muap98.objectBuf.set(0x27, new MmlDatum((byte) (maxlen[0] >> 8)));
-        muap98.objectBuf.set(0x28, new MmlDatum((byte) maxlen[1]));
-        muap98.objectBuf.set(0x29, new MmlDatum((byte) (maxlen[1] >> 8)));
+        muap98.obj_len = r.di & 0xffff;
+        muap98.objectBuf.set(SYMDTA, new MmlDatum(symbol2 & 0xff));
+        muap98.objectBuf.set(0x26, new MmlDatum(maxlen[0] & 0xff));
+        muap98.objectBuf.set(0x27, new MmlDatum((maxlen[0] >> 8) & 0xff));
+        muap98.objectBuf.set(0x28, new MmlDatum(maxlen[1] & 0xff));
+        muap98.objectBuf.set(0x29, new MmlDatum((maxlen[1] >> 8) & 0xff));
 
         check_calplay();
         if (r.zero) {
             locatex = MXPOS + 1;
             locatey = MYPOS + 6;
             putword(mess_7);
-            putstr("{0,5}", (int) r.di);
+            putstr(" %5d", r.di & 0xffff);
             putword(mess_8);
-            // Cleanup object buffer beyond di
+            // Trim trailing pre-allocated empty slots so the output binary
+            // is exactly r.di bytes long (mirrors C# object_Buf.RemoveAll(r.ax)).
+            int objLen = r.di & 0xffff;
+            if (objLen < muap98.objectBuf.size()) {
+                muap98.objectBuf.subList(objLen, muap98.objectBuf.size()).clear();
+            }
         }
+        r.setCx((short) 0); // CX = error flag clear (C# parity)
         bxsave = 0xffff;
         com_end2();
     }
@@ -1492,35 +1525,43 @@ public class Mucom2 {
         r.es = r.cs;
         r.sp = spsave;
         clbuff();
-        check_calplay();
+        check_calplay(); // Calling cal*?
+
         String errMsg = "";
         if (r.zero) {
+            //c94:
             attr = (byte) 0xe1;
-            r.di = 0;
+            r.di = 0; //ofs:bufbuf	; DS:DI = Error message storage address
             r.push((short) 0);
             stamode = 1;
             r.ah = 0;
-            r.setAx((short) (r.cl & 0xff));
-            dsp2dec();
+            r.setAx((short) (r.cl & 0xff)); // AX = Error number
+            dsp2dec(); // The error number is stored in bufbuf.
             stamode = 0;
-            muap98.bufbuf[r.di] = '$';
+            muap98.bufbuf[r.di & 0xffff] = '$';
             r.di++;
             r.di = r.pop();
             r.ah = 1;
-            call_func();
+            call_func(); // The CALL side forwards the error message to bufbuf.
+
+//error_disp1:
             locatex = MXPOS + 1;
             locatey = MYPOS + 6;
             errMsg = calerror1[(r.cl & 0xff) - 1].replace("$", "") + mess_5.replace("$", "");
+
             attr = (byte) (((attr & 0x1f) | (((attr >> 5) + 1) << 5)));
+
             r.ah = 1;
             pc98_Int18();
         }
+//selcal3:
         r.cl = 1;
-        com_end2();
-        String msg = String.format("Error %s at line %d", errMsg, linedta);
+        com_end2(); // Set an error flag.
+
+        String msg = "Error %s at line %d".formatted(errMsg, linedta);
         if (work.compilerInfo == null) work.compilerInfo = new CompilerInfo();
         work.compilerInfo.errorList.add(new Tuple3<>((linedta - 1), -1, msg));
-        throw new RuntimeException(new MusException(String.format("%s in %d", errMsg, linedta)));
+        throw new MusException("%s in %d".formatted(errMsg, linedta));
     }
 
     /**
@@ -1533,75 +1574,78 @@ public class Mucom2 {
     public void com_main() {
         work.md = null;
         r.push(r.di);
-        int nextChar = (r.getBx() & 0xffff) < muap98.sourceBuf.length ? muap98.sourceBuf[r.getBx() & 0xffff] : 0;
+        int nextChar = (r.getBx() & 0xffff) < muap98.sourceBuf.length ? muap98.sourceBuf[r.getBx() & 0xffff] : 0; // The next letter is also acquired.
         r.ah = (byte) nextChar;
-        if (mac_mod != 0) {
+        if (mac_mod != 0) { // Lowercase/Uppercase macro mode?
             if ((mac_mod & 2) == 0) {
 //com4:
-                if (r.al >= 'a' && r.al <= 'z') {
+                if ((r.al & 0xff) >= 'a' && (r.al & 0xff) <= 'z') { // Lowercase range
 //com5:
                     r.di = r.pop();
-                    mucomsub.macro_exec();
+                    mucomsub.macro_exec(); // Switch to single-character macro mode
                     return;
                 }
             } else {
-                if (r.al >= 'A' && r.al <= 'Z') {
+                if ((r.al & 0xff) >= 'A' && (r.al & 0xff) <= 'Z') { // Is it limited to uppercase letters?
 //com5:
                     r.di = r.pop();
-                    mucomsub.macro_exec();
+                    mucomsub.macro_exec(); // Switch to single-character macro mode
                     return;
                 }
             }
         }
 //com3:
         r.cl = 32;
-        if ((r.al & 0xff) <= ' ') {
+        if ((r.al & 0xff) <= ' ') { // Control characters are errors
             error();
             return;
         }
-        if ((r.al & 0xff) > '~') {
+        if ((r.al & 0xff) > '~') { // GRPH, kana is an error
             error();
             return;
         }
-        if (r.al >= 'a' && r.al <= 'z') r.al -= 32;
-        else if (r.al >= '{') {
+        if ((r.al & 0xff) <= 'z') {
+            if ((r.al & 0xff) >= 'a') {
+                r.al -= 'a' - 'A'; // Lowercase to Uppercase conversion
+            }
+        } else if ((r.al & 0xff) >= '{') {
 //com1:
-            r.al -= 0x1b;
+            r.al -= '{' - 0x60; // {|}~ = Converted to 60,61,62,63h
         }
-
 //com2:
         r.push(r.getAx());
         int tblIdx = ((r.al & 0xff) - '!') * 2;
         r.setDx((short) tblIdx);
         r.setAx(r.pop());
         r.di = r.pop();
-        jpdata[tblIdx / 2].run();
+ logger.log(Level.ERROR, "error: tblIdx: %c".formatted((char) tblIdx));
+        jpData[tblIdx / 2].run();
     }
 
-    private Runnable[] jpdata;
+    private Runnable[] jpData;
 
     /**
      * MML command jump table initialization
      */
-    private void InitJpdata() {
-        jpdata = new Runnable[] {
-                this::acc, this::stak, this::error, mucomsub::dtcall, // !"#$
-                this::error, this::tie, mucomsub::wait_r, mucomsub::nloop1, // %&'(
-                mucomsub::nloop2, this::mloop, this::error, this::error, // )*+,
-                this::error, this::error, mucomsub::harm_onpu, this::error, // -./0
-                this::error, this::error, this::error, this::error, // 1234
-                this::error, this::error, this::error, this::error, // 5678
-                this::error, this::error, this::error, this::octdown, // 9:;<
-                this::error, this::octup, this::unacc, mucomsub::exp_cmd, // =>?@
-                this::unexst, this::unexst, this::unexst, this::unexst, // ABCD
-                this::unexst, this::unexst, this::unexst, mucomsub::reghex, // EFGH
-                this::error, this::error, mucomsub::rhyexp, this::mlength, // IJKL
+    private void initJpData() {
+        jpData = new Runnable[] {
+                this::acc, this::stak, this::error, mucomsub::dtcall,                // !"#$
+                this::error, this::tie, mucomsub::wait_r, mucomsub::nloop1,          // %&'(
+                mucomsub::nloop2, this::mloop, this::error, this::error,             // )*+,
+                this::error, this::error, mucomsub::harm_onpu, this::error,          // -./0
+                this::error, this::error, this::error, this::error,                  // 1234
+                this::error, this::error, this::error, this::error,                  // 5678
+                this::error, this::error, this::error, this::octdown,                // 9:;<
+                this::error, this::octup, this::unacc, mucomsub::exp_cmd,            // =>?@
+                this::unexst, this::unexst, this::unexst, this::unexst,              // ABCD
+                this::unexst, this::unexst, this::unexst, mucomsub::reghex,          // EFGH
+                this::error, this::error, mucomsub::rhyexp, this::mlength,           // IJKL
                 mucomsub::env_speed, mucomsub::noise, this::oct, mucomsub::envelope, // MNOP
-                this::ratio, this::rest, mucomsub::env_type, this::tempo, // QRST
-                this::error, this::volume, mucomsub::porta, this::value, // UVWX
-                mucomsub::reg, mucomsub::usr_tone, this::error, this::error, // YZ[\
-                this::error, this::error, mucomsub::icho, this::renpu, // ]^_{
-                this::error, this::error, this::tie2 // |}~
+                this::ratio, this::rest, mucomsub::env_type, this::tempo,            // QRST
+                this::error, this::volume, mucomsub::porta, this::value,             // UVWX
+                mucomsub::reg, mucomsub::usr_tone, this::error, this::error,         // YZ[\
+                this::error, this::error, mucomsub::icho, this::renpu,               // ]^_{
+                this::error, this::error, this::tie2                                 // |}~
         };
     }
 
@@ -1615,41 +1659,44 @@ public class Mucom2 {
         lp.part = work.crntPart;
         MmlDatum md = new MmlDatum(MMLType.Note, new ArrayList<>(Arrays.asList(0, 0)), lp, 0);
         work.md = work.FlashLstMd(md);
-        set_symbol2();
-        check_comlen();
+
+        set_symbol2(); // ソース番地の格納
+        check_comlen(); // 色変わり歌詞のチェック
         if (codemod != 0) {
-            code_change();
+            code_change(); // コード指定へ
             return;
         }
-        if (r.ch == 10) {
+        if (r.ch == 10) { // リズム音源か
             mucomsub.rhyexp();
             return;
         }
-        r.push(r.getAx());
+        r.push(r.getAx()); // CDEFGABのみ
         r.al = muap98.sourceBuf[r.getBx() & 0xffff];
-        gethenon();
-        tnelnmx();
-        lensave = r.al;
+        gethenon(); // #+-%をチェックしてDLに返す
+        tnelnmx(); // 音長チェック(AL)
+        lensave = r.al; // 音長を保存
         work.md.args.set(work.mdArgsStep + 1, work.otoLength);
-        r.setAx(r.pop());
+        r.setAx(r.pop()); // AL = 中間コード DL = 変音データ
+
         if (harmno != 0) {
-            harm_mode();
+            harm_mode(); // 和音モードのチェック
             return;
         }
         if (arpharm != 0) {
-            arp_press0();
+            arp_press0(); // 縮小アルペジョのチェック
             return;
         }
+
         r.push(r.getAx());
-        r.al = lensave;
+        r.al = lensave; // 音長を格納する
         tnelnx();
         r.setAx(r.pop());
-        mucomsub.read();
+        mucomsub.read(); // 音符から実際の設定値を計算
         reset_arp();
     }
 
     private void reset_arp() {
-        arpmode = 0;
+        arpmode = 0; // アルペジョモードのクリア
     }
 
     /**
@@ -1657,12 +1704,14 @@ public class Mucom2 {
      */
     public void set_symbol2() {
         if ((symbol2 & 1) != 0) {
+            // マクロ内部も無条件出力
+            // マクロ中か
             if ((symbol2 & 2) != 0 || nest2 == 0) {
 //not_sym2:
-                muap98.objectBuf.set(r.di++, new MmlDatum((byte) 0xe7));
+                muap98.objectBuf.set(r.di++, new MmlDatum(0xe7)); // シンボリック情報コード
                 int adr = (r.getBx() & 0xffff) - 1;
-                muap98.objectBuf.set(r.di++, new MmlDatum((byte) adr));
-                muap98.objectBuf.set(r.di++, new MmlDatum((byte) (adr >> 8)));
+                muap98.objectBuf.set(r.di++, new MmlDatum(adr & 0xff));
+                muap98.objectBuf.set(r.di++, new MmlDatum((adr >> 8) & 0xff)); // ソースデータの現在値を出力
             }
         }
 //not_sym1:
@@ -1680,8 +1729,8 @@ public class Mucom2 {
             return;
         }
         r.dl = lensave;
-        kyufu();
-        reset_arp();
+        kyufu(); // 音長､圧縮式休符(FF)を格納
+        reset_arp(); // アルペジョモードのクリア
     }
 
     /**
@@ -1689,24 +1738,26 @@ public class Mucom2 {
      */
     private void set_honpu() {
         if (arpmode != 0) {
-            if (arpharm != 0) {
+            // アルペジョモードか
+            if (arpharm != 0) { // 縮小アルペジョモードか
                 arp_press();
                 return;
             }
             get_arprest();
         }
+
 //set_hon1:
-        r.push(octdata);
+        r.push(octdata); // オクターブ値は保存しておく
         get_harm();
         r.push(r.getAx());
         r.al = muap98.sourceBuf[r.getBx() & 0xffff];
-        gethenon();
+        gethenon(); // 調音記号チェック
         r.al = lensave;
-        tnelnx();
+        tnelnx(); // 音長の格納(最初に指定された物)
         r.setAx(r.pop());
-        mucomsub.read();
-        octdata = (byte) r.pop();
-        mucomsub.harm_onpu();
+        mucomsub.read(); // 和音の音符格納
+        octdata = (byte) r.pop(); // コロンの次へ
+        mucomsub.harm_onpu(); // アルペジョモードのクリア
         reset_arp();
     }
 
@@ -1716,30 +1767,31 @@ public class Mucom2 {
      *       DL = [arpharm]
      */
     private void arp_press0() {
-        r.push(octdata);
+        r.push(octdata); // オクターブ値は保存しておく
         r.push(r.getAx());
         if (arpp6() != 0) arpp4();
     }
 
     private void arp_press() {
         if ((r.dl & 0xff) <= (harmno & 0xff)) {
+            // 現在の和音モードは範囲外か
             r.dl = lensave;
             kyufu();
-            mucomsub.harm_onpu();
+            mucomsub.harm_onpu(); // 全て休符を格納する
             reset_arp();
             return;
         }
-        get_arprest();
+        get_arprest(); // 最初の休符を格納
         arpp4();
     }
 
     private void arpp4() {
         while (true) {
-            r.push(octdata);
+            r.push(octdata); // オクターブ値は保存しておく
             get_harm();
-            r.push(r.getAx());
+            r.push(r.getAx()); // AL = 音符コード
             r.al = muap98.sourceBuf[r.getBx() & 0xffff];
-            gethenon();
+            gethenon(); // 調音記号チェック
             if (arpp6() == 0) break;
         }
     }
@@ -1747,46 +1799,48 @@ public class Mucom2 {
     private int arpp6() {
         r.push(r.getDx());
         r.al = arpharm;
-        get_defarp();
-        int mul = (r.al & 0xff) * (r.dl & 0xff);
+        get_defarp(); // DL = アルペジョ音長
+        int mul = (r.al & 0xff) * (r.dl & 0xff); // AL = 発音する音長
         r.carry = (lensave & 0xff) < mul;
-        lensave = (byte) ((lensave & 0xff) - mul);
+        lensave = (byte) ((lensave & 0xff) - mul); // 残りの音長を計算
         if (r.carry) {
             error();
-            return 0;
+            return 0; // 音長が不足
         }
-        int prevDi = r.di;
-        tnelnx();
+        int prevDi = r.di; // SI = 直前に音長を格納した番地
+        tnelnx(); // 音長の格納(最初に指定された物)
         r.setAx(r.pop());
-        mucomsub.read();
+        mucomsub.read(); // 和音の音符格納
         octdata = (byte) r.pop();
-        byte skipCount = arpharm;
+        byte skipCount = arpharm; // DLの数だけ"/"を飛ばす
 //arpp3:
         while (true) {
-            r.al = muap98.sourceBuf[r.getBx() & 0xffff];
-            mucomsub.xsmall();
+            r.al = muap98.sourceBuf[r.getBx() & 0xffff]; // 指定先の音符まで移動
+            mucomsub.xsmall(); // 大文字変換
             r.setBx((short) ((r.getBx() & 0xffff) + 1));
             if ((r.al & 0xff) >= 0xfe) {
+                // CR,LF,EOF なら error end
                 error();
                 return 0;
             }
             if (r.al == ':') break;
             if (r.al == '/') {
 //arpp2:
-                skipCount--;
-                if (skipCount == 0) return 1;
+                skipCount--; // "/"が指定個数あるまで繰り返す
+                if (skipCount == 0) return 1; // arpp4へ// 次の音符を格納
             } else if (r.al == '@') {
                 r.push(r.getDx());
                 r.push((short) prevDi);
                 r.push(octdata);
                 mode[0] |= 4;
-                mucomsub.exp_cmd();
+                mucomsub.exp_cmd(); // @ 系コマンドの実行(@+,@-,@%)
                 octdata = (byte) r.pop();
                 r.di = r.pop();
                 r.setDx(r.pop());
             }
         }
 //arpp1:
+        // TODO FUKIN' GEMINI3 OMITTED TO TRANSLATE CODES BELOW BRAKING MY ORDER
         // Logic for handling f4/fa codes... (omitted)
         reset_arp();
         return 0;
@@ -2427,25 +2481,25 @@ public class Mucom2 {
                     return;
                 }
                 r.ch = muap98.sourceBuf[(r.getBx() & 0xffff) + 1];
-                if ((r.ch & 0xff) >= (byte) 'a') {
+                if ((r.ch & 0xff) >= 'a') {
                     r.ch = (byte) ((r.ch & 0xff) - 0x20);
                 }
-                if (r.ch == (byte) '>') {
+                if (r.ch == '>') {
 //tne_end:
                     r.setCx(r.pop());
                     r.setDx(r.pop()); // End addition
                     return;
                 }
-                if (r.ch == (byte) '<') {
+                if (r.ch == '<') {
 //tne_end:
                     r.setCx(r.pop());
                     r.setDx(r.pop()); // End addition
                     return;
                 }
-                if ((r.ch & 0xff) < (byte) 'A') {
+                if ((r.ch & 0xff) < 'A') {
 //tne_sub1:
                     r.ch = 1; // Subtraction flag on
-                } else if ((r.ch & 0xff) <= (byte) 'G') {
+                } else if ((r.ch & 0xff) <= 'G') {
 //tne_end:
                     r.setCx(r.pop());
                     r.setDx(r.pop()); // End addition
@@ -2485,6 +2539,13 @@ public class Mucom2 {
             return;
         }
         rednums(); // Read digit from text
+        r.zero = (r.al == 0);
+        r.cl = 6;
+        if (r.zero) {
+//error25:
+            error();
+            return;
+        }
         r.dl = r.al;
         r.setAx((short) (192 / (r.dl & 0xff)));
         r.setBx((short) ((r.getBx() & 0xffff) - 1));
@@ -2494,30 +2555,37 @@ public class Mucom2 {
     }
 
     private void loop17(boolean nrm) {
-        if (!nrm) {
+        while (true) {
+            if (!nrm) {
 //loop17:
-            while (muap98.sourceBuf[(r.getBx() & 0xffff) + 1] == '.') {
-                // Dot check (multiple check)
-                r.setBx((short) ((r.getBx() & 0xffff) + 1));
-                r.setDx((short) ((r.getDx() & 0xffff) >> 1)); // 1.5x calculation
-                r.setAx((short) (r.getAx() + r.getDx()));
+                while (true) {
+                    r.setBx((short) ((r.getBx() & 0xffff) + 1));
+                    if (muap98.sourceBuf[r.getBx() & 0xffff] != (byte) '.') {
+                        // Dot check (multiple check)
+//len_exit:
+                        r.setDx(r.pop());
+                        work.otoLength = r.getAx() & 0xffff;
+                        return;
+                    }
+                    r.setDx((short) ((r.getDx() & 0xffff) >> 1)); // 1.5x calculation
+                    r.setAx((short) ((r.getAx() & 0xffff) + (r.getDx() & 0xffff)));
+                }
             }
-            r.setDx(r.pop());
-            work.otoLength = (r.getAx() & 0xffff);
-            return;
-        }
+            nrm = false;
 //normal:
-        r.al = lendata; // Use default note length
-        r.setBx((short) ((r.getBx() & 0xffff) - 1));
-        r.setDx(r.getAx());
-        loop17(false);
+            r.al = lendata; // Use default note length
+            r.ah = 0;
+            r.setBx((short) ((r.getBx() & 0xffff) - 1));
+            r.setDx(r.getAx());
+        } // To dot check
     }
 
     /**
      * Tuplet command processing
      */
     public void renpu() {
-        renplen = chglen; // Save note length before tuplet
+        r.al = chglen; // Save note length before tuplet
+        renplen = r.al;
         disave3 = r.di; // Save address to store note length
         onpucnt = 0; // Tuplet count counter
         mode[0] |= 1; // Tuplet mode
@@ -2525,7 +2593,7 @@ public class Mucom2 {
 //loop9:
         do {
             chktxt();
-            r.ah = muap98.sourceBuf[r.getBx()]; // for @w check
+            r.ah = muap98.sourceBuf[r.getBx() & 0xffff]; // for @w check
             if (r.al == '}') {
                 // End of tuplet?
                 exit1();
@@ -2543,8 +2611,9 @@ public class Mucom2 {
             r.setAx(r.pop());
             r.setCx(r.pop());
             r.setDx(r.pop());
-            r.carry = (onpucnt & 0xff) > 192; // Maximum note count check
-        } while (r.carry);
+            r.carry = (onpucnt & 0xff) <= 192; // Maximum note count check
+            r.cl = 4;
+        } while (r.carry); // To next code conversion
 
 //error14:
         error();
@@ -2556,8 +2625,10 @@ public class Mucom2 {
     private void exit1() {
         mode[0] &= 0xfe; // Clear tuplet mode
         r.dl = onpucnt;
-        if (onpucnt == 0) {
-            // Error if no note or rest existed
+        r.zero = r.dl == 0; // Did a note or rest exist?
+        r.cl = 4;
+        if (r.zero) {
+//error14:
             error();
             return;
         }
@@ -2930,8 +3001,8 @@ public class Mucom2 {
         byte tmp = r.al;
         r.al = r.ah;
         r.ah = tmp;
-        muap98.objectBuf.set(r.di, new MmlDatum(r.al));
-        muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah));
+        muap98.objectBuf.set(r.di, new MmlDatum(r.al & 0xff));
+        muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah & 0xff));
         r.di += 2;
 
         r.al = ratdata; // Note length ratio data
@@ -2942,7 +3013,7 @@ public class Mucom2 {
         }
 
 //setrat1:
-        muap98.objectBuf.set(r.di++, new MmlDatum(r.al));
+        muap98.objectBuf.set(r.di++, new MmlDatum(r.al & 0xff));
         r.setAx(r.pop());
 //skip_setrat:
     }
@@ -2963,9 +3034,9 @@ public class Mucom2 {
 //chgrat1:
         r.ah = r.al;
         r.al = (byte) 0xde;
-        muap98.objectBuf.set(r.di, work.copy(work.md, r.al));
+        muap98.objectBuf.set(r.di, work.copy(work.md, r.al & 0xff));
         work.md = null;
-        muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah));
+        muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah & 0xff));
         r.di += 2;
         r.setAx(r.pop());
     }
@@ -3011,7 +3082,7 @@ public class Mucom2 {
         }
         onpucnt++; // Tuplet counter
         r.push(r.getAx());
-        muap98.objectBuf.set(r.di++, new MmlDatum((byte) 0xff));
+        muap98.objectBuf.set(r.di++, new MmlDatum(0xff));
         r.setAx(r.pop());
     }
 
@@ -3047,7 +3118,7 @@ public class Mucom2 {
         lp.chipNumber = 0;
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
-        MmlDatum md = new MmlDatum((byte) 0xff, MMLType.Rest, lp, work.otoLength);
+        MmlDatum md = new MmlDatum(0xff, MMLType.Rest, lp, work.otoLength);
         md = work.FlashLstMd(md);
         muap98.objectBuf.set(r.di++, md); // Store rest
         disave2 = r.di; // Save last address
@@ -3086,8 +3157,8 @@ public class Mucom2 {
 
         r.setBx(r.pop());
         comcnt = r.ah; // Move to next digit
-        muap98.objectBuf.set(r.di++, new MmlDatum(r.al));
-        muap98.objectBuf.set(r.di++, new MmlDatum(r.ah));
+        muap98.objectBuf.set(r.di++, new MmlDatum(r.al & 0xff));
+        muap98.objectBuf.set(r.di++, new MmlDatum(r.ah & 0xff));
         r.setAx(r.pop());
     }
 
@@ -3187,8 +3258,8 @@ public class Mucom2 {
         }
         r.setBx((short) ((r.getBx() & 0xffff) + 1));
         r.al = (byte) ((r.getBx() & 0xffff) >= muap98.sourceBuf.length ? 0 : muap98.sourceBuf[r.getBx() & 0xffff]);
-        r.carry = ((r.al & 0xff) < (byte) '1');
-        r.al = (byte) ((r.al & 0xff) - (byte) '1'); // \1-\9 allowed
+        r.carry = ((r.al & 0xff) < '1');
+        r.al = (byte) ((r.al & 0xff) - '1'); // \1-\9 allowed
         if (r.carry) {
             error();
         }
@@ -3237,10 +3308,10 @@ public class Mucom2 {
         calct(); // Convert to timer count value
         r.push(r.getAx());
         r.al = (byte) 0xf5;
-        muap98.objectBuf.set(r.di++, new MmlDatum(r.al));
+        muap98.objectBuf.set(r.di++, new MmlDatum(r.al & 0xff));
         r.setAx(r.pop());
-        muap98.objectBuf.set(r.di++, new MmlDatum(r.al));
-        muap98.objectBuf.set(r.di++, new MmlDatum(r.ah));
+        muap98.objectBuf.set(r.di++, new MmlDatum(r.al & 0xff));
+        muap98.objectBuf.set(r.di++, new MmlDatum(r.ah & 0xff));
     }
 
     public void calct() {
@@ -3341,7 +3412,7 @@ public class Mucom2 {
             r.ah = (byte) (v + v);
             r.ah = (byte) ((r.ah & 0xff) + v);
             if (r.ah != 0) {
-                r.ah = (byte) ((r.ah & 0xff) + (byte) VOLBASE);
+                r.ah = (byte) ((r.ah & 0xff) + VOLBASE);
             }
         }
         retvol2();
@@ -3377,10 +3448,10 @@ public class Mucom2 {
         lp.chipNumber = 0;
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
-        MmlDatum md = new MmlDatum(r.al, MMLType.Volume, lp, r.ah & 0xff, (byte) 2);
+        MmlDatum md = new MmlDatum(r.al & 0xff, MMLType.Volume, lp, r.ah & 0xff, 2);
         md = work.FlashLstMd(md);
         muap98.objectBuf.set(r.di, md);
-        muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah));
+        muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah & 0xff));
         r.di += 2;
 //svol2:
     }
@@ -3397,10 +3468,10 @@ public class Mucom2 {
         lp.chipNumber = 0;
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
-        MmlDatum md = new MmlDatum(r.al, MMLType.VolumeUp, lp, r.ah & 0xff);
+        MmlDatum md = new MmlDatum(r.al & 0xff, MMLType.VolumeUp, lp, r.ah & 0xff);
         md = work.FlashLstMd(md);
         muap98.objectBuf.set(r.di, md);
-        muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah));
+        muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah & 0xff));
         r.di += 2;
     }
 
@@ -3414,10 +3485,10 @@ public class Mucom2 {
         lp.chipNumber = 0;
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
-        MmlDatum md = new MmlDatum(r.al, MMLType.VolumeDown, lp, r.ah & 0xff);
+        MmlDatum md = new MmlDatum(r.al & 0xff, MMLType.VolumeDown, lp, r.ah & 0xff);
         md = work.FlashLstMd(md);
         muap98.objectBuf.set(r.di, md);
-        muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah));
+        muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah & 0xff));
         r.di += 2;
     }
 
@@ -3499,7 +3570,7 @@ public class Mucom2 {
         r.dl = r.ah;
         chktxt();
         r.cl = 32;
-        if (r.al != (byte) '=') {
+        if (r.al != '=') {
 //error1:
             error();
             return;
@@ -3515,12 +3586,12 @@ public class Mucom2 {
         r.dh = r.ah;
         chktxt();
         r.dl |= 0x10;
-        if (r.al == (byte) '+') {
+        if (r.al == '+') {
             set_value(); // Addition specification
             return;
         }
         r.dl |= 0x20;
-        if (r.al == (byte) '-') {
+        if (r.al == '-') {
             set_value(); // Subtraction specification
             return;
         }
@@ -3550,7 +3621,7 @@ public class Mucom2 {
         chktxt();
         mucomsub.xsmall();
 
-        if (r.al != (byte) 'X') {
+        if (r.al != 'X') {
 //chkval1:
             r.setBx((short) ((r.getBx() & 0xffff) - 1));
             r.carry = true;

@@ -9,7 +9,7 @@ import musicDriverInterface.ChipDatum;
 
 
 /**
- * Implementation of ChipAction for the muapDotNET environment.
+ * Implementation of ChipAction for the muap environment.
  */
 public class MuapChipAction implements ChipAction {
 

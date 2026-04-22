@@ -20,20 +20,21 @@ import vavi.util.serdes.Serdes;
 
 
 /**
- * Main entry point for the muapDotNET console application.
+ * Main entry point for the muap console application.
  */
 public class Program {
 
     private static final Logger logger = System.getLogger(Program.class.getName());
 
-    private static final ResourceBundle rb = ResourceBundle.getBundle("messages");
+    private static final ResourceBundle rb = ResourceBundle.getBundle("muap/message");
 
     private static String srcFile;
     private static boolean isSeli = false;
+    public static boolean isTest = false;
 
-    static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
-        logger.log(Level.INFO, "Hello, muapDotNET!");
+        logger.log(Level.INFO, "Hello, muap!");
 
         int fnIndex = analyzeOption(args);
 
@@ -45,8 +46,9 @@ public class Program {
         try {
             compile(args[fnIndex], (args.length > fnIndex + 1 ? args[fnIndex + 1] : null));
 
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
+            if (isTest) throw ex;
         }
     }
 
@@ -56,60 +58,63 @@ public class Program {
      * @param srcFile  Path to the source MML file.
      * @param destFile Optional path for the output binary.
      */
-    private static void compile(String srcFile, String destFile) {
-        try {
-            if (Path.getExtension(srcFile).isEmpty() && !File.exists(srcFile))
-                srcFile = Path.combine(
-                        Path.getDirectoryName(Path.getFullPath(srcFile)),
-                        "%s.mus".formatted(Path.getFileNameWithoutExtension(srcFile))
-                );
+    private static void compile(String srcFile, String destFile) throws java.io.IOException {
+        if (Path.getExtension(srcFile).isEmpty() && !File.exists(srcFile))
+            srcFile = "%s.mus".formatted(Path.getFileNameWithoutExtension(srcFile));
 
-            srcFile = Path.combine(Path.getDirectoryName(Path.getFullPath(srcFile)), srcFile);
+        // Use java.io.File to resolve the source path against the current
+        // working directory. dotnet4j's Path uses Windows-style separators,
+        // so Path.combine() produces malformed UNC-style paths on Unix.
+        srcFile = new java.io.File(srcFile).getAbsolutePath();
 
-            Program.srcFile = srcFile;
-            Compiler compiler = new Compiler();
-            compiler.init();
+        Program.srcFile = srcFile;
+        Compiler compiler = new Compiler();
+        compiler.init();
 
-            //compiler.SetCompileSwitch("IDE");
-            //compiler.SetCompileSwitch("SkipPoint=R19:C30");
+        //compiler.setCompileSwitch("IDE");
+        //compiler.setCompileSwitch("SkipPoint=R19:C30");
 
-            String destFileName = Path.combine(Path.getDirectoryName(Path.getFullPath(srcFile)), "%s.o".formatted(Path.getFileNameWithoutExtension(srcFile)));
-            if (destFile != null) {
-                destFileName = destFile;
-            }
+        java.io.File srcIo = new java.io.File(srcFile);
+        String srcStem = srcIo.getName();
+        int dotIdx = srcStem.lastIndexOf('.');
+        if (dotIdx >= 0) srcStem = srcStem.substring(0, dotIdx);
+        String destFileName = new java.io.File(srcIo.getParentFile(), srcStem + ".o").getAbsolutePath();
+        if (destFile != null) {
+            destFileName = destFile;
+        }
 
-            if (!File.exists(srcFile)) {
-                logger.log(Level.ERROR, rb.getString("E0601").formatted(srcFile));
-                return;
-            }
+        if (!File.exists(srcFile)) {
+            logger.log(Level.ERROR, rb.getString("E0601").formatted(srcFile));
+            return;
+        }
 
-            boolean isSuccess = false;
-            try (
-                    FileStream sourceMML = new FileStream(srcFile, FileMode.Open);
-                    MemoryStream destCompiledBin = new MemoryStream();
-                    BufferedStream bufferedDestStream = new BufferedStream(destCompiledBin)
-            ) {
+        boolean isSuccess = false;
+        try (
+                FileStream sourceMML = new FileStream(srcFile, FileMode.Open);
+                MemoryStream destCompiledBin = new MemoryStream();
+                BufferedStream bufferedDestStream = new BufferedStream(destCompiledBin)
+        ) {
 
-                if (isSeli) {
-                    // T.B.D: Serialize Mode
-                    logger.log(Level.INFO, "Serialize Mode");
-                    MmlDatum[] mmlData = compiler.compile(sourceMML, Program::appendFileReaderCallback);
-                    if (mmlData != null && destFileName != null) {
-                        try (FileStream fos = new FileStream(destFileName + ".seli", FileMode.Create)) {
-                            Serdes.Util.serialize(mmlData, fos);
-                        }
+            if (isSeli) {
+                // T.B.D: Serialize Mode
+                logger.log(Level.INFO, "Serialize Mode");
+                MmlDatum[] mmlData = compiler.compile(sourceMML, Program::appendFileReaderCallback);
+                if (mmlData != null && destFileName != null) {
+                    try (FileStream fos = new FileStream(destFileName + ".seli", FileMode.Create)) {
+                        Serdes.Util.serialize(mmlData, fos);
                     }
-                } else
-                    isSuccess = compiler.compile(sourceMML, bufferedDestStream, Program::appendFileReaderCallback);
-
-                if (isSuccess) {
-                    bufferedDestStream.flush();
-                    byte[] destbuf = destCompiledBin.toArray();
-                    File.writeAllBytes(destFileName, destbuf);
+                } else {
+                    if (isTest) throw new IllegalStateException("compile error");
                 }
-            }
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, "Compilation failed: " + ex.getMessage());
+            } else
+                isSuccess = compiler.compile(sourceMML, bufferedDestStream, Program::appendFileReaderCallback);
+
+            if (isSuccess) {
+                bufferedDestStream.flush();
+                byte[] destbuf = destCompiledBin.toArray();
+                File.writeAllBytes(destFileName, destbuf);
+            } else
+                throw new IllegalStateException("compile error");
         }
     }
 

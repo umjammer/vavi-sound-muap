@@ -8,7 +8,7 @@ import musicDriverInterface.MmlDatum;
 
 
 /**
- * Port of the Work class, which holds global state and context for the muapDotNET compiler.
+ * Port of the Work class, which holds global state and context for the muap compiler.
  */
 public class Work {
 

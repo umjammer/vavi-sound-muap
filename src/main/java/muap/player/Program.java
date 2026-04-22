@@ -34,7 +34,13 @@ import musicDriverInterface.ChipDatum;
 import musicDriverInterface.MmlDatum;
 import org.apache.tools.ant.types.LogLevel;
 
+import static vavi.sound.SoundUtil.volume;
 
+
+/**
+ * system property
+ * <li>{@code muap.volume} ... volume</li>
+ */
 public class Program {
 
     private static final Logger logger = System.getLogger(Program.class.getName());
@@ -81,6 +87,7 @@ public class Program {
         DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
         audioOutput = (SourceDataLine) AudioSystem.getLine(info);
         audioOutput.open(format, (int) (SamplingRate * (latency / 1000.0) * 4));
+        volume(audioOutput, Double.parseDouble(System.getProperty("muap.volume", "0.2")));
 
         List<MDSound.Chip> lstChips = new ArrayList<>();
         MDSound.Chip chip;
@@ -94,6 +101,10 @@ public class Program {
             chip.clock = (int) opnaMasterClock;
             chip.volume = 0;
             chip.option = null;
+            chip.setVolumes.put("FM", ym2608::setVolume);
+            chip.setVolumes.put("SSG", ym2608::setVolume);
+            chip.setVolumes.put("RHYTHM", ym2608::setVolume);
+            chip.setVolumes.put("ADPCM", ym2608::setVolume);
             lstChips.add(chip);
         }
 
@@ -122,9 +133,10 @@ public class Program {
         }
 
         mds = new MDSound();
+        mds.init(SamplingRate, 1024, lstChips);
 
-        mds.inst(Ym2608Inst.class).setVolume("PSG", -10, 0);
-        mds.inst(Ym2608Inst.class).setVolume("Rhythm", 5, 0);
+        mds.inst(Ym2608Inst.class).setVolume("SSG", -10, 0);
+        mds.inst(Ym2608Inst.class).setVolume("RHYTHM", 5, 0);
 
         List<ChipAction> lca = new ArrayList<>();
         lca.add(new MuapChipAction(Program::opnaWriteP, null, null));
@@ -217,7 +229,7 @@ public class Program {
     private static void writeLineF(LogLevel level, String msg) {
         try (FileWriter fw = new FileWriter("C:\\Users\\kuma\\Desktop\\new.log", true)) {
             fw.write(String.format("[%s] %s%n", String.format("%-7s", level), msg));
-        } catch (IOException e) {
+        } catch (IOException _) {
         }
     }
 
@@ -233,7 +245,7 @@ public class Program {
                 buffer[offset + i * 2 + 0] = emuRenderBuf[0];
                 buffer[offset + i * 2 + 1] = emuRenderBuf[1];
             }
-        } catch (Exception e) {
+        } catch (Exception _) {
         }
         return count;
     }
@@ -291,16 +303,4 @@ public class Program {
     private static void cs4231EMS_AllocMemory(byte[] ah, int[] dx, int bx) {
         cS4231.EMS_AllocMemory(0, ah, dx, bx);
     }
-
-//    public static class SineWaveProvider16 {
-//
-//        public naudioCallBack callback;
-//
-//        public int read(short[] buffer, int offset, int sampleCount) {
-//            return callback.apply(buffer, offset, sampleCount);
-//        }
-//    }
-
-//    public interface naudioCallBack extends TriFunction<short[], Integer, Integer, Integer> {
-//    }
 }

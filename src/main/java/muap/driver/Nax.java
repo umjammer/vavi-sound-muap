@@ -509,7 +509,7 @@ public class Nax {
         tbseg = reg.getAx();
         reg.setAx(ax_bk);
 
-        if ((reg.al & 0xff) == 0x0b) {
+        if (reg.al == 0x0b) {
             pt1 = 2; // Change IMR operation port (for -V0B)
             pt2 = 2; //
             jmp1 = 0x0ceb; // Set to jmp short +12h (ignore slave processing)
@@ -647,14 +647,14 @@ public class Nax {
     }
 
     private boolean Chkparam() {
-        if (reg.al >= (byte) '0' && reg.al <= (byte) '9') {
+        if ((reg.al & 0xff) >= '0' && (reg.al & 0xff) <= '9') {
             reg.al -= (byte) '0';
             return true;
         }
 
         reg.al &= 0xdf;
 
-        if (reg.al >= (byte) 'A' && reg.al <= (byte) 'F') {
+        if ((reg.al & 0xff) >= 'A' && (reg.al & 0xff) <= 'F') {
             reg.al -= (byte) 'A';
             reg.al += 10;
             return true;
@@ -701,7 +701,7 @@ public class Nax {
         reg.al = arg.length() > bx ? (byte) arg.charAt(bx) : (byte) 0;
         reg.setBx((short) (bx + 1));
 
-        if ((reg.al & 0xff) < (byte) '1' || (reg.al & 0xff) > (byte) '8') err_param();
+        if ((reg.al & 0xff) < '1' || (reg.al & 0xff) > '8') err_param();
         reg.al -= (byte) '1';
         reg.ah = 0;
         reg.al++;
@@ -870,7 +870,7 @@ public class Nax {
         reg.setBx((short) (bx + 1));
         reg.al = (byte) xsmall((char) reg.al);
 
-        if ((reg.al & 0xff) < (byte) 'A' || (reg.al & 0xff) > (byte) 'P') err_param();
+        if ((reg.al & 0xff) < 'A' || (reg.al & 0xff) > 'P') err_param();
 
         reg.setAx((short) ((reg.al & 0xff) - 'A'));
 
@@ -1020,7 +1020,7 @@ public class Nax {
         reg.al = arg.length() > bx ? (byte) arg.charAt(bx) : (byte) 0;
         reg.setBx((short) (bx + 1));
 
-        if ((reg.al & 0xff) < (byte) '0') err_param();
+        if ((reg.al & 0xff) < '0') err_param();
         reg.al -= (byte) '0';
         if ((reg.al & 0xff) < 2 || (reg.al & 0xff) > 3) err_param();
         reg.ah = reg.al;
@@ -1790,10 +1790,10 @@ public class Nax {
             if (reg.al == 0x1a) return true;
             if (reg.ah == 0x1a) return true;
 
-            if (reg.al == (byte) ' ' || reg.al == 9 || reg.al == 13 || reg.al == 10)
+            if (reg.al == ' ' || reg.al == 9 || reg.al == 13 || reg.al == 10)
                 continue;
 
-            if (reg.al != (byte) ';') {
+            if (reg.al != ';') {
                 reg.setSi((short) ((reg.getSi() & 0xffff) + 1));
                 return false;
             }
@@ -1832,7 +1832,7 @@ public class Nax {
         short bxbk = reg.getBx();
         reg.setBx(reg.getDx());
         reg.dl = (byte) path.charAt(reg.getBx() & 0xffff);
-        reg.carry = ((reg.dl & 0xff) < (byte) 'a');
+        reg.carry = ((reg.dl & 0xff) < 'a');
         reg.dl -= (byte) 'a';
         if (!reg.carry) reg.dl += (byte) ' ';
         drv_sense();

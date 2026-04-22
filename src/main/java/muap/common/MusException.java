@@ -5,11 +5,11 @@ import java.util.ResourceBundle;
 
 
 /**
- * Custom exception class for the muapDotNET environment.
+ * Custom exception class for the muap environment.
  */
-public class MusException extends Exception implements Serializable {
+public class MusException extends RuntimeException implements Serializable {
 
-    private static final ResourceBundle rb = ResourceBundle.getBundle("messages");
+    private static final ResourceBundle rb = ResourceBundle.getBundle("muap/message");
 
     /**
      * Initializes a new instance of the MusException class.

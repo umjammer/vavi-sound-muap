@@ -2790,7 +2790,7 @@ pcm_exit: {
         r.push(r.getDx());
         r.setDx((short) ((r.getDx() & 0xffff) >> 4));
         r.al = r.ah;
-        r.setAx(r.al);
+        r.setAx(/* signed */ r.al);
         int ans = r.getAx() * r.getDx();
         r.setDx((short) (ans >> 16));
         r.setAx((short) (ans & 0xffff));

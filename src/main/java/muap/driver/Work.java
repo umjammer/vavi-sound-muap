@@ -4,7 +4,7 @@ import musicDriverInterface.MmlDatum;
 
 
 /**
- * Port of the Work class for the muapDotNET Driver.
+ * Port of the Work class for the muap Driver.
  * This class maintains the runtime state of the music driver, including timers,
  * audio buffers, and synchronization objects.
  */
