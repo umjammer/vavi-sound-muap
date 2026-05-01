@@ -12,7 +12,6 @@ public class X86Register {
     private short eaxh;
 
     public short getAx() {
-        // Return (ah * 256 + al) cast to ushort equivalent (short in Java)
         return (short) (((ah & 0xff) << 8) | (al & 0xff));
     }
 
@@ -22,7 +21,6 @@ public class X86Register {
     }
 
     public int getEax() {
-        // Return (eaxh * 65536 + ax) cast to uint equivalent (int in Java)
         return ((eaxh & 0xffff) << 16) | (getAx() & 0xffff);
     }
 
@@ -287,9 +285,5 @@ public class X86Register {
         setDx(pop());
         setCx(pop());
         setAx(pop());
-    }
-
-    public byte[] toByteArray() {
-        return new byte[30];
     }
 }

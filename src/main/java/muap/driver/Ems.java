@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import dotnet4j.util.compat.QuadConsumer;
-import dotnet4j.util.compat.TriConsumer;
 import muap.common.X86Register;
+import vavi.util.compat.QuadConsumer;
+import vavi.util.compat.TriConsumer;
 
 
 public class Ems {

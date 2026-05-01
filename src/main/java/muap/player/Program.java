@@ -1,7 +1,5 @@
 package muap.player;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.ByteBuffer;
@@ -17,7 +15,6 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 
-import dotnet4j.util.compat.Tuple;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.Cs4231Inst;
@@ -32,7 +29,7 @@ import muap.driver.Ems.EMS_SetHandleName;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.MmlDatum;
-import org.apache.tools.ant.types.LogLevel;
+import vavi.util.compat.Tuple;
 
 import static vavi.sound.SoundUtil.volume;
 
@@ -45,30 +42,31 @@ public class Program {
 
     private static final Logger logger = System.getLogger(Program.class.getName());
 
-    private static int device = 0;
-    private static int loop = 0;
+    private int device = 0;
+    private int loop = 0;
     private static final int latency = 1000;
-    private static MDSound mds = null;
-    private static final short[] emuRenderBuf = new short[2];
+    private MDSound mds = null;
+    private final short[] emuRenderBuf = new short[2];
     private static final int SamplingRate = 55467;
     private static final int samplingBuffer = 1024;
-    private static SourceDataLine audioOutput = null;
+    private SourceDataLine audioOutput = null;
     private static final long opnaMasterClock = 7987200;
 
     private static final int MAXBUF = 18;
     private static final int FIFO_SIZE = 128;
-    private static final byte[] fifoBuf = new byte[FIFO_SIZE * MAXBUF * 2];
+    private final byte[] fifoBuf = new byte[FIFO_SIZE * MAXBUF * 2];
 
-    private static Driver drv;
-    private static Cs4231Inst cS4231;
+    private Driver drv;
+    private Cs4231Inst cS4231;
 
     public static void main(String[] args) throws Exception {
 
         logger.log(Level.INFO, "Hello, muap!");
 
-        int fnIndex = analyzeOption(args);
-        if (args == null || args.length != fnIndex + 1) {
-            logger.log(Level.ERROR, "I need one argument (.o/.oy file)."); // I need one argument (.o/.oy file).
+        Program app = new Program();
+        int fnIndex = app.analyzeOption(args);
+        if (args.length != fnIndex + 1) {
+            logger.log(Level.ERROR, "I need one argument (.o/.oy file).");
             System.exit(-1);
         }
         if (!Files.exists(Paths.get(args[fnIndex]))) {
@@ -76,13 +74,17 @@ public class Program {
             System.exit(-1);
         }
 
+        app.plat(args[fnIndex]);
+    }
+
+    /** */
+    void plat(String filename) throws Exception {
         List<MmlDatum> bl = new ArrayList<>();
-        byte[] srcBuf = Files.readAllBytes(Paths.get(args[fnIndex]));
-        String objPath = Paths.get(args[fnIndex]).toAbsolutePath().getParent().toString();
+        byte[] srcBuf = Files.readAllBytes(Paths.get(filename));
+        String objPath = Paths.get(filename).toAbsolutePath().getParent().toString();
         for (byte b : srcBuf) bl.add(new MmlDatum(b & 0xff));
         MmlDatum[] blary = bl.toArray(new MmlDatum[0]);
 
-        // Audio setup (using standard Java Sound API as a replacement for DirectSoundOut)
         AudioFormat format = new AudioFormat(SamplingRate, 16, 2, true, false);
         DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
         audioOutput = (SourceDataLine) AudioSystem.getLine(info);
@@ -139,18 +141,19 @@ public class Program {
         mds.inst(Ym2608Inst.class).setVolume("RHYTHM", 5, 0);
 
         List<ChipAction> lca = new ArrayList<>();
-        lca.add(new MuapChipAction(Program::opnaWriteP, null, null));
-        lca.add(new MuapChipAction(Program::opn2WriteP, null, null));
-        lca.add(new MuapChipAction(Program::cs4231Write, null, null));
+        lca.add(new MuapChipAction(this::opnaWriteP, null, null));
+        lca.add(new MuapChipAction(this::opn2WriteP, null, null));
+        lca.add(new MuapChipAction(this::cs4231Write, null, null));
 
         drv = new Driver();
-        drv.init(lca, blary, null, (Function<Byte, Byte>) Program::cs4231Read,
-                (Supplier<byte[]>) Program::cs4231EMS_GetCrntMapBuf,
-                (EMS_Map) Program::cs4231EMS_Map,
-                (Supplier<Integer>) Program::cs4231EMS_GetPageMap,
-                (EMS_GetHandleName) Program::cs4231EMS_GetHandleName,
-                (EMS_SetHandleName) Program::cs4231EMS_SetHandleName,
-                (EMS_AllocMemory) Program::cs4231EMS_AllocMemory,
+        drv.init(lca, blary, null,
+                (Function<Byte, Byte>) this::cs4231Read,
+                (Supplier<byte[]>) this::cs4231EMS_GetCrntMapBuf,
+                (EMS_Map) this::cs4231EMS_Map,
+                (Supplier<Integer>) this::cs4231EMS_GetPageMap,
+                (EMS_GetHandleName) this::cs4231EMS_GetHandleName,
+                (EMS_SetHandleName) this::cs4231EMS_SetHandleName,
+                (EMS_AllocMemory) this::cs4231EMS_AllocMemory,
                 null,
                 0,
                 null,
@@ -201,7 +204,7 @@ public class Program {
         audioOutput.close();
     }
 
-    private static int analyzeOption(String[] args) {
+    private int analyzeOption(String[] args) {
         int i = 0;
 
         device = 0;
@@ -222,22 +225,11 @@ public class Program {
         return i;
     }
 
-    private static void writeLine(LogLevel level, String msg) {
-        System.out.printf("[%s] %s%n", String.format("%-7s", level), msg);
-    }
-
-    private static void writeLineF(LogLevel level, String msg) {
-        try (FileWriter fw = new FileWriter("C:\\Users\\kuma\\Desktop\\new.log", true)) {
-            fw.write(String.format("[%s] %s%n", String.format("%-7s", level), msg));
-        } catch (IOException _) {
-        }
-    }
-
-    private static int emuCallback(short[] buffer, int offset, int count) {
+    private int emuCallback(short[] buffer, int offset, int count) {
         try {
             int bufCnt = count / 2;
             for (int i = 0; i < bufCnt; i++) {
-                mds.update(emuRenderBuf, 0, 2, Program::oneFrame);
+                mds.update(emuRenderBuf, 0, 2, this::oneFrame);
 
                 emuRenderBuf[0] = (short) Math.clamp(emuRenderBuf[0] + drv.sound[0], Short.MIN_VALUE, Short.MAX_VALUE);
                 emuRenderBuf[1] = (short) Math.clamp(emuRenderBuf[1] + drv.sound[1], Short.MIN_VALUE, Short.MAX_VALUE);
@@ -250,57 +242,57 @@ public class Program {
         return count;
     }
 
-    private static void oneFrame() {
+    private void oneFrame() {
         drv.render();
     }
 
-    private static void opnaWriteP(ChipDatum dat) {
+    private void opnaWriteP(ChipDatum dat) {
         opnaWrite(0, dat);
     }
 
-    private static void opn2WriteP(ChipDatum dat) {
+    private void opn2WriteP(ChipDatum dat) {
         opn2Write(0, dat);
     }
 
-    private static void opnaWrite(int chipId, ChipDatum dat) {
+    private void opnaWrite(int chipId, ChipDatum dat) {
         if (dat.port == -1) return;
         mds.inst(Ym2608Inst.class).write(chipId, dat.port, dat.address, dat.data);
     }
 
-    private static void opn2Write(int chipId, ChipDatum dat) {
+    private void opn2Write(int chipId, ChipDatum dat) {
         if (dat.port == -1) return;
         mds.inst(Ym3438Inst.class).write(chipId, dat.port, dat.address, dat.data);
     }
 
-    private static void cs4231Write(ChipDatum dat) {
+    private void cs4231Write(ChipDatum dat) {
         mds.inst(Cs4231Inst.class).write(0, dat.port, dat.address, dat.data);
     }
 
-    private static byte cs4231Read(byte adr) {
+    private byte cs4231Read(byte adr) {
         return (byte) mds.inst(Cs4231Inst.class).read(0, adr & 0xff);
     }
 
-    private static byte[] cs4231EMS_GetCrntMapBuf() {
+    private byte[] cs4231EMS_GetCrntMapBuf() {
         return cS4231.EMS_GetCurrentMapBuf(0);
     }
 
-    private static void cs4231EMS_Map(int al, byte[] ah, int bx, int dx) {
+    private void cs4231EMS_Map(int al, byte[] ah, int bx, int dx) {
         cS4231.EMS_Map(0, al, ah, bx, dx);
     }
 
-    private static int cs4231EMS_GetPageMap() {
+    private int cs4231EMS_GetPageMap() {
         return cS4231.EMS_GetPageMap(0);
     }
 
-    private static void cs4231EMS_GetHandleName(byte[] ah, int dx, String[] sbuf) {
+    private void cs4231EMS_GetHandleName(byte[] ah, int dx, String[] sbuf) {
         cS4231.EMS_GetHandleName(0, ah, dx, sbuf);
     }
 
-    private static void cs4231EMS_SetHandleName(byte[] ah, int dx, String emsname2) {
+    private void cs4231EMS_SetHandleName(byte[] ah, int dx, String emsname2) {
         cS4231.EMS_SetHandleName(0, ah, dx, emsname2);
     }
 
-    private static void cs4231EMS_AllocMemory(byte[] ah, int[] dx, int bx) {
+    private void cs4231EMS_AllocMemory(byte[] ah, int[] dx, int bx) {
         cS4231.EMS_AllocMemory(0, ah, dx, bx);
     }
 }

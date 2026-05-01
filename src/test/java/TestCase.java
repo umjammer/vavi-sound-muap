@@ -186,4 +186,25 @@ Debug.println("java: " + Files.size(testO));
 Debug.println("play --------");
         muap.player.Program.main(new String[] {testO.toString()});
     }
+
+    @Test
+    @DisplayName("compile & play")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void test7() throws Exception {
+Debug.println(mml);
+        Path testMML = Path.of("tmp/test_java.mus");
+        Path testO = Path.of("tmp/test_java.o");
+
+        Files.copy(Path.of(mml), testMML, StandardCopyOption.REPLACE_EXISTING);
+        Files.deleteIfExists(testO);
+
+        // compile java
+Debug.println("compile java --------");
+        muap.console.Program.main(new String[] {testMML.toString()});
+        assertTrue(Files.exists(testO), "java compile failed");
+
+        // play
+Debug.println("play --------");
+        muap.player.Program.main(new String[] {testO.toString()});
+    }
 }

@@ -10,19 +10,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import dotnet4j.util.compat.Tuple;
 import muap.common.X86Register;
 import musicDriverInterface.CompilerInfo;
-import musicDriverInterface.MetaData;
 import musicDriverInterface.LinePos;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MetaData.Tag;
 import musicDriverInterface.MmlDatum;
 import musicDriverInterface.MmlDatum.MMLType;
+import vavi.util.compat.Tuple;
 
 
-/**
- * Handles extended command parsing, macro expansions, and musical data conversion.
- */
+/** */
 public class MucomSub {
 
     private final X86Register r;

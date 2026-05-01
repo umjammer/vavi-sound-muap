@@ -1,61 +1,45 @@
 package muap.driver;
 
-/**
- * Base class for FM sound source timer emulation (e.g., YM2608, YM2203).
- * Handles the logic for Timer A and Timer B overflow and status register updates.
- */
+
+/** */
 public class FMTimer {
 
-    /** Timer A overflow setting value. */
-    public int timerA; // Timer A overflow set value
-    /** Current counter value for Timer A. */
-    protected double timerACounter; // Timer A counter value
-    /** Timer B overflow setting value. */
-    public int timerB; // Timer B overflow set value
-    /** Current counter value for Timer B. */
-    protected double timerBCounter; // Timer B counter value
-    /** Timer control register (lower 4 bits + bit 7). */
-    public int timerReg; // Timer control register (lower 4 bits + bit 7)
-    /** The amount to increment the counters per step. */
+    /** Timer A overflow set value */
+    public int timerA;
+    /** Timer A counter value */
+    protected double timerACounter;
+    /** Timer B overflow set value */
+    public int timerB;
+    /** Timer B counter value */
+    protected double timerBCounter;
+    /** Timer control register (lower 4 bits + bit 7) */
+    public int timerReg;
     public double step;
 
-    /** Status register (lower 2 bits representing timer overflows). */
-    public int statReg; // Status register (lower 2 bits)
-    /** Callback for Composite Sine Mode (CSM) Key On events. */
+    /** Status register (lower 2 bits) */
+    public int statReg;
     public Runnable csmKeyOn;
 
-    /**
-     * Initializes a new instance of the FMTimer class.
-     *
-     * @param renderingFreq The sampling frequency of the output.
-     * @param masterClock   The master clock frequency of the sound chip.
-     */
+    /** */
     public FMTimer(int renderingFreq, int masterClock) {
-        // Initialization logic is empty in source.
     }
 
-    /**
-     * Updates the timers based on the current step.
-     */
+    /** */
     public void timer() {
-        // Bit 0 of timerReg indicates Timer A is running.
         if ((timerReg & 0x01) != 0) {
             timerACounter += step;
-            // Timer A is 10-bit; it overflows when reaching 1024.
+            // Timer A is working
             if (timerACounter >= (1024 - timerA)) {
-                // Update status register based on the overflow mask.
                 statReg |= ((timerReg >> 2) & 0x01);
                 timerACounter -= (1024 - timerA);
-                // Bit 7 indicates CSM mode; triggering Key On is handled if enabled.
-                // if ((timerReg & 0x80) != 0) if (csmKeyOn != null) csmKeyOn.run();
+                //if ((timerReg & 0x80) != 0) if (csmKeyOn != null) csmKeyOn.run();
             }
         }
 
-        // Bit 1 of timerReg indicates Timer B is running.
         if ((timerReg & 0x02) != 0) {
+            // Timer B is working
             timerBCounter += step;
             if (timerBCounter >= timerB) {
-                // Update status register based on the overflow mask.
                 statReg |= ((timerReg >> 2) & 0x02);
                 timerBCounter -= timerB;
             }
