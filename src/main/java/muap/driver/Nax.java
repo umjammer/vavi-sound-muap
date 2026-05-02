@@ -2369,7 +2369,7 @@ public class Nax {
             if (Files.exists(Paths.get(objPathFn))) {
                 try {
                     filebuf = Files.readAllBytes(Paths.get(objPathFn));
-                    logger.log(Level.INFO, "[{0}] File found.", objPathFn);
+                    logger.log(Level.INFO, "[%s] File found.".formatted(objPathFn));
                 } catch (IOException e) {
                     reg.carry = true; // Not found, proceed to existing process
                 }
@@ -2379,14 +2379,14 @@ public class Nax {
         if (reg.carry) {
             reg.carry = false;
             if (!Files.exists(Paths.get(pcm_path1))) {
-                logger.log(Level.ERROR, "File not found. {0}", pcm_path1);
+                logger.log(Level.ERROR, "File not found. " + pcm_path1);
                 reg.carry = true;
             } else {
                 try {
                     filebuf = Files.readAllBytes(Paths.get(pcm_path1));
-                    logger.log(Level.INFO, "[{0}] File found.", pcm_path1);
+                    logger.log(Level.INFO, "[%s] File found. ".formatted(pcm_path1));
                 } catch (IOException e) {
-                    logger.log(Level.ERROR, "File not found. {0}", pcm_path1);
+                    logger.log(Level.ERROR, "File not found. " + pcm_path1);
                     reg.carry = true;
                 }
             }

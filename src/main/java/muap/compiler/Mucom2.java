@@ -11,7 +11,6 @@ import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.LinePos;
 import musicDriverInterface.MmlDatum;
 import musicDriverInterface.MmlDatum.MMLType;
-import org.apache.tools.ant.taskdefs.Java;
 import vavi.util.compat.Tuple;
 import vavi.util.compat.Tuple3;
 
@@ -39,7 +38,7 @@ public class Mucom2 {
 
     public void init() {
         initJpData();
-        InitCalltbl();
+        initCallTbl();
     }
 
     private short getSourceData(int adr) {
@@ -121,7 +120,7 @@ public class Mucom2 {
 
     // MUTRACE.ASM simulation
     private byte saples = 0;
-    private static final byte zero = 0;
+    private byte zero = 0;
     private byte stamode = 0;
 
     private void dsp2dec() {
@@ -275,8 +274,8 @@ public class Mucom2 {
     public static final int MAXPCM = 100;
 
     // PLAY4.ASM
-    private final short[] maxlen = new short[] {0, 0};
-    private final byte[] skipbyte = new byte[] {
+    private final short[] maxLen = {0, 0};
+    private final byte[] skipByte = {
             0, 0, 0, 0, 0, 8, 0, 3,  // FF-F8 Number of bytes of control code - 1
             3, 1, 2, 2, 0, 3, 2, 1,  // F7-F0
             1, 2, 1, 1, 1, 2, 2, 0,  // EF-E8
@@ -297,7 +296,7 @@ public class Mucom2 {
         r.push(r.getDx());
         r.setDx((short) ((r.getDx() & 0xffff) >> 4));
         r.al = r.ah;
-        r.setAx(/* sigend */ r.al);
+        r.setAx((short) (byte) r.al); // sign extend
         int ans = r.getAx() * r.getDx();
         r.setDx((short) (ans >> 16));
         r.setAx((short) ans);
@@ -395,7 +394,7 @@ public class Mucom2 {
     /**
      * CAL.ASM initialization
      */
-    private void InitCalltbl() {
+    private void initCallTbl() {
         calltbl = new Runnable[26];
         // helpcal2, mucom2, menu2, dsperr2; 0-3
         // tonedsp2, get_bufseg, toneedit_ent, load_usrpcm; 4-7
@@ -452,23 +451,23 @@ public class Mucom2 {
     }
 
     private void cal_mucom2() {
-        // pushall();
-        // r.es = r.ds; // ES: DI = address of bufbuf
-        // r.ds = r.cs;
-        // r.si = 0; // ofs:error1; DS: SI = Error message storage address
+        //pushall();
+        //r.es = r.ds; // ES: DI = address of bufbuf
+        //r.ds = r.cs;
+        //r.si = 0; // ofs:error1; DS: SI = Error message storage address
 
-        // // search_d:
-        // r.cl--;
+//search_d:
+        //r.cl--;
 
-        // // xfererr:
-        // do {
-        //     r.al = calerror1[r.cl];
-        //     r.si++;
-        //     muap98.bufbuf[r.di] = r.al;
-        //     r.di++; // Transfer of error message
-        //     r.zero = r.al == (byte) '$';
-        // } while (!r.zero);
-        // popall();
+//xfererr:
+        //do {
+        //    r.al = calerror1[r.cl];
+        //    r.si++;
+        //    muap98.bufbuf[r.di] = r.al;
+        //    r.di++; // Transfer of error message
+        //    r.zero = r.al == (byte) '$';
+        //} while (!r.zero);
+        //popall();
     }
 
     private void call_func() {
@@ -477,6 +476,7 @@ public class Mucom2 {
         r.al = r.ah; // AH = Function number
         r.ah = 0;
         int idx = (r.getAx() & 0xffff);
+
         // r.setAx((short) (idx * 2));
         // r.setBx((short) 0); // ofs:calltbl
         // r.setBx((short) (r.getBx() + r.getAx()));
@@ -508,138 +508,235 @@ public class Mucom2 {
     private static final String mess_10 = "Debug$";
     private static final String mess_11 = "Info Output$";
 
-    public static final int VOLBASE = 80; // Internal volume of V1 (+3)
-    private static final int srctop = 0; // Source start address
-    public byte mmlver = 0x30; // MML version
-    public final byte[] mode = new byte[] {0, 0}; // b0=Tuplet mode, b1=Scale outputted?, b2=Chord @+@%@-
+    /** Internal volume of V1 (+3) */
+    public static final int VOLBASE = 80;
+    /** Source start address */
+    private static final int srctop = 0;
+    /** MML version */
+    public byte mmlver = 0x30;
+    /** b0=Tuplet mode, b1=Scale outputted?, b2=Chord @+@%@- */
+    public final byte[] mode = new byte[] {0, 0};
     // b3=&Auto-tie prohibited, b4=Clear accidental on newline, b5=Z inversion mode
     // b6='F3 non-output, b7=Auto-tie request
     // db 0 ; b0=[] Converting, b1=1-character macro
-    private byte onkai = 0; // For scale storage
-    private byte bassdta = 0; // For bass scale
-    private short codesav = 0; // For chord number storage
+    /** For scale storage */
+    private byte onkai = 0;
+    /** For bass scale */
+    private byte bassdta = 0;
+    /** For chord number storage */
+    private short codesav = 0;
 
-    private int bxsave = 0xffff; // Source address
-    public int linedta = 0; // Source line number
-    public byte ope_no = 1; // Channel number (=CH, 1-17)
-    public byte sendch = 0; // Actual transmission channel number (1-17)
-    private int disave = 0; // Performance data address storage address
-    private short disave3 = 0; // For tuplet length setting address storage
-    private short spsave = 0; // For stack storage
-    private int bef_len = 0; // End address of previous channel
-    public byte cal_num = 0; // $xx$ calling number
-    public byte symbol2 = 0; // b0=Debug info output flag, b1=No macro internal
+    /** Source address */
+    private int bxsave = 0xffff;
+    /** Source line number */
+    public int linedta = 0;
+    /** Channel number (=CH, 1-17) */
+    public byte ope_no = 1;
+    /** Actual transmission channel number (1-17) */
+    public byte sendch = 0;
+    /** Performance data address storage address */
+    private int disave = 0;
+    /** For tuplet length setting address storage */
+    private short disave3 = 0;
+    /** For stack storage */
+    private short spsave = 0;
+    /** End address of previous channel */
+    private int bef_len = 0;
+    /** $xx$ calling number */
+    public byte cal_num = 0;
+    /** b0=Debug info output flag, b1=No macro internal */
+    public byte symbol2 = 0;
     public final byte[] wordbuf = new byte[32];
-    public final byte[] rhyvol = new byte[] {31, 31, 31, 31, 31, 31};
+    public final byte[] rhyvol = {31, 31, 31, 31, 31, 31};
     // waitadd dw ? ; Previous WAIT command address
-    public byte from_no = 0; // Copy source tone number
-    public byte to_no = 0; // Copy destination tone number
-    public int rhyadrs = 0; // Rhythm data table address
-    public byte rtm_max = 0; // Rhythm remaining length storage
-    public byte volstt = 0; // Crescendo start volume
-    public int tmpstt = 0; // Ritardando start tempo
-    public byte lensave = 0; // For note analysis length storage
+    /** Copy source tone number */
+    public byte from_no = 0;
+    /** Copy destination tone number */
+    public byte to_no = 0;
+    /** Rhythm data table address */
+    public int rhyadrs = 0;
+    /** Rhythm remaining length storage */
+    public byte rtm_max = 0;
+    /** Crescendo start volume */
+    public byte volstt = 0;
+    /** Ritardando start tempo */
+    public int tmpstt = 0;
+    /** For note analysis length storage */
+    public byte lensave = 0;
 
-    public int tempos = 120; // Tempo storage
-    public byte volsave = 110; // Internal volume storage (@V110)
-    private byte lendata = 48; // Default length (L4)
-    public byte octdata = 3; // Octave (O4)
-    public byte octsave = 3; // For trill
-    public byte ratdata = 1; // Gate time ratio (Q7)
-    private byte maxrest = (byte) 192; // Maximum value for compressed rest (length of 1 measure)
+    /** Tempo storage */
+    public int tempos = 120;
+    /** Internal volume storage (@V110) */
+    public byte volsave = 110;
+    /** Default length (L4) */
+    private byte lendata = 48;
+    /** Octave (O4) */
+    public byte octdata = 3;
+    /** For trill */
+    public byte octsave = 3;
+    /** Gate time ratio (Q7) */
+    public byte ratdata = 1;
+    /** Maximum value for compressed rest (length of 1 measure) */
+    private byte maxrest = (byte) 192;
 
-    public byte tridta0 = 0; // Alteration data of root note
-    public byte tridta1 = 0; // Triller +,- specification
-    public byte tridta2 = 0; // Lower note
-    public byte totalen = 0; // Total length
-    public byte trillen = 0; // Triller length
-    public byte trionpu = 0; // Note code
-    public byte trildef = 6; // Trill speed
-    public byte slursav = 0; // Q value storage during trill
-    public byte debug = 0; // Whether to insert rest at end of measure
+    /** Alteration data of root note */
+    public byte tridta0 = 0;
+    /** Triller +,- specification */
+    public byte tridta1 = 0;
+    /** Lower note */
+    public byte tridta2 = 0;
+    /** Total length */
+    public byte totalen = 0;
+    /** Triller length */
+    public byte trillen = 0;
+    /** Note code */
+    public byte trionpu = 0;
+    /** Trill speed */
+    public byte trildef = 6;
+    /** Q value storage during trill */
+    public byte slursav = 0;
+    /** Whether to insert rest at end of measure */
+    public byte debug = 0;
 
-    public int panadrs = 0; // Current auto-pan position
+    /** Current auto-pan position */
+    public int panadrs = 0;
 
-    public int porta1 = 0; // Portamento start frequency
-    public int porta2 = 0; // Portamento end frequency
+    /** Portamento start frequency */
+    public int porta1 = 0;
+    /** Portamento end frequency */
+    public int porta2 = 0;
     public int freqsv1 = 0;
     public int freqsv2 = 0;
-    public int porcnt = 0; // Number of divisions
-    public byte slbase = (byte) 0xfc; // Slide displacement value
-    public byte slspeed = 6; // Slide speed
-    public byte accbase = 4; // Accent addition value
-    public byte dwnbase = 6; // Reverse accent addition value
+    /** Number of divisions */
+    public int porcnt = 0;
+    /** Slide displacement value */
+    public byte slbase = (byte) 0xfc;
+    /** Slide speed */
+    public byte slspeed = 6;
+    /** Accent addition value */
+    public byte accbase = 4;
+    /** Reverse accent addition value */
+    public byte dwnbase = 6;
     public int por_end = 0;
 
     // Following are 0-initialized per channel
-    public int dionpu = 0; // Address where previous note was
-    public byte[] dionpuBuf = new byte[256]; // Address where previous note was
-    public byte slurmod = 0; // Q storage during slur mode (b7=@si)
-    public int lastfrq = 0; // Frequency data of previous note (for &)
-    public byte harmno = 0; // Chord number of @harm
-    public byte codemod = 0; // Code conversion mode
-    public byte dt2mode = 0; // Multiple detune mode of ch3
-    private byte arpmode = 0; // Arpeggio mode
-    private byte arpharm = 0; // Number of chords to expand in arpeggio (1 word with arpmode)
+    /** Address where previous note was */
+    public int dionpu = 0;
+    /** Address where previous note was */
+    public byte[] dionpuBuf = new byte[256];
+    /** Q storage during slur mode (b7=@si) */
+    public byte slurmod = 0;
+    /** Frequency data of previous note (for &) */
+    public int lastfrq = 0;
+    /** Chord number of @harm */
+    public byte harmno = 0;
+    /** Code conversion mode */
+    public byte codemod = 0;
+    /** Multiple detune mode of ch3 */
+    public byte dt2mode = 0;
+    /** Arpeggio mode */
+    private byte arpmode = 0;
+    /** Number of chords to expand in arpeggio (1 word with arpmode) */
+    private byte arpharm = 0;
     private byte arplen = 0;
-    public byte volsft = 0; // Volume displacement of V=:
-    public byte nesting = 0; // () nest counter
-    public byte nest2 = 0; // $xx$ nest
-    public byte chglen = 0; // Previously specified length
-    private byte chgsav = 0; // For chglen storage before rest
-    private byte renplen = 0; // Previous chglen storage for tuplet
-    private byte restlen = 0; // Total length of consecutive rests
-    private int disave1 = 0; // Rest start address
-    private int disave2 = 0; // Rest end address
-    public int cresvol = 0; // Crescendo change amount
-    public int creslen = 0; // Crescendo length
+    /** Volume displacement of V=: */
+    public byte volsft = 0;
+    /** () nest counter */
+    public byte nesting = 0;
+    /** $xx$ nest */
+    public byte nest2 = 0;
+    /** Previously specified length */
+    public byte chglen = 0;
+    /** For chglen storage before rest */
+    private byte chgsav = 0;
+    /** Previous chglen storage for tuplet */
+    private byte renplen = 0;
+    /** Total length of consecutive rests */
+    private byte restlen = 0;
+    /** Rest start address */
+    private int disave1 = 0;
+    /** Rest end address */
+    private int disave2 = 0;
+    /** Crescendo change amount */
+    public int cresvol = 0;
+    /** Crescendo length */
+    public int creslen = 0;
     public int dcrelen = 0;
-    public int crescnt = 0; // Length from crescendo start
-    public int tmpdata = 0; // Value of @ACC,@RIT (signed)
-    public int tmplen = 0; // Its length
+    /** Length from crescendo start */
+    public int crescnt = 0;
+    /** Value of @ACC,@RIT (signed) */
+    public int tmpdata = 0;
+    /** Its length */
+    public int tmplen = 0;
     public int tmpcnt = 0;
-    public final byte[] dtdata = new byte[4]; // Detune value
-    public final byte[] dtshift = new byte[4]; // Detune shift value (attached with dtdata)
-    public byte rhydata = 0; // Rhythm tone
-    public byte jumpnes = 0; // Nest value
-    public byte ichosav = 0; // Transposition data (_C)
-    public int lastrp = 0; // Previous rhythm key-on/dump data
-    private byte macrof = 0; // Check of $name[]
-    public byte commode = 0; // b0=Lyric output presence, b1=Colored lyric mode
-    public byte mac_mod = 0; // Lowercase/uppercase conversion mode (b0,1)
-    public byte comcnt = 0; // Colored lyric position digit counter
-    public byte optimiz = 0; // Optimization flag (b0=tone, b1=pan, b2=volume, b3=rhythm)
-    public byte opt_tne = 0; // Tone number check
-    public byte opt_pan = 0; // Pan check
-    private byte opt_vol = 0; // Volume check
-    public int opt_rhy = 0; // Pan/volume check for rhythm
-    public byte ssgpcmm = 0; // SSGPCM mode
-    public byte ratmode = 0; // Q/@Q mode
-    public byte onpucnt = 0; // Counter for number of notes in tuplet
-    public byte ifflag = 0; // Execution flag for @if then etc.
+    /** Detune value */
+    public final byte[] dtdata = new byte[4];
+    /** Detune shift value (attached with dtdata) */
+    public final byte[] dtshift = new byte[4];
+    /** Rhythm tone */
+    public byte rhydata = 0;
+    /** Nest value */
+    public byte jumpnes = 0;
+    /** Transposition data (_C) */
+    public byte ichosav = 0;
+    /** Previous rhythm key-on/dump data */
+    public int lastrp = 0;
+    /** Check of $name[] */
+    private byte macrof = 0;
+    /** b0=Lyric output presence, b1=Colored lyric mode */
+    public byte commode = 0;
+    /** Lowercase/uppercase conversion mode (b0,1) */
+    public byte mac_mod = 0;
+    /** Colored lyric position digit counter */
+    public byte comcnt = 0;
+    /** Optimization flag (b0=tone, b1=pan, b2=volume, b3=rhythm) */
+    public byte optimiz = 0;
+    /** Tone number check */
+    public byte opt_tne = 0;
+    /** Pan check */
+    public byte opt_pan = 0;
+    /** Volume check */
+    private byte opt_vol = 0;
+    /** Pan/volume check for rhythm */
+    public int opt_rhy = 0;
+    /** SSGPCM mode */
+    public byte ssgpcmm = 0;
+    /** Q/@Q mode */
+    public byte ratmode = 0;
+    /** Counter for number of notes in tuplet */
+    public byte onpucnt = 0;
+    /** Execution flag for @if then etc. */
+    public byte ifflag = 0;
 
-    public final int[] alllen = new int[64]; // Total length + length between loop exits
+    /** Total length + length between loop exits */
+    public final int[] allLen = new int[64];
     // Length for nested parts in loop
-    public final int[] macrov = new int[18]; // Macro variable buffer
+    /** Macro variable buffer */
+    public final int[] macrov = new int[18];
     // Its text start address
-    public int macroflg = 0; // Variable specification flag
-    public final byte[] pandata = new byte[17]; // Auto-pan data
-    public final byte[] rhythmdta = new byte[44]; // Rhythm performance pattern
-    public final byte[] flatdata = new byte[7]; // ABCDEFG +- accidental
-    public final byte[] flatdata2 = new byte[54]; // Accidental valid for only 1 measure (o1-o8, o9)
-    public final int[] stttbl = new int[30]; // Start address of () n command, @ifexit address
+    /** Variable specification flag */
+    public int macroflg = 0;
+    /** Auto-pan data */
+    public final byte[] pandata = new byte[17];
+    /** Rhythm performance pattern */
+    public final byte[] rhythmdta = new byte[44];
+    /** ABCDEFG +- accidental */
+    public final byte[] flatdata = new byte[7];
+    /** Accidental valid for only 1 measure (o1-o8, o9) */
+    public final byte[] flatdata2 = new byte[54];
+    /** Start address of () n command, @ifexit address */
+    public final int[] stttbl = new int[30];
 
-    public final byte[] ichodta = new byte[] {(byte) 0xfd, (byte) 0xff, 0, 2, 4, 5, (byte) 0xfb};
-    public final byte[] musdata = new byte[] {9, 11, 0, 2, 4, 5, 7};
-    public final byte[] data1 = new byte[] {0x6a, 0x2, (byte) 0x8f, 0x2, (byte) 0xb6, 0x2, (byte) 0xdf, 0x2, 0x0b, 0x3, 0x39, 0x3, 0x6a, 0x3, (byte) 0x9e, 0x3, (byte) 0xde, 0x3, 0x10, 0x4, 0x4e, 0x4, (byte) 0x8f, 0x4};
-    public final byte[] data2 = new byte[] {(byte) 0xe8, 0xe, 0x12, 0xe, 0x48, 0xd, (byte) 0x89, 0xc, (byte) 0xd5, 0xb, 0x2b, 0xb, (byte) 0x8a, 0xa, (byte) 0xf3, 0x9, 0x64, 0x9, (byte) 0xdd, 0x8, 0x5e, 0x8, (byte) 0xe6, 0x7};
-    public final byte[] data3 = new byte[] {(byte) 0xbc, 0x49, 0x1e, 0x4e, (byte) 0xc4, 0x52, (byte) 0xaf, 0x57, (byte) 0xe6, 0x5c, 0x6c, 0x62, 0x47, 0x68, 0x7a, 0x6e, 0x0c, 0x75, 0x02, 0x7c, 0x61, (byte) 0x83, 0x31, (byte) 0x8b};
+    public static final byte[] ichodta = {(byte) 0xfd, (byte) 0xff, 0, 2, 4, 5, (byte) 0xfb};
+    public static final byte[] musdata = {9, 11, 0, 2, 4, 5, 7};
+    public static final byte[] data1 = {0x6a, 0x2, (byte) 0x8f, 0x2, (byte) 0xb6, 0x2, (byte) 0xdf, 0x2, 0x0b, 0x3, 0x39, 0x3, 0x6a, 0x3, (byte) 0x9e, 0x3, (byte) 0xde, 0x3, 0x10, 0x4, 0x4e, 0x4, (byte) 0x8f, 0x4};
+    public static final byte[] data2 = {(byte) 0xe8, 0xe, 0x12, 0xe, 0x48, 0xd, (byte) 0x89, 0xc, (byte) 0xd5, 0xb, 0x2b, 0xb, (byte) 0x8a, 0xa, (byte) 0xf3, 0x9, 0x64, 0x9, (byte) 0xdd, 0x8, 0x5e, 0x8, (byte) 0xe6, 0x7};
+    public static final byte[] data3 = {(byte) 0xbc, 0x49, 0x1e, 0x4e, (byte) 0xc4, 0x52, (byte) 0xaf, 0x57, (byte) 0xe6, 0x5c, 0x6c, 0x62, 0x47, 0x68, 0x7a, 0x6e, 0x0c, 0x75, 0x02, 0x7c, 0x61, (byte) 0x83, 0x31, (byte) 0x8b};
 
-    //
-    // Work area initialization
-    // entry CH = channel number (1 - 17)
-    //
-
+    /**
+     * Work area initialization
+     * entry CH = channel number (1 - 17)
+     */
     private void work_init() {
         r.push(r.es);
         r.push(r.ds);
@@ -726,7 +823,7 @@ public class Mucom2 {
         ratmode = 0; // Q/@Q mode
         onpucnt = 0; // Counter for number of notes in tuplet
         ifflag = 0; // Execution flag for @if then etc.
-        Arrays.fill(alllen, 0); // Total length + length between loop exits
+        Arrays.fill(allLen, 0); // Total length + length between loop exits
         // Length for nested parts in loop
         Arrays.fill(macrov, 0); // Macro variable buffer
         // Its text start address
@@ -775,17 +872,16 @@ public class Mucom2 {
         r.es = r.pop();
     }
 
-    //
-    // MML assembler entry
-    // entry CL = debug (0, 1, 5)
-    // exit CL = presence of error
-    //
-
+    /**
+     * MML assembler entry
+     * entry CL = debug (0, 1, 5)
+     * exit CL = presence of error
+     */
     public void compile() {
         r.push(r.cs);
         r.ds = r.pop();
         symbol2 = r.cl;
-        check_calplay(); // cal* call?
+        menu.checkCalPlay(); // cal* call?
         if (!r.zero) return;
 
         topx = MXPOS;
@@ -835,7 +931,7 @@ public class Mucom2 {
 //dspch2:
         for (int i = 0; i < 4; i++) {
             locatex = MXPOS + 12; // Display channel number
-            putstr("%+02d", curNum);
+            putstr("%+2d", curNum);
             curNum += 5;
             locatey++;
         }
@@ -846,8 +942,8 @@ public class Mucom2 {
 //selcal1:
         Arrays.fill(muap98.text_Buf, MACACHE, MACACHE + 52, (byte) 0); // Initialize cache buffer
         Arrays.fill(muap98.bufbuf, 64, 80, (byte) 0); // Clear common label area
-        maxlen[0] = 0; // Maximum length
-        maxlen[1] = 0;
+        maxLen[0] = 0; // Maximum length
+        maxLen[1] = 0;
         tempos = 120; // Tempo value (T120)
         mode[0] = 0;
         debug = 0; // Clear debug flag
@@ -881,50 +977,62 @@ public class Mucom2 {
         }
     }
 
-    //
-    // Version check
-    //
-
-    // Note: Permitted versions are as follows:
-    // V2.2# V2.3# V2.4# V2.5# V2.6#
-    // V3.0#
-    // V4.0#
-    // If not permitted or version notation not found, V3.0# (initial value)
-
+    /**
+     * Version check
+     *
+     * Note: Permitted versions are as follows:
+     * V2.2# V2.3# V2.4# V2.5# V2.6#
+     * V3.0#
+     * V4.0#
+     * If not permitted or version notation not found, V3.0# (initial value)
+     */
     private void ver_check() {
-//ver_check:
-        while (true) {
-            r.setAx(getSourceData(r.getBx()));
-            r.setBx((short) ((r.getBx() & 0xffff) + 1));
-            if ((r.al & 0xff) == 0xff) { // Is it EOF?
-                error15();
-                return;
-            }
-            if ((r.getBx() & 0xffff) >= muap98.sor_len) { // Note: originally >
-                error15();
-                return;
-            }
-            if (r.al == '_' && (r.ah == 'v' || r.ah == 'V')) break;
-        }
-//_ver1:
-        short v = getSourceData((r.getBx() & 0xffff) + 1);
-        int vInt = v & 0xff;
-        if (vInt < '2' || vInt > '4') {
-            ver_check();
-            return;
-        }
+ver_check:
+        {
+            do {
+                r.setAx(getSourceData(r.getBx()));
+                r.setBx((short) ((r.getBx() & 0xffff) + 1));
+                if ((r.al & 0xff) == 0xff) { // Is it EOF?
+                    error15();
+                    return;
+                }
+                if ((r.getBx() & 0xffff) >= muap98.sor_len) { // Note: originally >
+                    error15();
+                    return;
+                }
+                if (r.al != '_' && r.ah == 'v') {
+                    break;
+                }
+            } while (r.al != '_' || r.ah != 'V');
 
-        byte major = (byte) (muap98.sourceBuf[(r.getBx() & 0xffff) + 1] - '0');
-        byte minor = (byte) (muap98.sourceBuf[(r.getBx() & 0xffff) + 3] - '0');
-        if (major != 4 && major != 3 && !(major == 2 && minor >= 2 && minor <= 6)) {
-             // simplified logic from C# goto ver_check check
+//_ver1:
+            // V2.x#,V3.x#,V4.x#を許可
+            r.setAx(getSourceData((r.getBx() & 0xffff) + 1));
+            if ((r.getAx() & 0xffff) < '2' + ('.' * 0x100)) break ver_check;
+            if ((r.getAx() & 0xffff) > '4' + ('.' * 0x100)) break ver_check;
+            r.setAx(getSourceData((r.getBx() & 0xffff) + 3));
+            if ((r.getAx() & 0xffff) < '0' + ('#' * 0x100)) break ver_check;
+            if ((r.getAx() & 0xffff) > '9' + ('#' * 0x100)) break ver_check;
+
+            r.al = (byte) ((muap98.sourceBuf[(r.getBx() & 0xffff) + 1] & 0xff) - '0'); // AH = 整数桁
+            r.al <<= 4;
+            r.ah = (byte) ((muap98.sourceBuf[(r.getBx() & 0xffff) + 3] & 0xff) - '0'); // AL = 小数桁
+            r.al |= r.ah;
+
+            if (r.al < 0x22) break ver_check;
+            if (r.al != 0x40) {
+                if (r.al != 0x30) {
+                    if (r.al > 0x30) break ver_check;
+                    if (r.al > 0x26) break ver_check;
+                }
+            }
         }
 //_ver2:
-        mmlver = (byte) ((major << 4) | minor); // Save version number
+        mmlver = r.al; // Save version number
     }
 
     private void error15() {
-        check_calplay(); // cal* call?
+        menu.checkCalPlay(); // cal* call?
         if (r.zero) {
             r.pushA();
             r.push(r.ds);
@@ -935,20 +1043,22 @@ public class Mucom2 {
             r.di = 0; // ofs:bufbuf ; DS:DI = Error message storage address
             r.ah = 1;
             muap98.call_func(); // Transfer error message to bufbuf on CALL side
-            if (!r.carry) putword(""); // Display error message
+            if (!r.carry) {
+                putword(""); // Display error message
+            }
             r.ds = r.pop();
             r.popA();
         }
     }
 
-    //
-    // Channel 1-17 conversion loop
-    //
-
-    // assume nothing, cs:main ; To add CS: to variables
+    /**
+     * Channel 1-17 conversion loop
+     *
+     * assume nothing, cs:main ; To add CS: to variables
+     */
     private void recov8() throws MusCompileEndException, MusRecov8Exception {
-        while (true) {
-            check_calplay(); // cal* call?
+        do {
+            menu.checkCalPlay(); // cal* call?
             if (r.zero) {
                 r.setAx((short) 0x400);
                 pc98_Int18();
@@ -956,92 +1066,132 @@ public class Mucom2 {
                     // Abort on ESC press
                     locatex = MXPOS + 1;
                     locatey = MYPOS + 6;
+                    r.setDx((short) 0); // ofs:mess_9
                     putword(mess_9);
 //abort2:
-                    while (true) {
+                    do {
                         r.ah = 1;
                         pc98_Int18();
-                        if (r.bh == 0) break;
+                        if (r.bh == 0) {
+                            break;
+                        }
                         r.ah = 0;
                         pc98_Int18();
-                    }
+                    } while (true);
+
 //abort3:
-                    // Make it unplayable
-                    for (int i = 0; i < 34; i += 2) {
-                        muap98.objectBuf.set(i, new MmlDatum(r.al & 0xff));
-                        muap98.objectBuf.set(i + 1, new MmlDatum(r.ah & 0xff));
-                    }
-                    muap98.objectBuf.set(OBJTOP, new MmlDatum(0xfc));
+
+                    r.setAx((short) OBJTOP); // Make it unplayable
+                    r.di = 0;
+                    r.setCx((short) 17);
+                    do {
+                        muap98.objectBuf.set((r.di & 0xffff), new MmlDatum(r.al & 0xff));
+                        muap98.objectBuf.set((r.di & 0xffff) + 1, new MmlDatum(r.ah & 0xff));
+                        r.di += 2;
+                        r.setCx((short) ((r.getCx() & 0xffff) - 1));
+                    } while ((r.getCx() & 0xffff) != 0);
+
+                    r.di = OBJTOP;
+                    r.al = (byte) 0xfc;
+                    muap98.objectBuf.set(r.di & 0xffff, new MmlDatum(r.al & 0xff));
+                    r.di++;
+
                     r.ds = r.cs;
                     r.cl = 1; // Make it an error
+                    // jmp com_end_abort
                 }
             }
+
 //abort1:
             ope_no = r.ch; // Save channel number
-            sendch = r.ch;
+            sendch = r.ch; // mov sendch,ch
             work_init(); // Work area initialization
             linedta = 1; // Number of source lines
             work.row = 1; // Initialize row count
             work.col = 1; // Initialize column count
             work.oldbx = 0;
+
             r.setBx((short) srctop); // BX = Source start address
-            if (!recov7()) break;
-        }
+        } while (recov7());
     }
 
-    //
-    // Channel start X[] command search
-    //
-
+    /**
+     * Channel start X[] command search
+     */
     private boolean recov7() throws MusCompileEndException, MusRecov8Exception {
 //recov7:
-        while (true) {
-            mode[1] &= 0xfe; // [] conversion flag off
-            r.ch = ope_no; // Search channel number
-            if (chkpart()) return true; // Acquire 1 character of source content in AL
+        do {
+            do {
+                mode[1] &= 0xfe; // [] conversion flag off
+                r.ch = ope_no; // Search channel number
+                if (chkpart()) return true; // Acquire 1 character of source content in AL
 //skip_num:
-            if ((r.al & 0xff) >= '1' && (r.al & 0xff) <= '9') break;
-        }
-        boolean s = true;
-        r.dl = (byte) (r.al - '0'); // AL = 1-9
-        if (r.dl == 1) { // Channel 1 or 10-17
-            if (chkpart()) return true; // Check for 10-17
-            if ((r.al & 0xff) < '0' || (r.al & 0xff) > '7') s = false;
-            else r.dl = (byte) (r.al - 38); // AL = 10-17
-        }
-        if (s) {
+            } while ((r.al & 0xff) < '1' || (r.al & 0xff) > '9');
+
+            boolean s = true;
+            r.al = (byte) ((r.al & 0xff) - '0'); // AL = 1-9
+            if (r.al == 1) { // Channel 1 or 10-17
+                r.dl = r.al;
+                if (chkpart()) return true; // Check for 10-17
+                if ((r.al & 0xff) < '0' || (r.al & 0xff) > '7') s = false;
+                else r.dl = (byte) ((r.al & 0xff) - 38); // AL = 10-17
+            }
+            if (s) {
 //skip_chk1:
-            if (chkpart()) return true;
-        }
+                r.dl = r.al; // テキストの数字保存
+                if (chkpart()) return true;
+            }
 
-//not1015:
-        int ret = 0;
-        if (r.al == '[') ret = ch_nomulti(); // Single channel specification (| valid)
-        else if (r.al == ',') ret = ch_multi(); // Multiple specification
-        else if (r.al == '-') ret = cnt_multi(); // Consecutive specification
+not1015:
+            do {
+                int ret = 0;
+                if (r.al == '[') // Single channel specification (| valid)
+                    ret = ch_nomulti();
+                else if (r.al == ',') // Multiple specification
+                    ret = ch_multi();
+                else if (r.al == '-') // Consecutive specification
+                    ret = cnt_multi();
 
-        if (ret == 1) find4();
-        else if (ret == 2) return recov7();
-
-        return recov7();
+                switch (ret) {
+                    case 0: // goto recov7;
+                        break not1015;
+                    case 1:
+                        find4();
+                        break not1015;
+                    case 2:
+                        break; // not1015;
+                }
+            } while (true);
+        } while (true); // goto recov7;
     }
 
     /**
      * Processing for single specification (| valid).
      */
     private int ch_nomulti() {
-        if ((r.dl & 0xff) > (r.ch & 0xff)) return 0; // Ignore if larger
-        if (r.dl == r.ch) return 1; // Matched
-        int skip = (r.ch & 0xff) - (r.dl & 0xff); // '|' skip count
+        if ((r.dl & 0xff) > (r.ch & 0xff)) { // 現チャネル番号と比較
+            return 0; // Ignore if larger
+        }
+        if (r.dl == r.ch) {
+            return 1; // Matched
+        }
+        r.dl = (byte) ((r.ch & 0xff) - (r.dl & 0xff)); // '|' skip count
+        r.dl = (byte) -(r.dl & 0xff); // '|'スキップ数
+
+//chkskip:
         do {
             do {
                 do {
                     chkpart();
                 } while (r.carry); // Ignore 2nd byte of Kanji
-                if (r.al == ']') return 0; // Current op number data not in this x[]
+                if (r.al == ']') {
+                    return 0; // Current op number data not in this x[]
+                }
             } while (r.al != '|');
-            skip--;
-        } while (skip != 0);
+
+            r.dl--;
+        } while (r.dl != 0);
+
         return 1;
     }
 
@@ -1049,13 +1199,17 @@ public class Mucom2 {
      * Processing for multiple specification.
      */
     private int ch_multi() {
-        if (r.dl != r.ch) return 0; // '|' cannot be used for multiple specification
+        if (r.dl != r.ch) { // 現チャネル番号と比較
+            return 0; // '|' cannot be used for multiple specification
+        }
 //find5:
         do {
             do {
                 chkpart(); // Check "x,x[" multiple specification
-                if (r.al == '[') return 1; // Assemble if start mark found
+                if (r.al == '[')
+                    return 1; // Assemble if start mark found
             } while (r.al == ',' || r.al == '-'); // ? OK if valid characters between "x,x,..,x["
+
             mucomsub.chknum(); // Number check
         } while (!r.carry);
         return 0; // Non-numeric character in channel number (invalid)
@@ -1065,14 +1219,19 @@ public class Mucom2 {
      * Processing for consecutive specification.
      */
     private int cnt_multi() {
-        if ((r.dl & 0xff) > (r.ch & 0xff)) return 0; // Compare start channel number with current
+        if ((r.dl & 0xff) > (r.ch & 0xff)) { // Compare start channel number with current
+            return 0;
+        }
         r.dh = r.dl; // Start channel number
         chkpart(); // Check if next of - is a number
         if ((r.al & 0xff) < '1' || (r.al & 0xff) > '9') return 0; // Not a number
-        r.dl = (byte) (r.al - '0'); // AL = 1-9
-        if (r.dl == 1) { // Channel 1 or 10-17
+
+        r.al = (byte) (r.al - '0'); // AL = 1-9
+        if (r.al == 1) { // Channel 1 or 10-17
             chkpart();
-            if ((r.al & 0xff) >= '0' && (r.al & 0xff) <= '7') r.dl = (byte) (r.al - 38); // Check for 10-17
+            if ((r.al & 0xff) >= '0' && (r.al & 0xff) <= '7') { // Check for 10-17
+                r.dl = (byte) ((r.al & 0xff) - 38); // AL = 10-17
+            }
         }
 
 //skip_chk2:
@@ -1080,36 +1239,51 @@ public class Mucom2 {
         chkpart();
 
 //not10152:
-        if (r.al != '[' && r.al != ',' && r.al != '-') return 0; // Invalid data
+        if (r.al != '[' && r.al != ',') {
+            if (r.al != '-') {
+                return 0; // Invalid data
+            }
+        }
 
 //cntmul1:
-        if ((r.dl & 0xff) < (r.ch & 0xff)) return 2; // Compare with current channel number
+        if ((r.dl & 0xff) < (r.ch & 0xff)) { // Compare with current channel number
+            return 2; // DL に前のチャネル番号を入れて再チェック
+        }
+        // 範囲内にあった
 
 //tofind4:
-        if (r.al == '[') return 1; // Move BX to [ mark if within range
+        if (r.al == '[') { // Move BX to [ mark if within range
+            return 1;
+        }
 
 //tofind5:
         return ch_multi();
     }
 
-    //
-    // [ ] internal conversion loop processing
-    //
-
-    private int find4() throws MusCompileEndException, MusRecov8Exception {
+    /**
+     * [ ] internal conversion loop processing
+     *
+     * @throws MusCompileEndException
+     * @throws MusRecov8Exception
+     */
+    private int find4() {
         do {
             do {
                 mode[1] |= 1; // [] conversion flag on
                 chktxt(); // AL = Music control code
             } while (r.carry); // Ignore 2nd byte of Kanji
-            if (r.al == ']') return 0; // Is it termination code?
-            if (r.al == '|') {
+
+            if (r.al == ']') { // Is it termination code?
+                return 0;
+            }
+            if (r.al == '|') { // 次のチャネルへ移るなら終了
 //skipend:
                 do {
                     chktxt(); // Skip to "]" as "|" is end
                 } while (r.al != ']');
                 return 0;
             }
+
             r.ch = sendch; // Output channel number
             com_main(); // Assemble main routine
             r.push(r.getAx());
@@ -1121,14 +1295,13 @@ public class Mucom2 {
         return 1;
     }
 
-    //
-    // Acquire 1 character from source text
-    // entry DS:BX = source address
-    // exit AL = text data
-    // CY = 2nd byte of Kanji
-    // Other regs saved
-    //
-
+    /**
+     * Acquire 1 character from source text
+     * entry DS:BX = source address
+     * exit AL = text data
+     * CY = 2nd byte of Kanji
+     * Other regs saved
+     */
     public void chktxt() {
 //chktxt3_:
         while (true) {
@@ -1204,11 +1377,9 @@ public class Mucom2 {
         return false;
     }
 
-    //
-    // Processing when end of buffer or EOF is reached
-    //
-
     /**
+     * Processing when end of buffer or EOF is reached
+     *
      * Handled by throwing exceptions for returning.
      */
     public void theend() {
@@ -1222,10 +1393,12 @@ public class Mucom2 {
         }
         r.cl = 35;
         if (jumpnes != 0) { // Nest of @if exit/then
+//error19:
             error();
             return;
         }
 
+//theend1:
         r.al = (byte) 0xfc; // Store stop code
         muap98.objectBuf.set(r.di++, new MmlDatum(r.al & 0xff));
 
@@ -1240,35 +1413,65 @@ public class Mucom2 {
             int dataLen = (r.di & 0xffff) - bef_len; // Difference in data amount from previous channel
             bef_len = r.di & 0xffff;
             attr = (byte) 0xe1;
-            if ((ifflag & 1) != 0) attr = (byte) 0x81; // When executed @if then etc.
-
+            if ((ifflag & 1) != 0) {
+                attr = (byte) 0x81; // When executed @if then etc.
+            }
 //exeif1:
-            // Update maxlen[] if alllen[] is greater
-            int alllenHi = alllen[1] & 0xffff;
-            int alllenLo = alllen[0] & 0xffff;
-            int maxlenHi = maxlen[1] & 0xffff;
-            int maxlenLo = maxlen[0] & 0xffff;
-            r.zero = (alllenHi == maxlenHi);
-            r.carry = (alllenHi < maxlenHi);
+            // Update maxLen[] if allLen[] is greater
+            r.setDx((short) allLen[2 / 2]);
+            r.setAx((short) allLen[0 / 2]);
+            r.zero = (r.getDx() & 0xffff) == maxLen[2 / 2];
+            r.carry = (r.getDx() & 0xffff) < maxLen[2 / 2];
             if (!r.carry) {
                 boolean flg1 = false;
                 if (r.zero) {
-                    if (alllenLo <= maxlenLo) {
+                    if ((r.getAx() & 0xffff) <=  maxLen[0 / 2]) {
                         flg1 = true;
                     }
                 }
                 if (!flg1) {
 //maxchk2:
-                    maxlen[0] = (short) alllenLo;
-                    maxlen[1] = (short) alllenHi;
+                    maxLen[0 / 2] = r.getAx();
+                    maxLen[2 / 2] = r.getDx();
                 }
             }
 //maxchk1:
-            // Skip the divsafe display logic (no terminal output);
-            // still record per-channel total length for compilerInfo.
-            if (work.compilerInfo.totalCount == null) work.compilerInfo.totalCount = new ArrayList<>();
-            work.compilerInfo.totalCount.add((alllenHi << 16) | alllenLo);
-
+divsafe2:
+            {
+divsafe1:
+                {
+                    r.zero = r.getDx() == 2;
+                    r.carry = (r.getDx() & 0xffff) < 2;
+                    if (!r.carry) {
+                        if (r.carry || r.zero) {
+                            if ((r.getAx() & 0xffff) <= 0xed40) { // 999*192
+                                break divsafe1; // goto divsafe1;
+                            }
+                        }
+//divsafe3:
+                        r.push(r.ds);
+                        r.setDx((short) 0); // ofs:mess_2
+                        putword(mess_2); // over表示
+                        r.ds = r.pop();
+                        break divsafe2; // goto divsafe2;
+                    }
+                }
+//divsafe1: ↑
+                if (work.compilerInfo.totalCount == null) work.compilerInfo.totalCount = new ArrayList<>();
+                work.compilerInfo.totalCount.add(((r.getDx() & 0xffff) << 16) + (r.getAx() & 0xffff));
+                r.setBx((short) 192);
+                r.div(r.getBx());
+                //dsp4dec(); // 全音符の数
+                int zen = r.getAx() & 0xffff;
+                r.setAx(r.getDx());
+                r.dl = (byte) '.';
+                //putchr(r.dl);
+                zero = 1;
+                //dsp3dec(); // 端数
+                putstr("#%-2d : %4d.%03d", work.compilerInfo.totalCount.size(), zen, r.getAx());
+                zero = 0;
+            }
+//divsafe2: ↑
             short ans = r.pop();
             locatex = (byte) ans;
             locatey = (byte) (ans >> 8);
@@ -1282,10 +1485,13 @@ public class Mucom2 {
         set_labeladrs(); // Execute pass 2
         r.setCx(r.pop()); // Restore CX (CH = original channel number)
         r.ch++; // To next channel
-        if ((r.ch & 0xff) > 17) throw new MusCompileEndException();
+        if ((r.ch & 0xff) > 17) {
+            throw new MusCompileEndException(); // compile_end; check end(di = next end address)
+        }
         disave += 2; // Set next performance storage address
         muap98.objectBuf.set(disave, new MmlDatum(r.di & 0xff));
         muap98.objectBuf.set(disave + 1, new MmlDatum((r.di >> 8) & 0xff));
+
         throw new MusRecov8Exception();
     }
 
@@ -1367,7 +1573,7 @@ public class Mucom2 {
 
             // C# uses (sbyte)al sign-extended into si and `si = 0xffff - si`,
             // so for control codes 0xCE-0xFF this becomes index 0xff - opcode.
-            int skip = skipbyte[0xff - opcode] & 0xff;
+            int skip = skipByte[0xff - opcode] & 0xff;
             r.setBx((short) ((r.getBx() & 0xffff) + skip)); // Add the skip count
         }
     }
@@ -1474,28 +1680,27 @@ public class Mucom2 {
         r.ds = r.cs;
         muap98.obj_len = r.di & 0xffff; // Stores the length of the performance data.
         muap98.objectBuf.set(SYMDTA, new MmlDatum(symbol2 & 0xff)); // Set whether or not symbol information is present in ES:[22h].
-        muap98.objectBuf.set(0x26, new MmlDatum(maxlen[0] & 0xff)); // ES:[26h～29h] stores the maximum note length.
-        muap98.objectBuf.set(0x27, new MmlDatum((maxlen[0] >> 8) & 0xff));
-        muap98.objectBuf.set(0x28, new MmlDatum(maxlen[1] & 0xff));
-        muap98.objectBuf.set(0x29, new MmlDatum((maxlen[1] >> 8) & 0xff));
+        muap98.objectBuf.set(0x26, new MmlDatum(maxLen[0] & 0xff)); // ES:[26h～29h] stores the maximum note length.
+        muap98.objectBuf.set(0x27, new MmlDatum((maxLen[0] >> 8) & 0xff));
+        muap98.objectBuf.set(0x28, new MmlDatum(maxLen[1] & 0xff));
+        muap98.objectBuf.set(0x29, new MmlDatum((maxLen[1] >> 8) & 0xff));
 
         //
         // Displaying the end message
         //
-        check_calplay(); // Calling cal*?
+        check_calplay();; // Calling cal*?
         if (r.zero) {
             locatex = MXPOS + 1;
             locatey = MYPOS + 6;
             r.setDx((short) 0); // ofs:mess_7
             putword(mess_7);
-            putstr(" %5d", r.di & 0xffff);
             r.setAx(r.di);
             //dsp5decl(); // Similarly, display
             putstr("%5d", r.getAx() & 0xffff);
             r.setDx((short) 0); // ofs:mess_8
             putword(mess_8);
 
-            muap98.objectBuf.removeAll(r.getAx() & 0xffff);
+            muap98.objectBuf.removeAllAfter(r.getAx() & 0xffff);
         }
 //com_end3:
         r.setCx((short) 0); // CX = error flag clear (C# parity)
@@ -1505,20 +1710,24 @@ public class Mucom2 {
     }
 
     private void com_end2() {
-        check_calplay();
+        check_calplay(); // cal* 呼び出し?
         if (r.zero) {
-            if ((menu.crFlag & 0x40) == 0) {
+            if ((menu.crFlag & 0x40) == 0) { // 連続モードでは待たない
                 if (r.cl != 0 || (symbol2 & 4) == 0) {
-                    menu.checkVisualPlay();
+                    // エラー時は待機
+//selcal6:
+                    menu.checkVisualPlay(); // VisualPlay実行中?
                     if (r.zero) {
-                        r.ah = 0;
+                        r.ah = 0; // キー入力待ち
                         pc98_Int18();
                     }
                 }
             }
+//com_skip1:
             r.setDx((short) 0);
-            loadText();
+            loadText(); // 画面復活･プロセス終了
         }
+//selcal5:
         work_init();
     }
 
@@ -1554,11 +1763,12 @@ public class Mucom2 {
             locatey = MYPOS + 6;
             errMsg = calerror1[(r.cl & 0xff) - 1].replace("$", "") + mess_5.replace("$", "");
 
-            attr = (byte) (((attr & 0x1f) | (((attr >> 5) + 1) << 5)));
+            attr = (byte) (((attr & 0x1f) | (((attr >> 5) + 1) << 5))); // AL = 色番号(0-7)
 
             r.ah = 1;
             pc98_Int18();
         }
+
 //selcal3:
         r.cl = 1;
         com_end2(); // Set an error flag.
@@ -1623,7 +1833,7 @@ public class Mucom2 {
         r.setDx((short) tblIdx);
         r.setAx(r.pop());
         r.di = r.pop();
- logger.log(Level.ERROR, "error: tblIdx: %c".formatted((char) tblIdx));
+ logger.log(Level.TRACE, "error: tblIdx: %c".formatted((char) tblIdx));
         jpData[tblIdx / 2].run();
     }
 
@@ -1845,9 +2055,52 @@ public class Mucom2 {
             }
         }
 //arpp1:
-        // TODO FUKIN' GEMINI3 OMITTED TO TRANSLATE CODES BELOW BRAKING MY ORDER
-        // Logic for handling f4/fa codes... (omitted)
-        reset_arp();
+        r.al = (byte) muap98.objectBuf.get(r.di).dat;
+        r.ah = (byte) muap98.objectBuf.get(r.di + 1).dat; // Note code might not exist
+        if (r.al != 0xf4) {
+            // Is tone length code stored?
+            if (r.al == 0xfa) {
+                // Multiple detune mode?
+                r.push(r.di);
+                r.setCx((short) 9);
+//arpp8:
+                do {
+                    r.al = (byte) muap98.objectBuf.get(r.di + 8).dat;
+                    muap98.objectBuf.set(r.di + 11, new MmlDatum(r.al & 0xff)); // Move 9 bytes
+                    r.di--;
+                    r.setCx((short) ((r.getCx() & 0xffff) - 1));
+                } while (r.getCx() != 0);
+                r.di = r.pop();
+            } else {
+//arpp7:
+                muap98.objectBuf.set(r.di + 3, new MmlDatum(r.al & 0xff));
+                muap98.objectBuf.set(r.di + 4, new MmlDatum(r.ah & 0xff)); // Move note code (2 bytes)
+            }
+//arpp9:
+            muap98.objectBuf.set(r.di, new MmlDatum(0xf4));
+        }
+//arpp5:
+        r.di = (short) prevDi;
+        get_defarp();
+        r.al = r.dl;
+        r.mul(arpharm);
+        r.al += lensave; // AL = remaining note length
+        setrat();
+        r.push(r.getAx());
+        r.push(r.getDx());
+        get_defarp();
+        r.al -= r.dl;
+        r.al -= r.dl;
+        add_tlen();
+        r.setDx(r.pop());
+        r.setAx(r.pop());
+        r.al = (byte) muap98.objectBuf.get(prevDi).dat;
+        if ((r.al & 0xff) == 0xfa) {
+            // Multiple detune note data?
+            r.di = (short) ((r.di & 0xffff) + 7);
+        }
+        r.di = (short) ((r.di & 0xffff) + 2);
+        reset_arp(); // Clear arpeggio mode
         return 0;
     }
 
@@ -2974,7 +3227,7 @@ public class Mucom2 {
 
         rednums(); // Read digit from text
 
-        work.md.args.add((int) r.al); // Gate time value (int)
+        work.md.args.add((int) (byte) r.al); // Gate time value (int) - sign extended
 
         r.cl = 6; // Range check
         if ((r.al & 0xff) >= 9) {
@@ -3563,7 +3816,7 @@ public class Mucom2 {
     private void volshift2() {
         r.setBx((short) ((r.getBx() & 0xffff) + 2));
         rednums();
-        r.al = (byte) (-r.al);
+        r.al = (byte) -(r.al & 0xff);
         volsft = r.al; // Value to subtract from overall volume
     }
 
@@ -3663,10 +3916,10 @@ public class Mucom2 {
         r.push(r.getBx()); // AX = length to add
         r.ah = 0;
         calc_alllen();
-        long ans = (alllen[r.getBx() / 2] & 0xffff) + (alllen[r.getBx() / 2 + 1] & 0xffff) * 0x10000L;
+        long ans = (allLen[r.getBx() / 2] & 0xffff) + (allLen[r.getBx() / 2 + 1] & 0xffff) * 0x10000L;
         ans += (r.getAx() & 0xffff);
-        alllen[r.getBx() / 2] = (int) (ans & 0xffff);
-        alllen[r.getBx() / 2 + 1] = (int) ((ans >> 16) & 0xffff);
+        allLen[r.getBx() / 2] = (int) (ans & 0xffff);
+        allLen[r.getBx() / 2 + 1] = (int) ((ans >> 16) & 0xffff);
         r.setBx(r.pop());
         r.setAx(r.pop());
     }
@@ -3675,11 +3928,11 @@ public class Mucom2 {
         r.push(r.getAx());
         r.push(r.getBx());
         calc_alllen();
-        int zeroAx = 0;
-        alllen[r.getBx() / 2] = zeroAx; // Initialization at start of loop // Note: alllen is ushort type in C#
-        alllen[r.getBx() / 2 + 1] = zeroAx;
-        alllen[r.getBx() / 2 + 2] = zeroAx;
-        alllen[r.getBx() / 2 + 3] = zeroAx;
+        r.setAx((short) 0);
+        allLen[r.getBx() / 2] = r.getAx() & 0xffff; // Initialization at start of loop // Kuma: allLen is ushort type
+        allLen[r.getBx() / 2 + 1] = r.getAx() & 0xffff;
+        allLen[r.getBx() / 2 + 2] = r.getAx() & 0xffff;
+        allLen[r.getBx() / 2 + 3] = r.getAx() & 0xffff;
         r.setBx(r.pop());
         r.setAx(r.pop());
     }
@@ -3688,10 +3941,10 @@ public class Mucom2 {
         r.push(r.getAx());
         r.push(r.getBx());
         calc_alllen();
-        int axVal = alllen[r.getBx() / 2]; // Store length up to exit when exiting loop
-        alllen[(r.getBx() + 4) / 2] = axVal;
-        axVal = alllen[(r.getBx() + 2) / 2];
-        alllen[(r.getBx() + 6) / 2] = axVal;
+        int axVal = allLen[(r.getBx() & 0xffff) / 2]; // Store length up to exit when exiting loop
+        allLen[((r.getBx() & 0xffff) + 4) / 2] = axVal;
+        axVal = allLen[(r.getBx() + 2) / 2];
+        allLen[((r.getBx() & 0xffff) + 6) / 2] = axVal;
         r.setBx(r.pop());
         r.setAx(r.pop());
     }
@@ -3701,33 +3954,33 @@ public class Mucom2 {
         r.push(r.getBx());
         r.push(r.getDx());
         calc_alllen();
-        int dxVal = alllen[(r.getBx() + 4) / 2]; // DX = length within loop
-        dxVal |= alllen[(r.getBx() + 6) / 2];
+        int dxVal = allLen[(r.getBx() + 4) / 2]; // DX = length within loop
+        dxVal |= allLen[(r.getBx() + 6) / 2];
         long ans;
         if (dxVal != 0) {
-            dxVal = alllen[(r.getBx() + 4) / 2];
-            ans = (alllen[(r.getBx() - 8) / 2] & 0xffff) + (dxVal & 0xffff);
+            dxVal = allLen[(r.getBx() + 4) / 2];
+            ans = (allLen[(r.getBx() - 8) / 2] & 0xffff) + (dxVal & 0xffff);
             r.carry = ans > 0xffff;
-            alllen[(r.getBx() - 8) / 2] = (int) (ans & 0xffff); // Add to previous nest
-            dxVal = alllen[(r.getBx() + 6) / 2];
-            alllen[(r.getBx() + 6) / 2] = (dxVal & 0xffff) + (r.carry ? 1 : 0);
+            allLen[(r.getBx() - 8) / 2] = (int) (ans & 0xffff); // Add to previous nest
+            dxVal = allLen[(r.getBx() + 6) / 2];
+            allLen[(r.getBx() + 6) / 2] = (dxVal & 0xffff) + (r.carry ? 1 : 0);
             r.al--;
         }
 //looplen1:
         r.ah = 0; // AX = loop count
         r.push(r.getAx());
-        dxVal = alllen[r.getBx() / 2]; // [bx+2] is ignored
+        dxVal = allLen[r.getBx() / 2]; // [bx+2] is ignored
         long mulAns = (long) (r.getAx() & 0xff) * (dxVal & 0xffff);
         r.setAx((short) mulAns);
-        r.setDx((short) (mulAns >> 16));
-        ans = (alllen[(r.getBx() - 8) / 2] & 0xffff) + (r.getAx() & 0xffff);
+        r.setDx((short) (mulAns >>> 16));
+        ans = (allLen[(r.getBx() - 8) / 2] & 0xffff) + (r.getAx() & 0xffff);
         r.carry = ans > 0xffff;
-        alllen[(r.getBx() - 8) / 2] = (int) (ans & 0xffff); // Add to previous nest
-        alllen[(r.getBx() - 6) / 2] += (r.getDx() & 0xffff) + (r.carry ? 1 : 0);
+        allLen[(r.getBx() - 8) / 2] = (int) (ans & 0xffff); // Add to previous nest
+        allLen[(r.getBx() - 6) / 2] += (r.getDx() & 0xffff) + (r.carry ? 1 : 0);
         r.setAx(r.pop());
-        dxVal = alllen[(r.getBx() + 2) / 2];
+        dxVal = allLen[(r.getBx() + 2) / 2];
         mulAns = (long) (r.getAx() & 0xff) * (dxVal & 0xffff);
-        alllen[(r.getBx() - 6) / 2] += (int) mulAns;
+        allLen[(r.getBx() - 6) / 2] += (int) mulAns;
 
         r.setDx(r.pop());
         r.setBx(r.pop());
@@ -3735,13 +3988,13 @@ public class Mucom2 {
     }
 
     /**
-     * Calculate alllen address
+     * Calculate allLen address
      * exit DS:BX = macro cache address
      */
     private void calc_alllen() {
         r.setBx((short) 0);
         r.bl = nesting;
         r.setBx((short) ((r.getBx() & 0xff) << 3));
-        // add bx, ofs:alllen
+        // add bx, ofs:allLen
     }
 }

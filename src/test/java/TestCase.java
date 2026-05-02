@@ -202,6 +202,7 @@ Debug.println(mml);
 Debug.println("compile java --------");
         muap.console.Program.main(new String[] {testMML.toString()});
         assertTrue(Files.exists(testO), "java compile failed");
+Debug.println("java: " + Files.size(testO));
 
         // play
 Debug.println("play --------");

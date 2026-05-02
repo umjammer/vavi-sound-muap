@@ -36,7 +36,7 @@ public class MucomSub {
         this.muap98 = muap98;
         this.work = work;
 
-        InitCmddata();
+        initCmdData();
         initCmdJump();
         InitExCmdTbl();
     }
@@ -45,7 +45,7 @@ public class MucomSub {
     // Branch processing for extended command @xxxx
     //
     public void exp_cmd() {
-        r.setSi((short) 0); // ofs:cmddata
+        r.setSi((short) 0); // ofs:cmdData
         r.cl = 0;
 
 //cmd5:
@@ -54,7 +54,7 @@ public class MucomSub {
 
 //cmd2:
             do {
-                r.al = (byte) cmddata.charAt(r.getSi());
+                r.al = (byte) cmdData.charAt(r.getSi());
                 r.setSi((short) (r.getSi() + 1));
 
                 if ((r.al & 0xff) == 255) {
@@ -81,7 +81,7 @@ public class MucomSub {
 
 //cmd4:
             do {
-                r.al = (byte) cmddata.charAt(r.getSi()); // Move to next search character
+                r.al = (byte) cmdData.charAt(r.getSi()); // Move to next search character
                 r.setSi((short) (r.getSi() + 1));
             } while (r.al != ' ');
 
@@ -106,13 +106,13 @@ public class MucomSub {
         tonex(); // To @xx command
     }
 
-    private String cmddata;
+    private String cmdData;
 
     /**
      * Extended command initialization
      */
-    private void InitCmddata() {
-        cmddata = "V W JUMP CALL " // 0
+    private void initCmdData() {
+        cmdData = "V W JUMP CALL " // 0
                 + "RET LABEL XASM POR " // 4
                 + "## ++ -- _ " // 8
                 + "+ # - % " // 12
@@ -4914,7 +4914,7 @@ public class MucomSub {
         mucom2.dtdata[r.getSi() & 0xffff] = r.al;
 
         work.md.args.add("D"); // Normal detune
-        work.md.args.add((int) r.al); // Detune value (int)
+        work.md.args.add((int) (byte) r.al); // Detune value (int) - sign extended
         // Kuma: Since @DT is managed by the compiler, information is entrusted to the next command
         work.lstMd.add(work.copy(work.md, 0xff));
 
@@ -5356,7 +5356,7 @@ autotie0: {
             if ((r.getDx() & 0xffff) > 0x3fff) r.setDx((short) 0x3fff);
         } else {
 //not_o9:
-            r.al = (byte) (((r.al & 0xff) << 3) + (mucom2.data1[(r.getBx() & 0xffff) + 1] & 0xff)); // set F-Number1 & Block
+            r.al = (byte) ((r.al << 3) + mucom2.data1[(r.getBx() & 0xffff) + 1]); // set F-Number1 & Block
             r.dh = r.al;
             r.dl = mucom2.data1[r.getBx() & 0xffff];
         }
