@@ -1,5 +1,6 @@
 package muap.driver;
 
+import java.io.InputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
@@ -10,8 +11,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import dotnet4j.io.Stream;
-import dotnet4j.util.compat.Tuple;
 import muap.common.X86Register;
 import muap.driver.Ems.EMS_AllocMemory;
 import muap.driver.Ems.EMS_GetHandleName;
@@ -19,9 +18,10 @@ import muap.driver.Ems.EMS_Map;
 import muap.driver.Ems.EMS_SetHandleName;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
-import musicDriverInterface.MetaData;
 import musicDriverInterface.IDriver;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
+import vavi.util.compat.Tuple;
 
 
 public class Driver implements IDriver {
@@ -146,7 +146,7 @@ public class Driver implements IDriver {
     }
 
     @Override
-    public void init(List<ChipAction> chipsAction, MmlDatum[] srcBuf, Function<String, Stream> appendFileReaderCallback, Object... additionalOption) {
+    public void init(List<ChipAction> chipsAction, MmlDatum[] srcBuf, Function<String, InputStream> appendFileReaderCallback, Object... additionalOption) {
         writeOPNAP = chipsAction.get(0)::writeRegister;
         writeOPN2P = chipsAction.get(1)::writeRegister;
         writeC4231 = chipsAction.get(2)::writeRegister;

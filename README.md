@@ -34,7 +34,7 @@ this is a fork of [muapDotNET](https://github.com/kuma4649/muapDotNET)
 
 ## TODO
 
-* compiler
+* compiler ... some output is different from c#
 * test more samples
 
 ---

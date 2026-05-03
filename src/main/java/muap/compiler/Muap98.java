@@ -4,52 +4,42 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import dotnet4j.util.compat.Tuple3;
 import muap.common.MusException;
 import muap.common.X86Register;
 import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.MmlDatum;
 import musicDriverInterface.common.AutoExtendList;
+import vavi.util.compat.Tuple3;
 
 
-/**
- * Port of muap98. Provides buffer management and tone data initialization for the compiler.
- */
+/** */
 public class Muap98 {
 
-    /** Current mode flags */
     public final byte[] m_mode = new byte[] {0, 0, 0, 8};
-    /** Segment address for object data */
     public static final int object_ = 0xc000;
-    /** Buffer for compiled object data */
     public final AutoExtendList<MmlDatum> objectBuf = new AutoExtendList<>(MmlDatum.class);
-    /** Segment address for source data */
     public static final int source = 0xb000;
-    /** Buffer for source MML data */
     public byte[] sourceBuf = null;
-    /** Buffer for text data; note: TONEOFS buffer is defined separately */
-    public static final int text = 0xa800; // Kuma: TONEOFS buffer is defined separately
+    /** Kuma: TONEOFS buffer is defined separately */
+    public static final int text = 0xa800;
     public final byte[] text_Buf = new byte[0x8000];
-    /** Segment for tone data buffer ($124) */
-    public static final int tone = 0; // $124 tone data buffer segment
-    /** Buffer for storing tone data */
-    public byte[] toneBuff = null; // Kuma: Buffer for storing tone data
-    /** Buffer length for source data ($126) */
-    public static final int buflens = 0x8000; // $126 buffer length (source)
-    /** Buffer length for object data ($128) */
-    public static final int bufleno = 0x8000; // $128 buffer length (object)
-    /** Source data length ($12c) */
-    public int sor_len = 0; // $12c source data length
-    /** Object data length ($12e) */
-    public int obj_len = 0; // $12e object data length
+    /** $124 tone data buffer segment */
+    public static final int tone = 0;
+    /** Kuma: Buffer for storing tone data */
+    public byte[] toneBuff;
+    /** $126 buffer length (source) */
+    public static final int buflens = 0x8000;
+    /** $128 buffer length (object) */
+    public static final int bufleno = 0x8000;
+    /** $12c source data length */
+    public int sor_len = 0;
+    /** $12e object data length */
+    public int obj_len = 0;
     public final byte[] bufbuf = new byte[128];
     private final X86Register r;
 
-    /**
-     * Initializes the muap98 environment, loads source buffer, and reads tone data.
-     */
+    /** */
     public Muap98(byte[] srcBuf, X86Register reg, String tone_path, Work work) throws MusException {
-        // Initialize object buffer with MmlDatum instances
         for (int i = 0; i < 0x10000; i++) {
             objectBuf.set(i, new MmlDatum());
         }
@@ -60,7 +50,6 @@ public class Muap98 {
 
         File toneFile = new File(tone_path);
         if (!toneFile.exists()) {
-            // Error: Tone file not found
             String errorMsg = "%s was not found".formatted(tone_path);
             if (work.compilerInfo == null) work.compilerInfo = new CompilerInfo();
             work.compilerInfo.errorList.add(new Tuple3<>(-1, -1, errorMsg));
@@ -70,23 +59,20 @@ public class Muap98 {
         try {
             byte[] buf = Files.readAllBytes(toneFile.toPath());
             toneBuff = new byte[6400];
-            // Copy tone data, capping at 6400 bytes
             System.arraycopy(buf, 0, toneBuff, 0, Math.min(buf.length, 6400));
         } catch (IOException e) {
             throw new MusException("Error reading tone file: " + e.getMessage());
         }
     }
 
-    /**
-     * Executes external function calls if enabled in m_mode.
-     */
+    /** */
     public void call_func() {
         if ((m_mode[1] & 1) == 0) {
-            // Equivalent to je skip_call
+            //je skip_call
             r.carry = true;
             return;
         }
-        // call_add(); // Kuma: TBD
+        //call_add(); // Kuma: TBD
         r.carry = false;
     }
 }

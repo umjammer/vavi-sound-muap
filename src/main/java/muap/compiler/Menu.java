@@ -13,16 +13,14 @@ public class Menu {
         this.muap98 = muap98;
     }
 
-    public byte crflag = 0;
-    public byte inmode = 0;
+    public byte crFlag = 0;
+    public byte inMode = 0;
 
-    public void check_calplay() {
-        // Sets the zero flag based on the m_mode calculation
+    public void checkCalPlay() {
         r.zero = ((muap98.m_mode[0] & 2) == 0);
     }
 
-    public void check_visualplay() {
-        // Sets the zero flag based on the inmode calculation
-        r.zero = ((inmode & 8) == 0);
+    public void checkVisualPlay() {
+        r.zero = ((inMode & 8) == 0);
     }
 }

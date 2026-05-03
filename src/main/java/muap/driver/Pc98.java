@@ -11,9 +11,7 @@ import muap.common.X86Register;
 import musicDriverInterface.ChipDatum;
 
 
-/**
- * Hardware I/O for a NEC PC-9801 system.
- */
+/** */
 public class Pc98 {
 
     private static final Logger logger = System.getLogger(Pc98.class.getName());
@@ -39,14 +37,19 @@ public class Pc98 {
     private int sdm = 0;
 
     // FM sound source connection state
-    // 0: None, 1: YM2203, 2: YM3438, 3: YM2608+ADPCM, 4: YM2608+WSS, 5: YM2608+86B
-    private final int[][] connectFMDevice = new int[][] {
-            new int[] {
+    // 0: None
+    // 1: YM2203
+    // 2: YM3438
+    // 3: YM2608+ADPCM
+    // 4: YM2608+WSS
+    // 5: YM2608+86B
+    private final int[][] connectFMDevice = {
+            {
                     0, // 0x088~ None
                     4, // 0x188~ 98CanBe(YM2608+WSS) (OPNA series (3,4,5) must be defined here (0x188))
                     2  // 0x288~ YM3438
             },
-            new int[] {
+            {
                     0, // 0x088~ None
                     3, // 0x188~ Otomi-chan(YM2608+ADPCM) (OPNA series (3,4,5) must be defined here (0x188))
                     2  // 0x288~ YM3438
@@ -83,6 +86,7 @@ public class Pc98 {
             return readCS4231.apply((byte) 5); // IMR
         }
 
+        //logger.log(Level.TRACE, "IN-PORT Adr:%04X".formatted(dx));
         int m = (dx >> 8) & 0xff;
         int l = dx & 0xff;
 
@@ -119,27 +123,31 @@ public class Pc98 {
         // FM sound source port reading
         if (m <= connectFMDevice[sdm].length - 1) {
             if (connectFMDevice[sdm][m] == 1) { // YM2203
-                if (l == 0x88) return 0;
+                if (l == 0x88) return 0; // (byte) work.timerOPNA1.statReg;
                 if (l == 0x8a) {
+                    // SSG can be read
                     if ((fmAdr[m] & 0xff) < 0x10) return fmReg[m][fmAdr[m] & 0xff];
                 }
             } else if (connectFMDevice[sdm][m] == 2) { // YM3438
                 if (l == 0x88) return (byte) 0xff;
                 if (l == 0x8a) {
                     // SSG cannot be read
+                    //if (FM_Adr[m] < 0x10) return FM_Reg[m][FM_Adr[m]];
                     return 0;
                 }
-            } else if (connectFMDevice[sdm][m] == 3 || connectFMDevice[sdm][m] == 4 || connectFMDevice[sdm][m] == 5) { // YM2608 series
+            } else if (connectFMDevice[sdm][m] == 3 || // YM2608+ADPCM
+                    connectFMDevice[sdm][m] == 4 ||    // YM2608+WSS
+                    connectFMDevice[sdm][m] == 5) {    // YM2608+86B series
                 if (l == 0x88) {
                     return (byte) (work.timerOPNA1.statReg | 0x80);
                 } else if (l == 0x8a) {
                     if (lastPort == 0x88 && lastData == 0xff) return 1; // Identify as 2608
-                    if ((fmAdr[m] & 0xff) < 0x10) return fmReg[m][fmAdr[m] & 0xff];
+                    if ((fmAdr[m] & 0xff) < 0x10) return fmReg[m][fmAdr[m] & 0xff]; // SSG can be read
                     return 0;
                 } else if (l == 0x8c) {
                     return (byte) 0x88; // bit7: busy, bit3: pcm
                 } else if (l == 0x8d) {
-                    return 0x00; // YM3438 check port (bit7=1 would imply NOT 2608)
+                    return 0x00; // unknown port, YM3438 check port (bit7=1 would imply NOT 2608)
                 }
             }
         }
@@ -148,13 +156,17 @@ public class Pc98 {
     }
 
     public void outportB(int dx, byte al) {
+        //logger.log(Level.TRACE, "OUT-PORT Adr:%04X Dat:%02X".formatted(dx, al));
+
         int m = (dx >> 8) & 0xff;
         int l = dx & 0xff;
 
         if (m == 0x00) {
             if (dx == 0x00) {
                 // Interrupt controller
-                // EOI if al == 0x20
+                if (al == 0x20) {
+                    // EOI
+                }
                 return;
             } else if (dx == 0x02) {
                 // Interrupt controller
@@ -165,7 +177,13 @@ public class Pc98 {
                 ChipDatum cd = new ChipDatum(1, l, al & 0xff, 0, work.crntMmlDatum);
                 writeCS4231.accept(cd);
                 return;
-            } else if (dx == 0x15 || dx == 0x17 || dx == 0x19) {
+            } else if (dx == 0x15) {
+                // DMA related
+                return;
+            } else if (dx == 0x17) {
+                // DMA related
+                return;
+            } else if (dx == 0x19) {
                 // DMA related
                 return;
             } else if (dx == 0x5f) {
@@ -179,15 +197,28 @@ public class Pc98 {
 
         // CS4231 related
         if (m == 0x0f) {
-            int addr = -1;
-            if (l == 0x40) addr = 4;
-            else if (l == 0x44) addr = 0;
-            else if (l == 0x45) addr = 1;
-            else if (l == 0x46) addr = 2;
-
-            if (addr != -1) {
-                ChipDatum cd = new ChipDatum(0, addr, al & 0xff, 0, work.crntMmlDatum);
+            if (l == 0x40) {
+                ChipDatum cd = new ChipDatum(0, 4, al & 0xff, 0, work.crntMmlDatum);
                 writeCS4231.accept(cd);
+                //work.cs4231.writeReg(4, al);
+                return;
+            }
+            if (l == 0x44) {
+                ChipDatum cd = new ChipDatum(0, 0, al & 0xff, 0, work.crntMmlDatum);
+                writeCS4231.accept(cd);
+                //work.cs4231.writeReg(0, al);
+                return;
+            }
+            if (l == 0x45) {
+                ChipDatum cd = new ChipDatum(0, 1, al & 0xff, 0, work.crntMmlDatum);
+                writeCS4231.accept(cd);
+                //work.cs4231.writeReg(1, al);
+                return;
+            }
+            if (l == 0x46) {
+                ChipDatum cd = new ChipDatum(0, 2, al & 0xff, 0, work.crntMmlDatum);
+                writeCS4231.accept(cd);
+                //work.cs4231.writeReg(2, al);
                 return;
             }
         }
@@ -202,8 +233,7 @@ public class Pc98 {
                 //        0 = Use only YM2203(OPN) equivalent part
                 //        1 = Use YM2608(OPNA) extended part as well
                 return;
-            } else if (l == 0x6c) {
-                // 86PCM FIFO I/O
+            } else if (l == 0x6c) { // 86PCM FIFO I/O
                 _86PcmFifo = al & 0xff;
                 return;
             }
@@ -218,16 +248,24 @@ public class Pc98 {
             fmAdr[m * 2] = al;
         } else if (l == 0x8a) {
             fmReg[m * 2][fmAdr[m * 2] & 0xff] = al;
-            ChipDatum dat = new ChipDatum(0, fmAdr[m * 2] & 0xff, al & 0xff, 0, work.crntMmlDatum);
-            if (m == 1) writeOPNAP.accept(dat);
-            else writeOPN2P.accept(dat);
+            if (m == 1) {
+                ChipDatum dat = new ChipDatum(0, fmAdr[m * 2] & 0xff, al & 0xff, 0, work.crntMmlDatum);
+                writeOPNAP.accept(dat);
+            } else {
+                ChipDatum dat = new ChipDatum(0, fmAdr[m * 2] & 0xff, al & 0xff, 0, work.crntMmlDatum);
+                writeOPN2P.accept(dat);
+            }
         } else if (l == 0x8c) {
             fmAdr[m * 2 + 1] = al;
         } else if (l == 0x8e) {
             fmReg[m * 2 + 1][fmAdr[m * 2 + 1] & 0xff] = al;
-            ChipDatum dat = new ChipDatum(1, fmAdr[m * 2 + 1] & 0xff, al & 0xff, 0, work.crntMmlDatum);
-            if (m == 1) writeOPNAP.accept(dat);
-            else writeOPN2P.accept(dat);
+            if (m == 1) {
+                ChipDatum dat = new ChipDatum(1, fmAdr[m * 2 + 1] & 0xff, al & 0xff, 0, work.crntMmlDatum);
+                writeOPNAP.accept(dat);
+            } else {
+                ChipDatum dat = new ChipDatum(1, fmAdr[m * 2 + 1] & 0xff, al & 0xff, 0, work.crntMmlDatum);
+                writeOPN2P.accept(dat);
+            }
         }
     }
 
@@ -236,66 +274,77 @@ public class Pc98 {
         int l = dx & 0xff;
         if (l == 0x88) {
             ChipDatum dat = new ChipDatum(-1, 0, 0, 0, work.crntMmlDatum);
-            if (m == 1) writeOPNAP.accept(dat);
-            else writeOPN2P.accept(dat);
+            if (m == 1) {
+                writeOPNAP.accept(dat);
+            } else {
+                writeOPN2P.accept(dat);
+            }
         }
     }
 
-    public void OutportC4231_Adrs(byte channel, int index, int val) {
+    public void outportC4231_Adrs(byte channel, int index, int val) {
+        // adrs = 0
         ChipDatum cd = new ChipDatum(2, channel * 10 + index, val & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
         cd = new ChipDatum(2, channel * 10 + index, (val >> 8) & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
     }
 
-    public void OutportC4231_Cnt(byte channel, int index, int val) {
+    public void outportC4231_Cnt(byte channel, int index, int val) {
+        // cnt = 1
         ChipDatum cd = new ChipDatum(2, channel * 10 + 2 + index, val & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
         cd = new ChipDatum(2, channel * 10 + 2 + index, (val >> 8) & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
     }
 
-    public void OutportC4231_Freq(byte channel, int index, int val) {
+    public void outportC4231_Freq(byte channel, int index, int val) {
+        // freq = 2
         ChipDatum cd = new ChipDatum(2, channel * 10 + 4 + index, val & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
         cd = new ChipDatum(2, channel * 10 + 4 + index, (val >> 8) & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
     }
 
-    public void OutportC4231_Pan(byte channel, int index, int val) {
+    public void outportC4231_Pan(byte channel, int index, int val) {
+        // pan = 3
         ChipDatum cd = new ChipDatum(2, channel * 10 + 6 + index, val & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
         cd = new ChipDatum(2, channel * 10 + 6 + index, (val >> 8) & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
     }
 
-    public void OutportC4231_Volume(byte channel, int index, int val) {
+    public void outportC4231_Volume(byte channel, int index, int val) {
+        // volume = 4
         ChipDatum cd = new ChipDatum(2, channel * 10 + 8 + index, val & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
         cd = new ChipDatum(2, channel * 10 + 8 + index, (val >> 8) & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
     }
 
-    public void OutportC4231_Freq2(int val) {
+    public void outportC4231_Freq2(int val) {
+        // freq = 200
         ChipDatum cd = new ChipDatum(2, 200, val & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
         cd = new ChipDatum(2, 200, (val >> 8) & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
     }
 
-    public void OutportC4231_Jump1(int val) {
+    public void outportC4231_Jump1(int val) {
+        // jump1 = 201
         ChipDatum cd = new ChipDatum(2, 201, val & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
         cd = new ChipDatum(2, 201, (val >> 8) & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
     }
 
-    public void OutportC4231_Jump2(byte val) {
+    public void outportC4231_Jump2(byte val) {
+        // jump2 = 202
         ChipDatum cd = new ChipDatum(2, 202, val & 0xff, 0, work.crntMmlDatum);
         writeCS4231.accept(cd);
     }
 
-    public byte[] ReadOpnaPCMMemory(int port34, int v1, int v2) {
+    public byte[] readOpnaPCMMemory(int port34, int v1, int v2) {
         return new byte[] {(byte) 'M', (byte) 'P', (byte) '2', (byte) '3'};
     }
 

@@ -3,7 +3,7 @@
 
   <groupId>vavi</groupId>
   <artifactId>vavi-sound-muap</artifactId>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
 
   <build>
     <plugins>
@@ -23,6 +23,10 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.2.5</version>
         <configuration>
+          <forkCount>1</forkCount>
+          <environmentVariables>
+            <DTA>tmp/MUAP/IV</DTA>
+          </environmentVariables>
           <argLine>
             -Djava.util.logging.config.file=${project.build.testOutputDirectory}/logging.properties
           </argLine>
@@ -61,19 +65,13 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdi</artifactId>
-      <version>0.0.4</version>
+      <version>0.0.5</version>
     </dependency>
 
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdsound</artifactId>
-      <version>0.0.15</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.umjammer</groupId> <!-- moe.yo3explorer / com.github.umjammer -->
-      <artifactId>dotnet4j</artifactId>
-      <version>1.2.5</version>
+      <version>0.0.16</version>
     </dependency>
 
     <dependency>
@@ -107,6 +105,14 @@
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-commons</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
+      <artifactId>vavi-sound-mdi</artifactId>
+      <version>0.0.5</version>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
   </dependencies>

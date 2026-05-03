@@ -4,37 +4,38 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 
-import dotnet4j.io.FileStream;
-import dotnet4j.io.Stream;
-import dotnet4j.io.compat.StreamInputStream;
-import dotnet4j.util.compat.Tuple;
-import dotnet4j.util.compat.Tuple3;
 import muap.common.MusException;
 import muap.common.X86Register;
 import musicDriverInterface.CompilerInfo;
-import musicDriverInterface.MetaData;
 import musicDriverInterface.ICompiler;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.MmlDatum;
 import musicDriverInterface.common.AutoExtendList;
+import vavi.util.compat.Tuple;
+import vavi.util.compat.Tuple3;
 
 
 /**
- * Main compiler class for muapDotNET implementing the iCompiler interface.
+ * Main compiler class for muap implementing the iCompiler interface.
+ * <p></p>
+ * system. property
+ * <li>{@code muap.dir.dta} ... {@code tones.dta} file path</li>
  */
 public class Compiler implements ICompiler {
 
     private static final Logger logger = System.getLogger(Compiler.class.getName());
 
-    private static final ResourceBundle rb = ResourceBundle.getBundle("messages");
+    private static final ResourceBundle rb = ResourceBundle.getBundle("muap/message");
+    public static final Charset encoding = Charset.forName("ms932");
 
     private byte[] srcBuf = null;
     private Work work = null;
@@ -43,22 +44,22 @@ public class Compiler implements ICompiler {
     public Compiler() {
     }
 
+    /**
+     * @return null compile error
+     */
     @Override
-    public MmlDatum[] compile(Stream sourceMML, Function<String, Stream> appendFileReaderCallback) {
-        Muap98 muap98 = null;
+    public MmlDatum[] compile(InputStream sourceMML, Function<String, InputStream> appendFileReaderCallback) {
+        Muap98 muap98;
         try {
             if (work == null) work = new Work();
             work.compilerInfo = new CompilerInfo();
 
             srcBuf = readAllBytesFromText(sourceMML);
             X86Register r = new X86Register();
-
-            // Get environment variables to check for DTA path
-            Map<String, String> envVars = System.getenv();
-            if (envVars.containsKey("DTA")) {
-                tone_path = new File(envVars.get("DTA"), tone_path).getPath();
+            String dta = System.getProperty("muap.dir.dta");
+            if (dta != null) {
+                tone_path = new File(dta, tone_path).getPath();
             }
-
             muap98 = new Muap98(srcBuf, r, tone_path, work);
             Menu menu = new Menu(r, muap98);
             Mucom2 mc2 = new Mucom2(r, menu, muap98, null, work);
@@ -87,33 +88,40 @@ public class Compiler implements ICompiler {
             return obj.toArray(new MmlDatum[0]);
         } catch (MusException me) {
             // Log known compiler exceptions
+            logger.log(Level.TRACE, me.getMessage(), me);
             logger.log(Level.ERROR, me.getMessage());
         } catch (Exception e) {
             if (work.compilerInfo == null) work.compilerInfo = new CompilerInfo();
             work.compilerInfo.errorList.add(new Tuple3<>(-1, -1, e.getMessage()));
-            logger.log(Level.ERROR, String.format(rb.getString("E0000"), e.getMessage()), e);
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
 
-        // Removed Debug block containing hex dump for brevity
+//#if DEBUG
+//        if (muap98 != null) {
+//            for (int j = 0; j < 16 * 16; j++) {
+//                StringBuilder hex = new StringBuilder(String.format("%02X: ", j * 16));
+//                for (int i = 0; i < 16; i++) {
+//                    hex.append(String.format("%02X ", muap98.objectBuf.get(i + j * 16).dat));
+//                }
+//                logger.log(Level.TRACE, hex.toString());
+//            }
+//        }
+//#endif
 
         return null;
     }
 
-    public boolean compile(FileStream sourceMML, Stream destCompiledBin, Function<String, Stream> appendFileReaderCallback) {
+    public boolean compile(InputStream sourceMML, ByteArrayOutputStream destCompiledBin, Function<String, InputStream> appendFileReaderCallback) {
         MmlDatum[] dat = compile(sourceMML, appendFileReaderCallback);
         if (dat == null) {
             return false;
         }
-        try {
-            for (MmlDatum md : dat) {
-                if (md == null) {
-                    destCompiledBin.writeByte((byte) 0);
-                } else {
-                    destCompiledBin.writeByte((byte) md.dat);
-                }
+        for (MmlDatum md : dat) {
+            if (md == null) {
+                destCompiledBin.write((byte) 0);
+            } else {
+                destCompiledBin.write((byte) md.dat);
             }
-        } catch (dotnet4j.io.IOException e) {
-            return false;
         }
         return true;
     }
@@ -139,7 +147,7 @@ public class Compiler implements ICompiler {
 
     @Override
     public void init() {
-        // Method body is empty in source
+        //throw new UnsupportedOperationException();
     }
 
     @Override
@@ -155,43 +163,19 @@ public class Compiler implements ICompiler {
         }
     }
 
-    /**
-     * Read binary data in bulk from a stream.
-     */
-    private static byte[] ReadAllBytes(Stream stream) {
+    /** */
+    private static byte[] readAllBytesFromText(InputStream stream) {
         if (stream == null) return null;
 
-        byte[] buf = new byte[8192];
-        try (ByteArrayOutputStream ms = new ByteArrayOutputStream()) {
-            while (true) {
-                int r = stream.read(buf, 0, buf.length);
-                if (r < 1) {
-                    break;
-                }
-                ms.write(buf, 0, r);
+        try (BufferedReader sr = new BufferedReader(new InputStreamReader(stream, encoding));
+             ByteArrayOutputStream ms = new ByteArrayOutputStream()) {
+            String line;
+            while ((line = sr.readLine()) != null) {
+                ms.write(line.getBytes(encoding));
+                ms.write(new byte[] {(byte) 0xfe});
             }
+            ms.write(new byte[] {(byte) 0xff});
             return ms.toByteArray();
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    /**
-     * Read text from stream and convert to Shift-JIS array format.
-     */
-    private static byte[] readAllBytesFromText(Stream stream) {
-        if (stream == null) return null;
-
-        try (BufferedReader sr = new BufferedReader(new InputStreamReader(new StreamInputStream(stream), Charset.forName("Windows-31J")))) {
-            try (ByteArrayOutputStream ms = new ByteArrayOutputStream()) {
-                String line;
-                while ((line = sr.readLine()) != null) {
-                    ms.write(line.getBytes(Charset.forName("Windows-31J")));
-                    ms.write(new byte[] {(byte) 0xfe});
-                }
-                ms.write(new byte[] {(byte) 0xff});
-                return ms.toByteArray();
-            }
         } catch (IOException e) {
             return null;
         }

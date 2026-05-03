@@ -111,18 +111,21 @@ public class Play4 {
     private static final byte SAMPLE_BIT = 0b0010;
     private static final int O4CDATA = 0x987;
     // SAMPLE_DATA = 011b
-    // ;  44.10  33.08  22.05  16.54  11.03  8.27  5.52  4.13
-    // ;   000b   001b   010b   011b   100b  101b  110b  111b
-    // ;                    987h   65ah  4c3h
+    //   44.10  33.08  22.05  16.54  11.03  8.27  5.52  4.13
+    //    000b   001b   010b   011b   100b  101b  110b  111b
+    //                  987h   65ah   4c3h
 
-    // ; Performance work area
+    // Performance work area
 
-    private final byte[] chtbl2 = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}; // Channels to be changed by @ch command (1-17)
-    private int fadedata = 320; // Fade-out addition value
+    /** Channels to be changed by @ch command (1-17) */
+    private final byte[] chtbl2 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    /** Fade-out addition value */
+    private int fadedata = 320;
     private short spsave1 = 0;
     private short sssave1 = 0;
-    // ; VisualPlay Work 3
-    private int fade_count = 0; // Fade-out level counter
+    // VisualPlay Work 3
+    /** Fade-out level counter */
+    private int fade_count = 0;
 
     /**
      * b0 = EMS map, b1 = Performance in progress, b2 = @dataDisp
@@ -130,26 +133,35 @@ public class Play4 {
      * b7 = Timer re-entry
      */
     private byte mapflag = 0;
-    private final byte[] maxlen = new byte[] {0, 0, 0, 0}; // Max length
-    private final byte[] con_data = new byte[] {8, 8, 8, 8, 10, 14, 14, 15}; // Bit values of output operators by FM connection
-    private final byte[] out_data = new byte[] {0, 8, 4, 12}; // FM address and operator order
-    private byte realch = 0; // Actual channel number
+    /** Max length */
+    private final byte[] maxlen = {0, 0, 0, 0};
+    /** Bit values of output operators by FM connection */
+    private final byte[] con_data = {8, 8, 8, 8, 10, 14, 14, 15};
+    /** FM address and operator order */
+    private final byte[] out_data = {0, 8, 4, 12};
+    /** Actual channel number */
+    private byte realch = 0;
     private byte fifo_exec = 0;
     // even
-    public final byte[] pcmtable = new byte[(Nax.MAXPCM + 1) * 2]; // PCM tone management table (@0-99) // Kuma: Probably 99 instead of 89 typo
-    public byte[] ssgtable = new byte[21 * 2]; // SSGPCM tone management table (@0-19)
+    /** PCM tone management table (@0-99) // Kuma: Probably 99 instead of 89 typo */
+    public final byte[] pcmtable = new byte[(Nax.MAXPCM + 1) * 2];
+    /** SSGPCM tone management table (@0-19) */
+    public byte[] ssgtable = new byte[21 * 2];
 
-    // fadesave dw 160 ; For saving fade-out counter
-    // skipbyte ... ; Omitted in source
+//    /** For saving fade-out counter */
+    // fadesave dw 160
+//    /** Number of bytes in the control code - 1 */
+    // skipbyte db	0,0,0,0,0,8,0,3 ; FF-F8
     //       db     3,1,2,2,0,3,2,1 ; F7-F0
     //       db     1,2,1,1,1,2,2,0 ; EF-E8
     //       db     2,26,0,4,4,1,0,0; E7-E0
     //       db     0,1,1,3,3,3,6,1 ; DF-D8
-    //       db   1,1,2,4,4,0,0,1   ; D7-D0
+    //       db     1,1,2,4,4,0,0,1 ; D7-D0
     //       db     1,0             ; CF-CE
-    public byte init_cnt = 0; // Loop count
+    /** Loop count */
+    public byte init_cnt = 0;
 
-    // ; DMA, FIFO buffers
+    // DMA, FIFO buffers
 
     public byte dma_chan = 3;
     public int dma_adr = 0;
@@ -166,7 +178,8 @@ public class Play4 {
     // VisualPlay Work 1
 
     // even
-    private final byte[] data_buff = { // Buffer for work area, initialized in logic
+    /** Buffer for work area, initialized in logic */
+    private final byte[] data_buff = {
             48, 0, 48, 0, 48, 0, 48, 0,
             48, 0, 48, 0, 48, 0, 48, 0,
             48, 0, 48, 0, 48, 0, 48, 0,
@@ -416,18 +429,18 @@ public class Play4 {
     private static class Pcm0work {
 
         /** Extended PCM start address, EMS page */
-        public final int[] pcm0adrs = new int[] {0, 0};
+        public final int[] pcm0adrs = {0, 0};
         /** Decr counter for performance * 4 */
-        public final int[] pcm0cnt = new int[] {0, 0};
+        public final int[] pcm0cnt = {0, 0};
         /** Frequency */
-        public final int[] pcm0freq = new int[] {0, 0};
+        public final int[] pcm0freq = {0, 0};
         /** right+left pan and data (0/FFFF) */
-        public final int[] pcm0pan = new int[] {0, 0};
+        public final int[] pcm0pan = {0, 0};
         /** Volume */
-        public final int[] pcm0vol = new int[] {0, 0};
+        public final int[] pcm0vol = {0, 0};
     }
 
-    private final Pcm0work[] pcm0work = new Pcm0work[] {
+    private final Pcm0work[] pcm0work = {
             new Pcm0work(), new Pcm0work(), new Pcm0work(), new Pcm0work(),
             new Pcm0work(), new Pcm0work(), new Pcm0work(), new Pcm0work(),
             new Pcm0work(), new Pcm0work(), new Pcm0work(), new Pcm0work(),
@@ -451,8 +464,8 @@ public class Play4 {
     // PCM#16
 
     //pcmrseg    dw 0               ; PCM recording data storage segment
-    // SSGPCM play start address, end address, frequency
-    private final int[] pcmNadrs = new int[] {
+    /** SSGPCM play start address, end address, frequency */
+    private final int[] pcmNadrs = {
             0, 0, 0, // ch1
             0, 0, 0, // ch2
             0, 0, 0  // ch3
@@ -1173,10 +1186,10 @@ pcm_exit: {
         r.di = 0; // ofs:pcm0work
 //pcminit1:
         do {
-            nax.pc98.OutportC4231_Volume((byte) r.di, (byte) 0, (byte) 110); // PCM volume
+            nax.pc98.outportC4231_Volume((byte) r.di, (byte) 0, (byte) 110); // PCM volume
             r.setAx((short) 0xc008); // or al, al
-            nax.pc98.OutportC4231_Pan((byte) r.di, (byte) 0, r.getAx() & 0xffff); // PCM pan
-            nax.pc98.OutportC4231_Pan((byte) r.di, (byte) 1, r.getAx() & 0xffff);
+            nax.pc98.outportC4231_Pan((byte) r.di, (byte) 0, r.getAx() & 0xffff); // PCM pan
+            nax.pc98.outportC4231_Pan((byte) r.di, (byte) 1, r.getAx() & 0xffff);
             r.di++;
             r.setCx((short) ((r.getCx() & 0xffff) - 1));
         } while ((r.getCx() & 0xffff) > 0);
@@ -2606,7 +2619,7 @@ pcm_exit: {
 //pmd_pcm86:
                 calc_pcmwork(data_buff);
                 // pcm0work[r.di].pcm0freq[1] = r.dx; // extended PCM frequency data
-                nax.pc98.OutportC4231_Freq((byte) (r.di & 0xffff), (byte) 1, r.getDx() & 0xffff); // extended PCM frequency data
+                nax.pc98.outportC4231_Freq((byte) (r.di & 0xffff), (byte) 1, r.getDx() & 0xffff); // extended PCM frequency data
             }
         }
 //exit_pcm:
@@ -2790,7 +2803,7 @@ pcm_exit: {
         r.push(r.getDx());
         r.setDx((short) ((r.getDx() & 0xffff) >> 4));
         r.al = r.ah;
-        r.setAx(r.al);
+        r.setAx(/* signed */ r.al);
         int ans = r.getAx() * r.getDx();
         r.setDx((short) (ans >> 16));
         r.setAx((short) (ans & 0xffff));
@@ -4940,7 +4953,7 @@ pcm_exit: {
         }
 //comment2:
         comdataBuf[r.di] = 0; // finally store 0
-        comdata = new String(comdataBuf, 0, r.di, nax.myEnc);
+        comdata = new String(comdataBuf, 0, r.di, nax.encoding);
         logger.log(Level.INFO, comdata.substring(0, comdata.contains("\0") ? comdata.indexOf("\0") : 0));
         nax.lyric = comdata;
         r.di = r.pop();
@@ -5290,7 +5303,7 @@ pcm_exit: {
         r.al = (byte) (r.al - r.dh);
         if (r.carry) r.al = 0;
 
-        nax.pc98.OutportC4231_Volume((byte) (r.di & 0xffff), (byte) 0, r.al);
+        nax.pc98.outportC4231_Volume((byte) (r.di & 0xffff), (byte) 0, r.al);
         // diBuf[r.di].pcm0vol[0] = r.al;
         r.al = (byte) ((r.al & 0xff) << 1); // within range of 0-ffh
         r.al++;
@@ -5377,7 +5390,7 @@ pcm_exit: {
 
     private void extpcm_play() {
         calc_pcmwork(data_buff);
-        nax.pc98.OutportC4231_Freq((byte) (r.di & 0xffff), (byte) 1, r.getAx() & 0xffff); // extended PCM frequency data
+        nax.pc98.outportC4231_Freq((byte) (r.di & 0xffff), (byte) 1, r.getAx() & 0xffff); // extended PCM frequency data
         // pcm0work[r.di].pcm0freq[1] = r.ax; // extended PCM frequency data
         if ((data_buff[(r.getSi() & 0xffff) + TI] & 2) == 0) {
             check_mask();
@@ -5433,10 +5446,10 @@ pcm_exit: {
         calc_pcmwork(data_buff); // DI = PCM work
         // pushf
         // cli
-        nax.pc98.OutportC4231_Adrs((byte) (r.di & 0xffff), (byte) 0, r.getAx() & 0xffff); // PCM address (0 to 3FFFh)
-        nax.pc98.OutportC4231_Adrs((byte) (r.di & 0xffff), (byte) 1, r.getCx() & 0xffff); // EMS page (0 to 31)
-        nax.pc98.OutportC4231_Cnt((byte) (r.di & 0xffff), (byte) 0, r.getDx() & 0xffff);
-        nax.pc98.OutportC4231_Cnt((byte) (r.di & 0xffff), (byte) 1, r.getBx() & 0xffff);
+        nax.pc98.outportC4231_Adrs((byte) (r.di & 0xffff), (byte) 0, r.getAx() & 0xffff); // PCM address (0 to 3FFFh)
+        nax.pc98.outportC4231_Adrs((byte) (r.di & 0xffff), (byte) 1, r.getCx() & 0xffff); // EMS page (0 to 31)
+        nax.pc98.outportC4231_Cnt((byte) (r.di & 0xffff), (byte) 0, r.getDx() & 0xffff);
+        nax.pc98.outportC4231_Cnt((byte) (r.di & 0xffff), (byte) 1, r.getBx() & 0xffff);
         // pcm0work[r.di].pcm0adrs[0] = r.ax; // PCM address (0 to 3FFFh)
         // pcm0work[r.di].pcm0adrs[1] = r.cx; // EMS page (0 to 31)
         // pcm0work[r.di].pcm0cnt[0] = r.dx;
@@ -5537,8 +5550,8 @@ pcm_exit: {
         // pushf
         // cli
         r.setAx((short) 0);
-        nax.pc98.OutportC4231_Cnt((byte) (r.di & 0xffff), (byte) 0, r.getAx() & 0xffff); // +++ for extended PCM
-        nax.pc98.OutportC4231_Cnt((byte) (r.di & 0xffff), (byte) 1, r.getAx() & 0xffff);
+        nax.pc98.outportC4231_Cnt((byte) (r.di & 0xffff), (byte) 0, r.getAx() & 0xffff); // +++ for extended PCM
+        nax.pc98.outportC4231_Cnt((byte) (r.di & 0xffff), (byte) 1, r.getAx() & 0xffff);
         // pcm0work[r.di].pcm0cnt[0] = r.ax; // +++ for extended PCM
         // pcm0work[r.di].pcm0cnt[1] = r.ax;
         // popf
@@ -5599,7 +5612,7 @@ pcm_exit: {
             }
         }
 //pancode1:
-        nax.pc98.OutportC4231_Pan((byte) (r.di & 0xffff), (byte) 0, r.getDx() & 0xffff); // L
+        nax.pc98.outportC4231_Pan((byte) (r.di & 0xffff), (byte) 0, r.getDx() & 0xffff); // L
         // pcm0work[r.di].pcm0pan[0] = r.dx; // L
 
         r.setDx((short) 0xdcf6); // neg ah
@@ -5613,7 +5626,7 @@ pcm_exit: {
             }
         }
 //pancode2:
-        nax.pc98.OutportC4231_Pan((byte) (r.di & 0xffff), (byte) 1, r.getDx() & 0xffff); // R
+        nax.pc98.outportC4231_Pan((byte) (r.di & 0xffff), (byte) 1, r.getDx() & 0xffff); // R
         // pcm0work[r.di].pcm0pan[1] = r.dx; // R
     }
 
@@ -5688,12 +5701,12 @@ pcm_exit: {
         dsp_mode = r.al; // Save mode
         // cli
         jump1_ = 0x3e3e;
-        nax.pc98.OutportC4231_Jump1(jump1_);
+        nax.pc98.outportC4231_Jump1(jump1_);
         r.al--;
         if (r.al == 0) {
 //mode1:
             jump2_ = 0;
-            nax.pc98.OutportC4231_Jump2((byte) jump2_);
+            nax.pc98.outportC4231_Jump2((byte) jump2_);
 //mode_chg_exit:
             r.setAx(axbk);
             return;
@@ -5702,7 +5715,7 @@ pcm_exit: {
         if (r.al == 0) {
 //mode2:
             jump2_ = 1; // (short)(test_lop2_ - test_lop1_);
-            nax.pc98.OutportC4231_Jump2((byte) jump2_);
+            nax.pc98.outportC4231_Jump2((byte) jump2_);
 //mode_chg_exit:
             r.setAx(axbk);
             return;
@@ -5711,14 +5724,14 @@ pcm_exit: {
         if (r.al == 0) {
 //mode3:
             jump2_ = 2; // (short)(test_entry3_ - test_lop1_);
-            nax.pc98.OutportC4231_Jump2((byte) jump2_);
+            nax.pc98.outportC4231_Jump2((byte) jump2_);
 //mode_chg_exit:
             r.setAx(axbk);
             return;
         }
 
         jump1_ = (0xeb + (dsp_exit_ - jump1_ - 2) * 256) & 0xffff;
-        nax.pc98.OutportC4231_Jump1(jump1_);
+        nax.pc98.outportC4231_Jump1(jump1_);
 
 //mode_chg_exit:
         r.setAx(axbk);
