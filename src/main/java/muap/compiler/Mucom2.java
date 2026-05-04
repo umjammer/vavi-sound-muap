@@ -1175,8 +1175,8 @@ not1015:
         if (r.dl == r.ch) {
             return 1; // Matched
         }
-        r.dl = (byte) ((r.ch & 0xff) - (r.dl & 0xff)); // '|' skip count
-        r.dl = (byte) -(r.dl & 0xff); // '|'スキップ数
+        r.dl = (byte) ((r.dl & 0xff) - (r.ch & 0xff));
+        r.dl = (byte) -(r.dl & 0xff); // '|' skip count
 
 //chkskip:
         do {
@@ -3963,7 +3963,7 @@ divsafe1:
             r.carry = ans > 0xffff;
             allLen[(r.getBx() - 8) / 2] = (int) (ans & 0xffff); // Add to previous nest
             dxVal = allLen[(r.getBx() + 6) / 2];
-            allLen[(r.getBx() + 6) / 2] = (dxVal & 0xffff) + (r.carry ? 1 : 0);
+            allLen[(r.getBx() + 6) / 2] += (dxVal & 0xffff) + (r.carry ? 1 : 0);
             r.al--;
         }
 //looplen1:
