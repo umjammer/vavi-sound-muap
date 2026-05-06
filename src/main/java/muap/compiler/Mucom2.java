@@ -1006,7 +1006,7 @@ ver_check:
             } while (r.al != '_' || r.ah != 'V');
 
 //_ver1:
-            // V2.x#,V3.x#,V4.x#を許可
+            // V2.x#,V3.x#,V4.x# allow
             r.setAx(getSourceData((r.getBx() & 0xffff) + 1));
             if ((r.getAx() & 0xffff) < '2' + ('.' * 0x100)) break ver_check;
             if ((r.getAx() & 0xffff) > '4' + ('.' * 0x100)) break ver_check;
@@ -1014,9 +1014,9 @@ ver_check:
             if ((r.getAx() & 0xffff) < '0' + ('#' * 0x100)) break ver_check;
             if ((r.getAx() & 0xffff) > '9' + ('#' * 0x100)) break ver_check;
 
-            r.al = (byte) ((muap98.sourceBuf[(r.getBx() & 0xffff) + 1] & 0xff) - '0'); // AH = 整数桁
+            r.al = (byte) ((muap98.sourceBuf[(r.getBx() & 0xffff) + 1] & 0xff) - '0'); // AH = integer digits
             r.al <<= 4;
-            r.ah = (byte) ((muap98.sourceBuf[(r.getBx() & 0xffff) + 3] & 0xff) - '0'); // AL = 小数桁
+            r.ah = (byte) ((muap98.sourceBuf[(r.getBx() & 0xffff) + 3] & 0xff) - '0'); // AL = Decimal places
             r.al |= r.ah;
 
             if (r.al < 0x22) break ver_check;
@@ -1138,7 +1138,7 @@ ver_check:
             }
             if (s) {
 //skip_chk1:
-                r.dl = r.al; // テキストの数字保存
+                r.dl = r.al; // Save numbers in text
                 if (chkpart()) return true;
             }
 
@@ -1169,7 +1169,7 @@ not1015:
      * Processing for single specification (| valid).
      */
     private int ch_nomulti() {
-        if ((r.dl & 0xff) > (r.ch & 0xff)) { // 現チャネル番号と比較
+        if ((r.dl & 0xff) > (r.ch & 0xff)) { // Compare with the current channel number
             return 0; // Ignore if larger
         }
         if (r.dl == r.ch) {
@@ -1199,7 +1199,7 @@ not1015:
      * Processing for multiple specification.
      */
     private int ch_multi() {
-        if (r.dl != r.ch) { // 現チャネル番号と比較
+        if (r.dl != r.ch) { // Compare with the current channel number
             return 0; // '|' cannot be used for multiple specification
         }
 //find5:
@@ -1247,9 +1247,9 @@ not1015:
 
 //cntmul1:
         if ((r.dl & 0xff) < (r.ch & 0xff)) { // Compare with current channel number
-            return 2; // DL に前のチャネル番号を入れて再チェック
+            return 2; // Enter the previous channel number in DL and check again.
         }
-        // 範囲内にあった
+        // It was within range
 
 //tofind4:
         if (r.al == '[') { // Move BX to [ mark if within range
@@ -1276,7 +1276,7 @@ not1015:
             if (r.al == ']') { // Is it termination code?
                 return 0;
             }
-            if (r.al == '|') { // 次のチャネルへ移るなら終了
+            if (r.al == '|') { // To move to the next channel, end the channel.
 //skipend:
                 do {
                     chktxt(); // Skip to "]" as "|" is end
@@ -1451,7 +1451,7 @@ divsafe1:
 //divsafe3:
                         r.push(r.ds);
                         r.setDx((short) 0); // ofs:mess_2
-                        putword(mess_2); // over表示
+                        putword(mess_2); // over display
                         r.ds = r.pop();
                         break divsafe2; // goto divsafe2;
                     }
@@ -1461,13 +1461,13 @@ divsafe1:
                 work.compilerInfo.totalCount.add(((r.getDx() & 0xffff) << 16) + (r.getAx() & 0xffff));
                 r.setBx((short) 192);
                 r.div(r.getBx());
-                //dsp4dec(); // 全音符の数
+                //dsp4dec(); // Number of whole notes
                 int zen = r.getAx() & 0xffff;
                 r.setAx(r.getDx());
                 r.dl = (byte) '.';
                 //putchr(r.dl);
                 zero = 1;
-                //dsp3dec(); // 端数
+                //dsp3dec(); // fraction
                 putstr("#%-2d : %4d.%03d", work.compilerInfo.totalCount.size(), zen, r.getAx());
                 zero = 0;
             }
@@ -1710,22 +1710,22 @@ divsafe1:
     }
 
     private void com_end2() {
-        check_calplay(); // cal* 呼び出し?
+        check_calplay(); // Calling cal*?
         if (r.zero) {
-            if ((menu.crFlag & 0x40) == 0) { // 連続モードでは待たない
+            if ((menu.crFlag & 0x40) == 0) { // Don't wait in continuous mode.
                 if (r.cl != 0 || (symbol2 & 4) == 0) {
-                    // エラー時は待機
+                    // Wait if an error occurs.
 //selcal6:
-                    menu.checkVisualPlay(); // VisualPlay実行中?
+                    menu.checkVisualPlay(); // Is VisualPlay running?
                     if (r.zero) {
-                        r.ah = 0; // キー入力待ち
+                        r.ah = 0; // Waiting for key input
                         pc98_Int18();
                     }
                 }
             }
 //com_skip1:
             r.setDx((short) 0);
-            loadText(); // 画面復活･プロセス終了
+            loadText(); // Screen restored / Process completed
         }
 //selcal5:
         work_init();
@@ -1763,7 +1763,7 @@ divsafe1:
             locatey = MYPOS + 6;
             errMsg = calerror1[(r.cl & 0xff) - 1].replace("$", "") + mess_5.replace("$", "");
 
-            attr = (byte) (((attr & 0x1f) | (((attr >> 5) + 1) << 5))); // AL = 色番号(0-7)
+            attr = (byte) (((attr & 0x1f) | (((attr >> 5) + 1) << 5))); // AL = Color numbers (0-7)
 
             r.ah = 1;
             pc98_Int18();
