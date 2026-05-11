@@ -1420,17 +1420,17 @@ public class MucomSub {
     public void pan_check() {
         r.push(r.getSi());
         r.push(r.getAx());
-        int siVal = (mucom2.panadrs & 0xffff);
-        r.al = mucom2.pandata[siVal];
+        r.setSi((short) mucom2.panadrs);
+        r.al = mucom2.pandata[r.getSi() & 0xffff];
         if (r.al == 0) {
-            siVal = 0; // ofs:pandata
-            mucom2.panadrs = (short) siVal; // Pan pattern address initialization
+            r.setSi((short) 0); // ofs:pandata
+            mucom2.panadrs = r.getSi(); // Pan pattern address initialization
         }
 //panchk1:
-        r.al = mucom2.pandata[siVal];
+        r.al = mucom2.pandata[r.getSi() & 0xffff];
         if (r.al != 0) {
             r.setSi((short) ((r.getSi() + 1) & 0xffff));
-            mucom2.panadrs = (short) siVal;
+            mucom2.panadrs = r.getSi();
             r.ah = r.al;
             set_pan(); // Pan specification
         }
@@ -1936,8 +1936,8 @@ public class MucomSub {
             r.setDx(r.pop());
             return;
         }
-        r.mul((byte) mucom2.cresvol);
-        r.div((byte) r.getCx()); // AX = current volume shift value
+        r.mul((short) (mucom2.cresvol & 0xffff));
+        r.div(r.getCx()); // AX = current volume shift value
         r.setAx((short) ((r.getAx() & 0xffff) + 1)); // Add 1
         r.setCx(r.getAx());
         r.setDx(r.pop());
@@ -2591,13 +2591,12 @@ public class MucomSub {
         r.ah = r.dl;
         r.dl = r.dh;
         r.dh = 0;
-        int porCntVal = (mucom2.porcnt & 0xffff);
-        r.div((byte) porCntVal); // Divide upper 16bit
+        r.div((short) (mucom2.porcnt & 0xffff)); // Divide upper 16bit
         r.setCx(r.getAx());
         r.setAx(r.pop());
         r.ah = r.al;
         r.al = 0;
-        r.div((byte) porCntVal); // Divide lower 16bit
+        r.div((short) (mucom2.porcnt & 0xffff)); // Divide lower 16bit
         r.setDx(r.getCx()); // DXAX = quotient
     }
 
@@ -5090,7 +5089,7 @@ autotie0: {
             break autotie0;
         }
         r.setDx((short) mucom2.lastfrq); // Consistent with previous frequency?
-        r.zero = (r.getDx() == ((muap98.objectBuf.get(r.di - 2).dat & 0xff) | ((muap98.objectBuf.get(r.di - 1).dat & 0xff) << 8))); // Compare with current frequency
+        r.zero = ((r.getDx() & 0xffff) == ((muap98.objectBuf.get(r.di - 2).dat & 0xff) | ((muap98.objectBuf.get(r.di - 1).dat & 0xff) << 8))); // Compare with current frequency
         if (!r.zero) {
             break autotie0;
         }
