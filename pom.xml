@@ -59,7 +59,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-commons</artifactId>
-      <version>1.1.16</version>
+      <version>1.1.17</version>
     </dependency>
 
     <dependency>
@@ -83,7 +83,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId>
       <artifactId>vavi-sound</artifactId>
-      <version>1.0.24</version>
+      <version>1.0.25</version>
     </dependency>
 
     <dependency>
