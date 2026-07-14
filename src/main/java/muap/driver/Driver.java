@@ -74,7 +74,7 @@ public class Driver implements IDriver {
     }
 
     @Override
-    public MmlDatum[] getDATA() {
+    public MmlDatum[] getData() {
         throw new UnsupportedOperationException();
     }
 
@@ -137,12 +137,13 @@ public class Driver implements IDriver {
         }
     }
 
+    /** @return "work": work, "omt0bEnt": runnable? */
     @Override
-    public Object getWork() {
-        return new Object[] {
-                work.fifoBuf,
-                (Runnable) this::int0BEnt
-        };
+    public Map<String, Object> getWork() {
+        return Map.of(
+                "work", work.fifoBuf,
+                "int0bEnt", (Runnable) this::int0BEnt
+        );
     }
 
     @Override

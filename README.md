@@ -27,15 +27,15 @@ this is a fork of [muapDotNET](https://github.com/kuma4649/muapDotNET)
 
 | name | type | status | desxription |
 |------|------|:------:|-------------|
-| MUS  | MML  |   ️?   |             |
+| MUS  | MML  |   ✅️   |             |
 | O    | SEQ  |   ✅️   |             |
 | OX   | SEQ  |   ️    |             |
-| OY   | SEQ  |   ️    |             |
+| OY   | SEQ  |   ✅️   |             |
 
 ## TODO
 
-* compiler ... some output is different from c#
-* test more samples
+* ~~compiler ... some output is different from c#~~
+* ~~test more samples~~
 
 ---
 
