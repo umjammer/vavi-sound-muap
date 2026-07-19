@@ -2793,6 +2793,7 @@ public class MucomSub {
             // CL = rhythm number (0-5)
         }
 //rpan1:
+        r.ch = 0;
         int cxVal = (r.getCx() & 0xffff); // SI = rhythm volume buffer
         r.dh = (byte) ((r.cl & 0xff) + 0x18); // DH = output address
         chkcm();
@@ -3280,8 +3281,8 @@ public class MucomSub {
                 r.setDx(r.pop());
                 r.setAx((short) ((r.getAx() & 0xffff) - (r.getSi() & 0xffff)));
                 r.setAx((short) ((r.getAx() + 1) & 0xffff));
-                muap98.objectBuf.add(r.getSi() & 0xffff, new MmlDatum(r.al & 0xff));
-                muap98.objectBuf.add(r.getSi() & 0xffff, new MmlDatum(r.ah & 0xff));
+                muap98.objectBuf.set(r.getSi() & 0xffff, new MmlDatum(r.al & 0xff));
+                muap98.objectBuf.set((r.getSi() & 0xffff) + 1, new MmlDatum(r.ah & 0xff));
                 mucom2.jumpnes--;
                 r.al = mucom2.chglen; // Set previous note length and ratio
                 mucom2.setrat();

@@ -1134,7 +1134,7 @@ ver_check:
                 r.dl = r.al;
                 if (chkpart()) return true; // Check for 10-17
                 if ((r.al & 0xff) < '0' || (r.al & 0xff) > '7') s = false;
-                else r.dl = (byte) ((r.al & 0xff) - 38); // AL = 10-17
+                else r.al = (byte) ((r.al & 0xff) - 38); // AL = 10-17
             }
             if (s) {
 //skip_chk1:
@@ -1227,16 +1227,19 @@ not1015:
         if ((r.al & 0xff) < '1' || (r.al & 0xff) > '9') return 0; // Not a number
 
         r.al = (byte) (r.al - '0'); // AL = 1-9
+        boolean s = true;
         if (r.al == 1) { // Channel 1 or 10-17
+            r.dl = r.al;
             chkpart();
-            if ((r.al & 0xff) >= '0' && (r.al & 0xff) <= '7') { // Check for 10-17
-                r.dl = (byte) ((r.al & 0xff) - 38); // AL = 10-17
-            }
+            if ((r.al & 0xff) < '0' || (r.al & 0xff) > '7') s = false;
+            else r.al = (byte) ((r.al & 0xff) - 38); // AL = 10-17
         }
 
+        if (s) {
 //skip_chk2:
-        r.dl = r.al; // Save text number
-        chkpart();
+            r.dl = r.al; // Save text number
+            chkpart();
+        }
 
 //not10152:
         if (r.al != '[' && r.al != ',') {
@@ -1637,7 +1640,7 @@ divsafe1:
                     r.ah = 0;
                     r.setAx((short) ((r.getAx() & 0xffff) + (r.getAx() & 0xffff)));
                     r.setSi((short) ((r.getSi() & 0xffff) + (r.getAx() & 0xffff)));
-                    r.setAx((short)(muap98.bufbuf[r.getSi() & 0xffff] | (muap98.bufbuf[(r.getSi() & 0xffff) + 1] << 8))); // Read the address of the variable @label.
+                    r.setAx((short) ((muap98.bufbuf[r.getSi() & 0xffff] & 0xff) | ((muap98.bufbuf[(r.getSi() & 0xffff) + 1] & 0xff) << 8))); // Read the address of the variable @label.
                     r.zero = r.getAx() == 0;
                     r.cl = 26;// @label Not set
                     if (r.zero) { error(); return; }
@@ -1647,7 +1650,7 @@ divsafe1:
                     r.cl = 27;// Infinite loop
                     if (r.zero) { error(); return; }
                     muap98.objectBuf.set(r.getBx() & 0xffff, new MmlDatum(r.al & 0xff));
-                    muap98.objectBuf.set((r.getBx() & 0xffff) + 1, new MmlDatum((r.ah & 0xff00) >> 8));
+                    muap98.objectBuf.set((r.getBx() & 0xffff) + 1, new MmlDatum(r.ah & 0xff));
                 }
             }
 //local2:
