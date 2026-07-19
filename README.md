@@ -19,6 +19,13 @@ this is a fork of [muapDotNET](https://github.com/kuma4649/muapDotNET)
 
  [sample](src/test/java/TestCase.java)
 
+### system properties
+
+* `code muap.dir.dta` ... FM tone file (TONES.DTA) dir, default is current dir
+* `code muap.dir.pcm` ... PCM tone files dir, default is current dir
+* `code muap.dir.udp` ... tone file user PCM (optional) dir, default is current dir
+* `code muap.dir.sud` ... tone file SUB user PCM (optional) dir, default is current dir
+
 ## References
 
 * https://packensoft.music.coocan.jp/
@@ -36,6 +43,7 @@ this is a fork of [muapDotNET](https://github.com/kuma4649/muapDotNET)
 
 * ~~compiler ... some output is different from c#~~
 * ~~test more samples~~
+* ~~make it same as the real original for pc98~~
 
 ---
 
