@@ -24,6 +24,14 @@ import musicDriverInterface.MmlDatum;
 import vavi.util.compat.Tuple;
 
 
+/**
+ * system property
+ *
+ * <li>{@code muap.dir.dta} ... FM tone file (TONES.DTA) dir, default is current dir</li>
+ * <li>{@code muap.dir.pcm} ... PCM tone files dir, default is current dir</li>
+ * <li>{@code muap.dir.udp} ... tone file user PCM (optional) dir, default is current dir</li>
+ * <li>{@code muap.dir.sud} ... tone file SUB user PCM (optional) dir, default is current dir</li>
+ */
 public class Driver implements IDriver {
 
     private static final Logger logger = System.getLogger(Driver.class.getName());
