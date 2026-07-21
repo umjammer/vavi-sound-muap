@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-import net.ucanaccess.util.Logger;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;

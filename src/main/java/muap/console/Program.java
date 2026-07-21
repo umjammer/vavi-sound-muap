@@ -83,7 +83,7 @@ public class Program {
         boolean isSuccess = false;
         try (
                 InputStream sourceMML = Files.newInputStream(java.nio.file.Path.of(srcFile));
-                ByteArrayOutputStream destCompiledBin = new ByteArrayOutputStream();
+                ByteArrayOutputStream destCompiledBin = new ByteArrayOutputStream()
         ) {
 
             if (isSeli) {

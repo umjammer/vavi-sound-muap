@@ -4914,7 +4914,7 @@ public class MucomSub {
         mucom2.dtdata[r.getSi() & 0xffff] = r.al;
 
         work.md.args.add("D"); // Normal detune
-        work.md.args.add((int) (byte) r.al); // Detune value (int) - sign extended
+        work.md.args.add((int) r.al); // Detune value (int) - sign extended
         // Kuma: Since @DT is managed by the compiler, information is entrusted to the next command
         work.lstMd.add(work.copy(work.md, 0xff));
 

@@ -1493,7 +1493,7 @@ public class Nax {
             reg.setCx((short) MAXCUS);
 
             int n = (buf.length - bufPtr);
-            n = n > (reg.getCx() & 0xffff) ? (reg.getCx() & 0xffff) : n;
+            n = Math.min(n, (reg.getCx() & 0xffff));
             if (n == 0) break;
             System.arraycopy(buf, bufPtr, cusbuff, 0, n);
             bufPtr += n;
@@ -1917,7 +1917,7 @@ public class Nax {
                     logger.log(Level.ERROR, "File not found. {0}", ssg1_path);
                 }
                 pcmBuff = new byte[pcmlen];
-                System.arraycopy(buf, 0, pcmBuff, 0, buf.length > pcmlen ? pcmlen : buf.length);
+                System.arraycopy(buf, 0, pcmBuff, 0, Math.min(buf.length, pcmlen));
                 reg.ds = dsbk;
             }
         }
@@ -1942,7 +1942,7 @@ public class Nax {
                 }
             }
             toneBuff = new byte[6400];
-            System.arraycopy(buf, 0, toneBuff, 0, buf.length > 6400 ? 6400 : buf.length);
+            System.arraycopy(buf, 0, toneBuff, 0, Math.min(buf.length, 6400));
             reg.ds = dsbk;
         }
 

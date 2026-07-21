@@ -296,7 +296,7 @@ public class Mucom2 {
         r.push(r.getDx());
         r.setDx((short) ((r.getDx() & 0xffff) >> 4));
         r.al = r.ah;
-        r.setAx((short) (byte) r.al); // sign extend
+        r.setAx(r.al); // sign extend
         int ans = r.getAx() * r.getDx();
         r.setDx((short) (ans >> 16));
         r.setAx((short) ans);
@@ -1691,7 +1691,7 @@ divsafe1:
         //
         // Displaying the end message
         //
-        check_calplay();; // Calling cal*?
+        check_calplay();// Calling cal*?
         if (r.zero) {
             locatex = MXPOS + 1;
             locatey = MYPOS + 6;
@@ -3230,7 +3230,7 @@ divsafe1:
 
         rednums(); // Read digit from text
 
-        work.md.args.add((int) (byte) r.al); // Gate time value (int) - sign extended
+        work.md.args.add((int) r.al); // Gate time value (int) - sign extended
 
         r.cl = 6; // Range check
         if ((r.al & 0xff) >= 9) {
