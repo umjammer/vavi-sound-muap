@@ -1,6 +1,7 @@
 package muap.console;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
@@ -66,11 +67,11 @@ public class Program {
         //compiler.setCompileSwitch("IDE");
         //compiler.setCompileSwitch("SkipPoint=R19:C30");
 
-        java.io.File srcIo = new java.io.File(srcFile);
+        File srcIo = new File(srcFile);
         String srcStem = srcIo.getName();
         int dotIdx = srcStem.lastIndexOf('.');
         if (dotIdx >= 0) srcStem = srcStem.substring(0, dotIdx);
-        String destFileName = new java.io.File(srcIo.getParentFile(), srcStem + ".o").getAbsolutePath();
+        String destFileName = new File(srcIo.getParentFile(), srcStem + ".o").getAbsolutePath();
         if (destFile != null) {
             destFileName = destFile;
         }
@@ -82,7 +83,7 @@ public class Program {
 
         boolean isSuccess = false;
         try (
-                InputStream sourceMML = Files.newInputStream(java.nio.file.Path.of(srcFile));
+                InputStream sourceMML = Files.newInputStream(Path.of(srcFile));
                 ByteArrayOutputStream destCompiledBin = new ByteArrayOutputStream()
         ) {
 

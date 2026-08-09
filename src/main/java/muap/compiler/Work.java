@@ -8,22 +8,22 @@ import musicDriverInterface.MmlDatum;
 
 
 /** */
-public class Work {
+class Work {
 
-    public CompilerInfo compilerInfo = null;
-    public String sourceFileName = "";
+    CompilerInfo compilerInfo = null;
+    String sourceFileName = "";
     public int row = 0;
     public int col = 0;
-    public int oldbx;
-    public int ontei;
+    int oldbx;
+    int ontei;
     public byte oct;
     public MmlDatum md;
-    public int otoLength; // Note length
-    public String crntChip;
-    public int crntChannel;
-    public String crntPart;
-    public final List<MmlDatum> lstMd = new ArrayList<>();
-    public int mdArgsStep = 0;
+    int otoLength; // Note length
+    String crntChip;
+    int crntChannel;
+    String crntPart;
+    final List<MmlDatum> lstMd = new ArrayList<>();
+    int mdArgsStep = 0;
 
     /** */
     public MmlDatum copy(MmlDatum md, int dat) {
@@ -38,7 +38,7 @@ public class Work {
     }
 
     /** */
-    public MmlDatum FlashLstMd(MmlDatum md) {
+    public MmlDatum flashLstMd(MmlDatum md) {
         mdArgsStep = 0;
         if (md == null) return null;
 

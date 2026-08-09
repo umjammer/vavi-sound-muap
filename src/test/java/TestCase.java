@@ -19,6 +19,7 @@ import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -61,6 +62,12 @@ class TestCase {
     @Property
     String ext;
 
+    @BeforeAll
+    static void setupAll() throws Exception {
+        Path tmp = Path.of("tmp");
+        if (!Files.exists(tmp)) Files.createDirectory(tmp);
+    }
+
     @BeforeEach
     void setup() throws Exception {
         if (localPropertiesExists()) {
@@ -79,6 +86,7 @@ Debug.println("volume: " + System.getProperty("muap.volume"));
 
     @Test
     @DisplayName("play")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test1() throws Exception {
 Debug.print(file);
         muap.player.Program.main(new String[]{file});
@@ -148,7 +156,6 @@ Debug.println(e);
 
     @Test
     @DisplayName("compile & compare & play")
-    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test6() throws Exception {
 Debug.println(mml);
         Path testMML = Path.of("tmp/test_java.mus");
@@ -183,12 +190,12 @@ Debug.println("java: " + Files.size(testO));
 
         // play
 Debug.println("play --------");
-        muap.player.Program.main(new String[] {testO.toString()});
+        if ("ide".equals(System.getProperty("vavi.test")))
+            muap.player.Program.main(new String[] {testO.toString()});
     }
 
     @Test
     @DisplayName("compile & play")
-    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test7() throws Exception {
 Debug.println(mml);
         Path testMML = Path.of("tmp/test_java.mus");
@@ -205,6 +212,7 @@ Debug.println("java: " + Files.size(testO));
 
         // play
 Debug.println("play --------");
-        muap.player.Program.main(new String[] {testO.toString()});
+        if ("ide".equals(System.getProperty("vavi.test")))
+            muap.player.Program.main(new String[] {testO.toString()});
     }
 }

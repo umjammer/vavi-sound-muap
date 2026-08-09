@@ -1,0 +1,87 @@
+_V3.0#
+
+
+;			    FUNNY SQUARE
+
+;			composed by ARIKAMA
+
+1[
+	Z@100,@92,E,7,4,
+		31,10, 8, 4, 2, 30,0, 7,-3,
+		31,10, 8, 4, 2,  0,0, 2,-1,
+		31,10, 8, 4, 2, 20,0, 7, 1,
+		31,10, 8, 4, 2,  0,0, 2, 3,
+]
+
+1[ @dt20 @r | @dt-8 r8. v-10 | @l ]
+
+1,2,3[
+	@lfop,1,40,4,10,1
+	@pv2 @av2
+@label1
+	@92
+	o5
+	@w1
+	l8
+	gfedefgabgfegaa+>cd<a+fdg {f?g!f} e2.d2<a+4>d4fd
+	a+{a?a+!a}g1!
+
+	>d<bag>c<gaefa>c agfc<gfgd>cd{c?d!c}<b2.!
+	>c2 de<gbagfb!>c2.!~
+@jump1
+]
+
+
+
+4[ @dt20 | @dt-8 ]
+
+
+4,5[
+	t157
+	@lfop,1,100,2,0,3
+	pa 60,10,5,5,1
+	l8 q8 @q2
+	@pv50
+@label1
+	( c4gg?gg? )2
+
+	( c4gg?gg? )4
+	( <a+4>ff?ff? )2
+	( c4gg?gg? )2
+
+	( c4gg?gg? )3
+	<g4>dd?dd?
+	c4gg?gg? <g4>gg?gg? 
+	c4gg?gg?
+@jump1
+
+]
+
+6[
+	@dt-2
+	@lfop,1,100,2
+	pa 60,10,5,5,1
+	l8 q8 @q2
+	@pv50
+@label1
+	( c4ee?ee? )2
+
+	( c4ee?ee? )4
+	( <a+4>dd?dd? )2
+	( c4ee?ee? )2
+
+	( c4ee?ee? )3
+	<g4bb?bb?>
+	c4ee?ee? <g4>dd?dd? 
+	c4ee?ee?
+@jump1
+]
+
+
+
+;	Å@Å@ÇΩÇÌÇ≤Ç∆
+
+;	Å@ëßî≤Ç´Ç‡ëÂêÿÇ≈Ç∑ÇÀÅöúc
+
+
+

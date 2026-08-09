@@ -2,26 +2,26 @@ package muap.driver;
 
 
 /** */
-public class FMTimer {
+class FMTimer {
 
     /** Timer A overflow set value */
-    public int timerA;
+    int timerA;
     /** Timer A counter value */
-    protected double timerACounter;
+    private double timerACounter;
     /** Timer B overflow set value */
-    public int timerB;
+    int timerB;
     /** Timer B counter value */
-    protected double timerBCounter;
+    private double timerBCounter;
     /** Timer control register (lower 4 bits + bit 7) */
-    public int timerReg;
-    public double step;
+    int timerReg;
+    double step;
 
     /** Status register (lower 2 bits) */
     public int statReg;
     public Runnable csmKeyOn;
 
     /** */
-    public FMTimer(int renderingFreq, int masterClock) {
+    FMTimer(int renderingFreq, int masterClock) {
     }
 
     /** */

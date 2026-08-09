@@ -36,7 +36,7 @@ public class Driver implements IDriver {
 
     private static final Logger logger = System.getLogger(Driver.class.getName());
 
-    public static final long cOPNAMasterClock = 7987200L;
+    private static final long cOPNAMasterClock = 7987200L;
 
     private final Object lockObjInt0BEnt = new Object();
     private final Object lockObjWriteReg = new Object();
@@ -44,12 +44,12 @@ public class Driver implements IDriver {
     private Consumer<ChipDatum> writeOPN2P;
     private Consumer<ChipDatum> writeC4231;
     private Function<Byte, Byte> readC4231;
-    public Supplier<byte[]> cs4231EMS_GetCurrentMapBuf;
-    public EMS_Map cs4231EMS_Map;
-    public Supplier<Integer> cs4231EMS_GetPageMap;
-    public EMS_GetHandleName cs4231EMS_GetHandleName;
-    public EMS_SetHandleName cs4231EMS_SetHandleName;
-    public EMS_AllocMemory cs4231EMS_AllocMemory;
+    private Supplier<byte[]> cs4231EMS_GetCurrentMapBuf;
+    private EMS_Map cs4231EMS_Map;
+    private Supplier<Integer> cs4231EMS_GetPageMap;
+    private EMS_GetHandleName cs4231EMS_GetHandleName;
+    private EMS_SetHandleName cs4231EMS_SetHandleName;
+    private EMS_AllocMemory cs4231EMS_AllocMemory;
 
     private BiFunction<Byte, Byte, Boolean> write8253;
     private final Map<String, String> envVars = Map.of(
@@ -68,7 +68,7 @@ public class Driver implements IDriver {
     private String objPath = null;
     private int sdm = 0;
 
-    public final short[] sound = new short[] {0, 0};
+    public final short[] sound = {0, 0};
 
     public Driver() {
         work.sound = sound;
@@ -220,7 +220,7 @@ public class Driver implements IDriver {
 
                 boolean flg = false;
                 if (work._8253timer.getCh0Stat() != 0) {
-                    if (nax != null) nax.Int08Entry();
+                    if (nax != null) nax.int08Entry();
                 }
 
                 flg = switch (work.currentTimer) {
@@ -228,7 +228,7 @@ public class Driver implements IDriver {
                     default -> flg;
                 };
                 if (flg) {
-                    if (nax != null) nax.TimerEntry();
+                    if (nax != null) nax.timerEntry();
                 }
             }
         } catch (Exception ex) {
@@ -284,7 +284,7 @@ public class Driver implements IDriver {
         throw new UnsupportedOperationException();
     }
 
-    public void writeOPNAPRegister(ChipDatum reg) {
+    private void writeOPNAPRegister(ChipDatum reg) {
         synchronized (lockObjWriteReg) {
             if (reg.port == 0) {
                 Boolean ret = work.timerOPNA1 != null ? work.timerOPNA1.writeReg((byte) reg.address, (byte) reg.data) : null;
@@ -295,19 +295,19 @@ public class Driver implements IDriver {
         }
     }
 
-    public void writeOPN2PRegister(ChipDatum reg) {
+    private void writeOPN2PRegister(ChipDatum reg) {
         synchronized (lockObjWriteReg) {
             if (writeOPN2P != null) writeOPN2P.accept(reg);
         }
     }
 
-    public void writeC4231Register(ChipDatum reg) {
+    private void writeC4231Register(ChipDatum reg) {
         synchronized (lockObjWriteReg) {
             if (writeC4231 != null) writeC4231.accept(reg);
         }
     }
 
-    public byte readC4231Register(byte regAddr) {
+    private byte readC4231Register(byte regAddr) {
         synchronized (lockObjWriteReg) {
             return readC4231 != null ? readC4231.apply(regAddr) : (byte) 0;
         }
@@ -319,7 +319,7 @@ public class Driver implements IDriver {
         }
     }
 
-    public void int0BEnt() {
-        nax.Int0bEntry();
+    private void int0BEnt() {
+        nax.int0BEntry();
     }
 }

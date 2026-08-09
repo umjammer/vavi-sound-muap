@@ -35,7 +35,7 @@ public class Compiler implements ICompiler {
     private static final Logger logger = System.getLogger(Compiler.class.getName());
 
     private static final ResourceBundle rb = ResourceBundle.getBundle("muap/message");
-    public static final Charset encoding = Charset.forName("ms932");
+    private static final Charset encoding = Charset.forName("ms932");
 
     private byte[] srcBuf = null;
     private Work work = null;
