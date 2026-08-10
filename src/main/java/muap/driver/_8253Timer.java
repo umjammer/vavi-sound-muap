@@ -18,25 +18,25 @@ public class _8253Timer {
         /**
          * Gets the status and resets it to 0.
          */
-        public int getStat() {
+        int getStat() {
             int bk = _stat;
             _stat = 0;
             return bk;
         }
 
-        public void setStat(int value) {
+        void setStat(int value) {
             _stat = value;
         }
 
-        public int c = 3;
-        public int b = 0;
-        public boolean a = false;
-        public int val = 0;
-        public double counter = 0.0;
-        public double step = 0.0;
+        int c = 3;
+        int b = 0;
+        boolean a = false;
+        int val = 0;
+        double counter = 0.0;
+        double step = 0.0;
     }
 
-    private final Ch[] ch = new Ch[] {new Ch(), new Ch(), new Ch()};
+    private final Ch[] ch = {new Ch(), new Ch(), new Ch()};
 
     public int getCh0Stat() {
         return ch[0].getStat();

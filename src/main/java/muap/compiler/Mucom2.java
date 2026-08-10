@@ -18,15 +18,15 @@ import vavi.util.compat.Tuple3;
 /**
  * Port of MUCOM2 compiler engine.
  */
-public class Mucom2 {
+class Mucom2 {
 
     private static final Logger logger = System.getLogger(Mucom2.class.getName());
 
-    public X86Register r;
-    public final Menu menu;
-    public final Muap98 muap98;
+    private final X86Register r;
+    private final Menu menu;
+    private final Muap98 muap98;
     public MucomSub mucomsub;
-    public final Work work;
+    private final Work work;
 
     public Mucom2(X86Register r, Menu menu, Muap98 muap98, MucomSub mucomsub, Work work) {
         this.r = r;
@@ -53,7 +53,7 @@ public class Mucom2 {
         r.setAx((short) 0);
     }
 
-    public void stosbObjBufAL2DI(MmlDatum md) {
+    private void stosbObjBufAL2DI(MmlDatum md) {
         if (md == null)
             muap98.objectBuf.set(r.di++, new MmlDatum(r.al & 0xff));
         else {
@@ -259,13 +259,13 @@ public class Mucom2 {
     private static final int MXSIZE = 57;
     private static final int MYSIZE = 7;
     /** Tone number replacement buffer address (256 bytes) */
-    public static final int TONEOFS = (MXSIZE + 4) * (MYSIZE + 2) * 3;
+    private static final int TONEOFS = (MXSIZE + 4) * (MYSIZE + 2) * 3;
     public final byte[] TONEOFSbuf = new byte[256];
     /** Stack for if then/exit (128 bytes) */
-    public static final int IFSTACK = TONEOFS + 256;
+    private static final int IFSTACK = TONEOFS + 256;
     public final byte[] IFSTACKbuf = new byte[128];
     /** 1-character macro cache (52 bytes) */
-    public static final int MACACHE = IFSTACK + 128;
+    private static final int MACACHE = IFSTACK + 128;
     public final byte[] MACACHEbuf = new byte[52];
 //    /**/ Internal volume of V1 (+3) */
 //    private static final int VOLBASE = 80;
@@ -509,13 +509,13 @@ public class Mucom2 {
     private static final String mess_11 = "Info Output$";
 
     /** Internal volume of V1 (+3) */
-    public static final int VOLBASE = 80;
+    private static final int VOLBASE = 80;
     /** Source start address */
     private static final int srctop = 0;
     /** MML version */
     public byte mmlver = 0x30;
     /** b0=Tuplet mode, b1=Scale outputted?, b2=Chord @+@%@- */
-    public final byte[] mode = new byte[] {0, 0};
+    public final byte[] mode = {0, 0};
     // b3=&Auto-tie prohibited, b4=Clear accidental on newline, b5=Z inversion mode
     // b6='F3 non-output, b7=Auto-tie request
     // db 0 ; b0=[] Converting, b1=1-character macro
@@ -562,7 +562,7 @@ public class Mucom2 {
     /** Ritardando start tempo */
     public int tmpstt = 0;
     /** For note analysis length storage */
-    public byte lensave = 0;
+    private byte lensave = 0;
 
     /** Tempo storage */
     public int tempos = 120;
@@ -709,7 +709,7 @@ public class Mucom2 {
     public byte ifflag = 0;
 
     /** Total length + length between loop exits */
-    public final int[] allLen = new int[64];
+    private final int[] allLen = new int[64];
     // Length for nested parts in loop
     /** Macro variable buffer */
     public final int[] macrov = new int[18];
@@ -1876,7 +1876,7 @@ divsafe1:
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
         MmlDatum md = new MmlDatum(MMLType.Note, new ArrayList<>(Arrays.asList(0, 0)), lp, 0);
-        work.md = work.FlashLstMd(md);
+        work.md = work.flashLstMd(md);
 
         set_symbol2(); // Storage of source addresses
         check_comlen(); // Check the color-changing lyrics
@@ -2305,7 +2305,7 @@ divsafe1:
     }
 
     private static final String codedta = "m:6:m6:7:m7:M7:mM7:sus4:7sus4:(+5):(-5):7(+5):7(-5):m7(-5):dim:add9:madd9:69:m69:7(+9):7(-9):9:m9:9(+5):9(-5):M9:mM9:11:m11:9(+11):13:";
-    private final byte[] codetne = new byte[] {0x00, 0x04, 0x07, (byte) 0xff, 0x00, 0x03, 0x07, (byte) 0xff, 0x00, 0x04, 0x07, 0x09, 0x00, 0x03, 0x07, 0x09, 0x00, 0x04, 0x07, 0x0a, 0x00, 0x03, 0x07, 0x0a, 0x00, 0x04, 0x07, 0x0b, 0x00, 0x03, 0x07, 0x0b, 0x00, 0x05, 0x07, (byte) 0xff, 0x00, 0x05, 0x07, 0x0a, 0x00, 0x04, 0x08, (byte) 0xff, 0x00, 0x04, 0x06, (byte) 0xff, 0x00, 0x04, 0x08, 0x0a, 0x00, 0x04, 0x06, 0x0a, 0x00, 0x03, 0x06, 0x0a, 0x00, 0x03, 0x06, 0x09, 0x00, 0x04, 0x07, 0x0e, 0x00, 0x03, 0x07, 0x0e, 0x04, 0x09, 0x0e, (byte) 0xff, 0x03, 0x09, 0x0e, (byte) 0xff, 0x04, 0x0a, 0x0f, (byte) 0xff, 0x04, 0x0a, 0x0d, (byte) 0xff, 0x04, 0x0a, 0x0e, (byte) 0xff, 0x03, 0x0a, 0x0e, (byte) 0xff, 0x04, 0x08, 0x0a, 0x0e, 0x04, 0x06, 0x0a, 0x0e, 0x04, 0x07, 0x0b, 0x0e, 0x03, 0x07, 0x0b, 0x0e, 0x0a, 0x10, 0x11, (byte) 0xff, 0x0a, 0x0f, 0x11, (byte) 0xff, 0x04, 0x06, 0x0a, 0x0e, 0x04, 0x09, 0x0a, 0x0e};
+    private final byte[] codetne = {0x00, 0x04, 0x07, (byte) 0xff, 0x00, 0x03, 0x07, (byte) 0xff, 0x00, 0x04, 0x07, 0x09, 0x00, 0x03, 0x07, 0x09, 0x00, 0x04, 0x07, 0x0a, 0x00, 0x03, 0x07, 0x0a, 0x00, 0x04, 0x07, 0x0b, 0x00, 0x03, 0x07, 0x0b, 0x00, 0x05, 0x07, (byte) 0xff, 0x00, 0x05, 0x07, 0x0a, 0x00, 0x04, 0x08, (byte) 0xff, 0x00, 0x04, 0x06, (byte) 0xff, 0x00, 0x04, 0x08, 0x0a, 0x00, 0x04, 0x06, 0x0a, 0x00, 0x03, 0x06, 0x0a, 0x00, 0x03, 0x06, 0x09, 0x00, 0x04, 0x07, 0x0e, 0x00, 0x03, 0x07, 0x0e, 0x04, 0x09, 0x0e, (byte) 0xff, 0x03, 0x09, 0x0e, (byte) 0xff, 0x04, 0x0a, 0x0f, (byte) 0xff, 0x04, 0x0a, 0x0d, (byte) 0xff, 0x04, 0x0a, 0x0e, (byte) 0xff, 0x03, 0x0a, 0x0e, (byte) 0xff, 0x04, 0x08, 0x0a, 0x0e, 0x04, 0x06, 0x0a, 0x0e, 0x04, 0x07, 0x0b, 0x0e, 0x03, 0x07, 0x0b, 0x0e, 0x0a, 0x10, 0x11, (byte) 0xff, 0x0a, 0x0f, 0x11, (byte) 0xff, 0x04, 0x06, 0x0a, 0x0e, 0x04, 0x09, 0x0a, 0x0e};
 
     /**
      * Processing after chord analysis.
@@ -2844,7 +2844,7 @@ divsafe1:
     /**
      * Tuplet command processing
      */
-    public void renpu() {
+    private void renpu() {
         r.al = chglen; // Save note length before tuplet
         renplen = r.al;
         disave3 = r.di; // Save address to store note length
@@ -3002,7 +3002,7 @@ divsafe1:
     /**
      * Automatic slur/tie command processing
      */
-    public void tie() {
+    private void tie() {
         r.setAx((short) dionpu);
         r.setDx((short) 1);
         move_obj();
@@ -3029,7 +3029,7 @@ divsafe1:
     /**
      * Processing of simple tie command
      */
-    public void tie2() {
+    private void tie2() {
         if ((r.ch & 0xff) != 11) {
             tie(); // Maximize note length ratio
             // PCM simply outputs F8
@@ -3046,7 +3046,7 @@ divsafe1:
     /**
      * Staccato processing (Q4)
      */
-    public void stak() {
+    private void stak() {
         r.setAx((short) dionpu);
         r.cl = muap98.sourceBuf[r.getBx() & 0xffff];
         if (r.cl != 0x22) {
@@ -3100,7 +3100,7 @@ divsafe1:
     /**
      * Accent processing
      */
-    public void acc() {
+    private void acc() {
         r.al = muap98.sourceBuf[r.getBx() & 0xffff];
         mucomsub.chknum(); // Number check
         if (r.carry) {
@@ -3135,7 +3135,7 @@ divsafe1:
     /**
      * Reverse accent processing
      */
-    public void unacc() {
+    private void unacc() {
         r.al = muap98.sourceBuf[r.getBx() & 0xffff];
         mucomsub.chknum(); // Number check
         if (r.carry) {
@@ -3170,7 +3170,7 @@ divsafe1:
     /**
      * Octave command processing
      */
-    public void oct() {
+    private void oct() {
         rednums(); // Read digit from source text
         r.zero = (r.al == 0); // Range check
         r.cl = 6;
@@ -3224,9 +3224,9 @@ divsafe1:
     /**
      * Gate time ratio set command processing
      */
-    public void ratio() {
+    private void ratio() {
         mucomsub.makeDatum(MMLType.GatetimeDiv);
-        work.md = work.FlashLstMd(work.md);
+        work.md = work.flashLstMd(work.md);
 
         rednums(); // Read digit from text
 
@@ -3305,7 +3305,7 @@ divsafe1:
     /**
      * Rest command
      */
-    public void rest() {
+    private void rest() {
         int r_ = work.row, c_ = work.col;
         set_symbol2(); // Store source address
         check_comlen(); // Check for colored lyric
@@ -3380,7 +3380,7 @@ divsafe1:
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
         MmlDatum md = new MmlDatum(0xff, MMLType.Rest, lp, work.otoLength);
-        md = work.FlashLstMd(md);
+        md = work.flashLstMd(md);
         muap98.objectBuf.set(r.di++, md); // Store rest
         disave2 = r.di; // Save last address
     }
@@ -3545,7 +3545,7 @@ divsafe1:
     /**
      * Tempo set command processing
      */
-    public void tempo() {
+    private void tempo() {
         rednum(); // Read text data and output to AX
         if (mmlver < 0x26) {
             r.setAx((short) (r.getAx() - 2)); // Tempo correction
@@ -3626,7 +3626,7 @@ divsafe1:
     /**
      * Default note length set command processing
      */
-    public void mlength() {
+    private void mlength() {
         tnelnmx(); // Calculate timer count value from note length value
         lendata = r.al; // Set to default note length
         chglen = r.al;
@@ -3710,7 +3710,7 @@ divsafe1:
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
         MmlDatum md = new MmlDatum(r.al & 0xff, MMLType.Volume, lp, r.ah & 0xff, 2);
-        md = work.FlashLstMd(md);
+        md = work.flashLstMd(md);
         muap98.objectBuf.set(r.di, md);
         muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah & 0xff));
         r.di += 2;
@@ -3730,7 +3730,7 @@ divsafe1:
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
         MmlDatum md = new MmlDatum(r.al & 0xff, MMLType.VolumeUp, lp, r.ah & 0xff);
-        md = work.FlashLstMd(md);
+        md = work.flashLstMd(md);
         muap98.objectBuf.set(r.di, md);
         muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah & 0xff));
         r.di += 2;
@@ -3747,7 +3747,7 @@ divsafe1:
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
         MmlDatum md = new MmlDatum(r.al & 0xff, MMLType.VolumeDown, lp, r.ah & 0xff);
-        md = work.FlashLstMd(md);
+        md = work.flashLstMd(md);
         muap98.objectBuf.set(r.di, md);
         muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah & 0xff));
         r.di += 2;

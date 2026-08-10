@@ -78,7 +78,7 @@ public class Program {
     }
 
     /** */
-    void plat(String filename) throws Exception {
+    private void plat(String filename) throws Exception {
         List<MmlDatum> bl = new ArrayList<>();
         byte[] srcBuf = Files.readAllBytes(Paths.get(filename));
         String objPath = Paths.get(filename).toAbsolutePath().getParent().toString();

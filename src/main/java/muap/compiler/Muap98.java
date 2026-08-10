@@ -13,16 +13,16 @@ import vavi.util.compat.Tuple3;
 
 
 /** */
-public class Muap98 {
+class Muap98 {
 
-    public final byte[] m_mode = new byte[] {0, 0, 0, 8};
-    public static final int object_ = 0xc000;
-    public final AutoExtendList<MmlDatum> objectBuf = new AutoExtendList<>(MmlDatum.class);
+    final byte[] m_mode = {0, 0, 0, 8};
+    static final int object_ = 0xc000;
+    final AutoExtendList<MmlDatum> objectBuf = new AutoExtendList<>(MmlDatum.class);
     public static final int source = 0xb000;
-    public byte[] sourceBuf = null;
+    byte[] sourceBuf = null;
     /** Kuma: TONEOFS buffer is defined separately */
     public static final int text = 0xa800;
-    public final byte[] text_Buf = new byte[0x8000];
+    final byte[] text_Buf = new byte[0x8000];
     /** $124 tone data buffer segment */
     public static final int tone = 0;
     /** Kuma: Buffer for storing tone data */

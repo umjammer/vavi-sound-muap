@@ -21,13 +21,13 @@ import vavi.util.compat.Tuple;
 // YM2608+3438 Music Integrated Driver NAX3 version 6.32
 // copyright(C)1987,1989-1995 by Packen Software[jan.5.1996]
 //
-public class Nax {
+class Nax {
 
     private static final Logger logger = System.getLogger(Nax.class.getName());
 
-    public static class NAXException extends Exception {
+    private static class NAXException extends Exception {
 
-        public NAXException(String message) {
+        NAXException(String message) {
             super(message);
         }
     }
@@ -41,7 +41,7 @@ public class Nax {
     public final Play4 play4;
     public static final Charset encoding = Charset.forName("ms932");
     private byte[] filebuf;
-    public final String objPath;
+    private final String objPath;
 
     // For self-modification detection
     private static final int port11 = 0x188;
@@ -98,7 +98,7 @@ public class Nax {
         this.toneBuffFromOutside = toneBuffFromOutside;
         work.fifoBuf = new byte[FIFO_SIZE * MAXBUF * 2];
         for (int i = 0; i < FIFO_SIZE * MAXBUF * 2; i++) work.fifoBuf[i] = (byte) 0x80;
-        work.int0bEnt = this::Int0bEntry;
+        work.int0bEnt = this::int0BEntry;
 
         initParaJump();
         initJmpTbl();
@@ -107,15 +107,15 @@ public class Nax {
         inst();
     }
 
-    public void Int08Entry() {
+    public void int08Entry() {
         play4.int08ent();
     }
 
-    public void TimerEntry() {
+    public void timerEntry() {
         play4.timer_entry();
     }
 
-    public void Int0bEntry() {
+    public void int0BEntry() {
         play4.int0bent();
     }
 
@@ -289,14 +289,14 @@ public class Nax {
     private String pcmd_path = "PCM.DTA";
     private String ssg1_path = "SSGPCM.DTA";
     private String ssg2_path = "SSGPCM.TBL";
-    public static final byte[] dma_ch_data = {
+    private static final byte[] dma_ch_data = {
             0x01, 0x01, 0x03, 0x27,
             0x02, 0x05, 0x07, 0x21,
             0x07, 0x00, 0x00, 0x00,
             0x03, 0x0d, 0x0f, 0x25
     };
 
-    public void initCallMenu() {
+    private void initCallMenu() {
         //
         // Set paths based on environment variables
         //
@@ -889,19 +889,19 @@ public class Nax {
     // E:32.00K, F:27.42K, G:22.05K, H:18.90K,
     // I:16.54K, J:16.00K, K:11.03K, L: 9.60K,
     // M: 8.27K, N: 8.00K, O: 6.62K, P: 5.51K
-    private final byte[] freq86b = new byte[] {
+    private final byte[] freq86b = {
             0b000, 0b000, 0b001, 0b001,
             0b001, 0b010, 0b010, 0b010,
             0b011, 0b011, 0b100, 0b100,
             0b101, 0b101, 0b110, 0b110
     };
-    private final byte[] freqwss = new byte[] {
+    private final byte[] freqwss = {
             0b1100, 0b1011, 0b1001, 0b1101,
             0b0110, 0b0100, 0b0111, 0b0101,
             0b0010, 0b0010, 0b0011, 0b1110,
             0b0010, 0b0000, 0b1111, 0b0001
     };
-    private final int[] freqtbl = new int[] {
+    private final int[] freqtbl = {
             7078, 6503, 5574, 4877,
             4719, 4043, 3251, 2787,
             2439, 2359, 1626, 1416,
@@ -3147,7 +3147,7 @@ public class Nax {
         voldata = 256;
         reg.setBx((short) 0);
 
-        int[] bx = new int[] {reg.getBx() & 0xffff};
+        int[] bx = {reg.getBx() & 0xffff};
         save_extpcm(bx);
         reg.setBx((short) bx[0]);
         setnew_extpcm();

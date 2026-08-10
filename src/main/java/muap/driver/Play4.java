@@ -16,10 +16,10 @@ public class Play4 {
 
     public int fadesave = 160;
 
-    public Nax nax = null;
-    public X86Register r = null;
-    public Work work = null;
-    public int[] labelPtr = null; // new ushort[40 * 17];
+    private Nax nax = null;
+    private X86Register r = null;
+    private Work work = null;
+    private int[] labelPtr = null; // new ushort[40 * 17];
     public final int[] labelPassCnt = new int[40 * 17];
 
     public Play4(Nax nax, Work work, int[] labelPtr) {
@@ -72,16 +72,16 @@ public class Play4 {
     public byte outdata2_ = 0;
     public byte outdata3_ = 0;
     public byte outdata4_ = 0;
-    public int jump1_ = 0;
-    public int jump2_ = 0;
-    public int dsp_exit_ = 0;
+    private int jump1_ = 0;
+    private int jump2_ = 0;
+    private int dsp_exit_ = 0;
     // public int test_lop1_ = 0;
     // public int test_lop2_ = 0;
     // public int test_entry3_ = 0;
-    public long farjmp1_ = 0;
-    public long farjmp2_ = 0;
-    public int panl1_ = 0xc008; // or al,al
-    public int panl2_ = 0xc008; // or al,al
+    private long farjmp1_ = 0;
+    private long farjmp2_ = 0;
+    private int panl1_ = 0xc008; // or al,al
+    private int panl2_ = 0xc008; // or al,al
     private int level1_ = 0x007f;
     private byte level2_ = 0x7f;
     private byte level3_ = 0x7f;
@@ -167,12 +167,12 @@ public class Play4 {
     public int dma_adr = 0;
     public int dma_bank = 0;
     public int dma_count = 0;
-    public int dma_data = 0;
-    public int fifoptr1 = 0;
-    public int fifoend1 = Nax.FIFO_SIZE * 2;
-    public int fifoptr2 = Nax.FIFO_SIZE * 2;
-    public int fifoend2 = Nax.FIFO_SIZE * 4;
-    public int fifofin = Nax.FIFO_SIZE * 2 * Nax.MAXBUF;
+    private int dma_data = 0;
+    private int fifoptr1 = 0;
+    private int fifoend1 = Nax.FIFO_SIZE * 2;
+    private int fifoptr2 = Nax.FIFO_SIZE * 2;
+    private int fifoend2 = Nax.FIFO_SIZE * 4;
+    private int fifofin = Nax.FIFO_SIZE * 2 * Nax.MAXBUF;
 
     // Data buffer during performance
     // VisualPlay Work 1
@@ -369,13 +369,13 @@ public class Play4 {
     /** #3 noise frequency */
     private byte noisef = 0;
     /** #4 tempo timer value */
-    private final byte[] tempo = new byte[] {0x00, 0x02, 0x00, 0x02};
+    private final byte[] tempo = {0x00, 0x02, 0x00, 0x02};
     //dw 200h ; Dummy
 
     /** #8 rhythm table */
-    private final byte[] rhytbl = new byte[] {0, 0, 0, 0, 0, 0};
+    private final byte[] rhytbl = {0, 0, 0, 0, 0, 0};
     /** #14 played length */
-    private final int[] playlen = new int[] {0, 0};
+    private final int[] playlen = {0, 0};
     /** #18 total loop count */
     private byte playcont = 0;
     /** #19 channel stop flag (b0 to b16) */
@@ -429,15 +429,15 @@ public class Play4 {
     private static class Pcm0work {
 
         /** Extended PCM start address, EMS page */
-        public final int[] pcm0adrs = {0, 0};
+        final int[] pcm0adrs = {0, 0};
         /** Decr counter for performance * 4 */
-        public final int[] pcm0cnt = {0, 0};
+        final int[] pcm0cnt = {0, 0};
         /** Frequency */
-        public final int[] pcm0freq = {0, 0};
+        final int[] pcm0freq = {0, 0};
         /** right+left pan and data (0/FFFF) */
-        public final int[] pcm0pan = {0, 0};
+        final int[] pcm0pan = {0, 0};
         /** Volume */
-        public final int[] pcm0vol = {0, 0};
+        final int[] pcm0vol = {0, 0};
     }
 
     private final Pcm0work[] pcm0work = {
@@ -471,7 +471,7 @@ public class Play4 {
             0, 0, 0  // ch3
     };
     /** X value*10nest + 17ch 6nest. */
-    public final byte[] loopcnt = new byte[17 * 16 + 0xff];
+    private final byte[] loopcnt = new byte[17 * 16 + 0xff];
 
     /**
      * Performance start routine
@@ -1238,7 +1238,7 @@ pcm_exit: {
     /**
      * Performance stop routine
      */
-    public void music_stop() {
+    private void music_stop() {
         music_stop(null);
     }
 
@@ -1374,7 +1374,7 @@ pcm_exit: {
         return;
     }
 
-    public void outdata0a() {
+    private void outdata0a() {
         if (!checksh()) return;
 
 //outdata0:
@@ -1452,7 +1452,7 @@ pcm_exit: {
         outdata4();
     }
 
-    public void outdata4() {
+    private void outdata4() {
         if (outdata4_ == (byte) 0xc3) return;
         short dxbk = r.getDx();
         short axbk = r.getAx();
@@ -1757,7 +1757,7 @@ pcm_exit: {
      * Write data to FIFO
      */
     private void put_fifo_data() {
-        int[] bx = new int[] {0};
+        int[] bx = {0};
         nax.save_extpcm(bx); // save EMS map
         int ax = nax.fifoseg; // ES, FS = FIFO segment
         int es = ax;
@@ -4953,7 +4953,7 @@ pcm_exit: {
         }
 //comment2:
         comdataBuf[r.di] = 0; // finally store 0
-        comdata = new String(comdataBuf, 0, r.di, nax.encoding);
+        comdata = new String(comdataBuf, 0, r.di, Nax.encoding);
         logger.log(Level.INFO, comdata.substring(0, comdata.contains("\0") ? comdata.indexOf("\0") : 0));
         nax.lyric = comdata;
         r.di = r.pop();

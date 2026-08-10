@@ -24,8 +24,8 @@ import vavi.util.compat.Tuple;
 public class MucomSub {
 
     private final X86Register r;
-    public final Mucom2 mucom2;
-    public final Muap98 muap98;
+    private final Mucom2 mucom2;
+    private final Muap98 muap98;
     /** Area to save label addresses (40 labels x 17 channels) */
     public final short[] labelAdrs = new short[40 * 17];
     private final Work work;
@@ -232,7 +232,7 @@ public class MucomSub {
             linePos.ch = (byte) work.crntChannel;
             linePos.part = work.crntPart;
             MmlDatum md = new MmlDatum(r.al & 0xff, MMLType.Instrument, linePos, 0, r.ah & 0xff);
-            md = work.FlashLstMd(md);
+            md = work.flashLstMd(md);
             muap98.objectBuf.set(r.di, md);
 
             muap98.objectBuf.set(r.di + 1, new MmlDatum(r.ah & 0xff));
@@ -1316,7 +1316,7 @@ public class MucomSub {
             lp.ch = (byte) work.crntChannel;
             lp.part = work.crntPart;
             MmlDatum md = new MmlDatum(r.al & 0xff, MMLType.Pan, lp, r.ah & 0xff);
-            md = work.FlashLstMd(md);
+            md = work.flashLstMd(md);
             muap98.objectBuf.set(r.di++, md); // Store rest
             muap98.objectBuf.set(r.di++, new MmlDatum(r.ah & 0xff));
             return;
@@ -2383,7 +2383,7 @@ public class MucomSub {
         lp.ch = (byte) work.crntChannel;
         lp.part = work.crntPart;
         MmlDatum md = new MmlDatum(MMLType.Note, new ArrayList<>(Arrays.asList(0, 0)), lp, 0);
-        md = work.FlashLstMd(md);
+        md = work.flashLstMd(md);
         work.md = md;
 
         r.ch = mucom2.sendch;
@@ -4867,7 +4867,7 @@ public class MucomSub {
         r.setBx((short) 0); // ofs:ichodta ; Obtain actual shift value from note
         r.ah = 0;
         r.setBx((short) ((r.getBx() & 0xffff) + (r.getAx() & 0xffff)));
-        r.dl += mucom2.ichodta[r.getBx() & 0xffff]; // Add transposition data by note
+        r.dl += Mucom2.ichodta[r.getBx() & 0xffff]; // Add transposition data by note
         r.setAx(r.pop());
         r.setBx(r.pop());
 
@@ -5147,7 +5147,7 @@ autotie0: {
         r.setBx((short) 0); // ofs:musdata
         r.ah = 0;
         r.setBx((short) ((r.getBx() & 0xffff) + (r.getAx() & 0xffff))); // Convert note to intermediate code
-        r.cl = mucom2.musdata[r.getBx() & 0xffff]; // CDEFGAB to 0-11
+        r.cl = Mucom2.musdata[r.getBx() & 0xffff]; // CDEFGAB to 0-11
         if (r.dl == 3) {
             // Natural (%)
             natural();
@@ -5289,7 +5289,7 @@ autotie0: {
         short ans = r.pop();
         mucom2.octdata = (byte) (ans & 0xff);
         mucom2.octsave = (byte) (ans >> 8);
-        r.setDx((short) ((mucom2.data3[r.getBx() & 0xffff] & 0xff) | ((mucom2.data3[(r.getBx() & 0xffff) + 1] & 0xff) << 8))); // DX = DELTA-N data
+        r.setDx((short) ((Mucom2.data3[r.getBx() & 0xffff] & 0xff) | ((Mucom2.data3[(r.getBx() & 0xffff) + 1] & 0xff) << 8))); // DX = DELTA-N data
         if ((r.al & 0xff) > 7) {
 //error18:
             r.cl = 36;
@@ -5350,15 +5350,15 @@ autotie0: {
         // Exception processing for O9
         if (r.al == 8) {
             r.al = 0x38;
-            r.setDx((short) ((mucom2.data1[r.getBx() & 0xffff] & 0xff) | ((mucom2.data1[(r.getBx() & 0xffff) + 1] & 0xff) << 8)));
+            r.setDx((short) ((Mucom2.data1[r.getBx() & 0xffff] & 0xff) | ((Mucom2.data1[(r.getBx() & 0xffff) + 1] & 0xff) << 8)));
             r.setDx((short) ((r.getDx() & 0xffff) + (r.getDx() & 0xffff)));
             r.dh = (byte) ((r.dh & 0xff) + (r.al & 0xff));
             if ((r.getDx() & 0xffff) > 0x3fff) r.setDx((short) 0x3fff);
         } else {
 //not_o9:
-            r.al = (byte) ((r.al << 3) + mucom2.data1[(r.getBx() & 0xffff) + 1]); // set F-Number1 & Block
+            r.al = (byte) ((r.al << 3) + Mucom2.data1[(r.getBx() & 0xffff) + 1]); // set F-Number1 & Block
             r.dh = r.al;
-            r.dl = mucom2.data1[r.getBx() & 0xffff];
+            r.dl = Mucom2.data1[r.getBx() & 0xffff];
         }
 
 //set_o9:
@@ -5427,7 +5427,7 @@ autotie0: {
     private void reads() {
         r.setBx((short) 0); // ofs:data2
         r.setBx((short) ((r.getBx() & 0xffff) + (r.getAx() & 0xffff)));
-        r.setDx((short) ((mucom2.data2[r.getBx() & 0xffff] & 0xff) | ((mucom2.data2[(r.getBx() & 0xffff) + 1] & 0xff) << 8)));
+        r.setDx((short) ((Mucom2.data2[r.getBx() & 0xffff] & 0xff) | ((Mucom2.data2[(r.getBx() & 0xffff) + 1] & 0xff) << 8)));
 
         r.al = mucom2.octdata; // load oct
         short ans = r.pop();
