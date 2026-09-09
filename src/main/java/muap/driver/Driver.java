@@ -266,7 +266,7 @@ public class Driver implements IDriver {
 
             work.timerOPNA1 = new OPNATimer(this.renderingFreq, this.opnaMasterClock);
             work._8253timer = new _8253Timer(this.renderingFreq);
-            logger.log(Level.TRACE, String.format("OPNA MasterClock %d".formatted(opnaMasterClock)));
+            logger.log(Level.TRACE, "OPNA MasterClock %d".formatted(opnaMasterClock));
             logger.log(Level.TRACE, "Start rendering.");
         }
     }

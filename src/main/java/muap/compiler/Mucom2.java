@@ -98,7 +98,7 @@ class Mucom2 {
     private static void putword(String msg) {
         int idx = msg.indexOf("$");
         String m = idx != -1 ? msg.substring(0, idx) : msg;
-        logger.log(Level.INFO, m);
+        System.out.print(m);
     }
 
     private static void putchr(byte c) {
@@ -108,11 +108,11 @@ class Mucom2 {
     private static void putchrs(byte[] c) {
         StringBuilder sb = new StringBuilder();
         for (byte b : c) sb.append((char) b);
-        logger.log(Level.INFO, sb.toString());
+        System.out.print(sb);
     }
 
     private static void putstr(String fmt, Object... prm) {
-        logger.log(Level.INFO, String.format(fmt, prm));
+        System.out.printf(fmt, prm);
     }
 
     private void loadText() {

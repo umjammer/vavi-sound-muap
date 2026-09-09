@@ -2946,7 +2946,7 @@ pcm_exit: {
             dx_ret = r.getDx() & 0xffff; // Note: pushed return address to stack
             r.setBx((short) ((r.getBx() & 0xffff) + 1));
             r.al = r.ah;
-            // if(r.si==12) logger.log(Level.ERROR, String.format("%d", r.di/2));
+            //if (r.si==12) logger.log(Level.ERROR, "%d".formatted(r.di / 2));
             jump_table1[(r.di & 0xffff) / 2].run();
             if (another1Flg) {
                 another1();
