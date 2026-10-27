@@ -2946,7 +2946,7 @@ pcm_exit: {
             dx_ret = r.getDx() & 0xffff; // Note: pushed return address to stack
             r.setBx((short) ((r.getBx() & 0xffff) + 1));
             r.al = r.ah;
-            // if(r.si==12) logger.log(Level.ERROR, String.format("%d", r.di/2));
+            //if (r.si==12) logger.log(Level.ERROR, "%d".formatted(r.di / 2));
             jump_table1[(r.di & 0xffff) / 2].run();
             if (another1Flg) {
                 another1();
@@ -3293,7 +3293,9 @@ pcm_exit: {
      */
     private void codeset() {
         r.setBx((short) ((r.getBx() & 0xffff) + 1));
-        if ((r.ah & 0xff) == 2) {
+        // CH is the channel (C# r.ch), not AH: with AH the channel-2 case fell through and wrote
+        // reg 0x27 = AH | 0xc, which dropped the timer load bits and froze the song on its first note
+        if ((r.ch & 0xff) == 2) {
             codem1 = r.al;
             return;
         }

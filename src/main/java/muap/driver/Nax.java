@@ -332,15 +332,15 @@ class Nax {
 
     private void dsp_help(String arg) throws NAXException {
         // Display parameter help
-        logger.log(Level.INFO, mess_2);
+        System.err.print(mess_2);
         throw new NAXException("Exit without becoming resident");
     }
 
     private static void putasciz(String mes, int sw) {
         if (sw == 0)
-            logger.log(Level.INFO, mes + ".");
+            System.out.print(mes + ".");
         else if (sw == 1)
-            logger.log(Level.INFO, mes);
+            System.out.print(mes);
     }
 
     //
@@ -348,7 +348,7 @@ class Nax {
     // The following programs for residency
     //
     private void inst() {
-        logger.log(Level.INFO, mess_3); // Initial message
+        System.out.print(mess_3); // Initial message
 
         check_port(); // Identification of YM2608 port
         check_extend(); // YM3438

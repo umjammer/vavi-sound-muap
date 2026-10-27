@@ -5,7 +5,7 @@
 
 # vavi-sound-muap
 
-<img alt="logo" src="src/test/resources/duke_ewi.png" width="160" />
+<img alt="logo" src="src/test/resources/duke_ocarina.png" width="160" />
 
 🪕 Java version of Muap.
 

@@ -99,9 +99,9 @@ public class Compiler implements ICompiler {
 //#if DEBUG
 //        if (muap98 != null) {
 //            for (int j = 0; j < 16 * 16; j++) {
-//                StringBuilder hex = new StringBuilder(String.format("%02X: ", j * 16));
+//                StringBuilder hex = new StringBuilder("%02X: ".formatted(j * 16));
 //                for (int i = 0; i < 16; i++) {
-//                    hex.append(String.format("%02X ", muap98.objectBuf.get(i + j * 16).dat));
+//                    hex.append("%02X ".formatted(muap98.objectBuf.get(i + j * 16).dat));
 //                }
 //                logger.log(Level.TRACE, hex.toString());
 //            }

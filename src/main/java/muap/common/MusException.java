@@ -25,6 +25,6 @@ public class MusException extends RuntimeException implements Serializable {
 
     /** */
     public MusException(String message, int row, int col) {
-        super(String.format(rb.getString("E0300"), row, col, message));
+        super(rb.getString("E0300").formatted(row, col, message));
     }
 }

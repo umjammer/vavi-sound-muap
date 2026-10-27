@@ -97,16 +97,24 @@ public class Driver implements IDriver {
 
         int aLoopCnt = nax.play4.init_cnt & 0xFF;
 
-        int lookUpLabel = 0;
-        int max0 = 0;
-        for (int i = 0; i < 17; i++) {
-            int dmy = nax.play4.labelPassCnt[i * 40 + lookUpLabel];
-            if (dmy >= 0) {
-                max0 = Math.max(max0, dmy);
+        // a song loops by "@jumpN" back to any "@labelN", each channel on its own and at its own
+        // length, so it has gone round once every channel that has a label jumped back. The C# only
+        // looked at label 0 and took the max, so a song looping to "@label1" never came round at all.
+        int min = Integer.MAX_VALUE;
+        if (labelPtr != null) {
+            for (int ch = 0; ch < 17; ch++) {
+                boolean labelled = false;
+                int passes = 0;
+                for (int l = 0; l < 40; l++) {
+                    if (labelPtr[ch * 40 + l] == 0) continue;
+                    labelled = true;
+                    passes = Math.max(passes, nax.play4.labelPassCnt[ch * 40 + l]);
+                }
+                if (labelled) min = Math.min(min, passes);
             }
         }
 
-        return Math.max(aLoopCnt, max0);
+        return Math.max(aLoopCnt, min == Integer.MAX_VALUE ? 0 : min);
     }
 
     @Override
@@ -266,7 +274,7 @@ public class Driver implements IDriver {
 
             work.timerOPNA1 = new OPNATimer(this.renderingFreq, this.opnaMasterClock);
             work._8253timer = new _8253Timer(this.renderingFreq);
-            logger.log(Level.TRACE, String.format("OPNA MasterClock %d".formatted(opnaMasterClock)));
+            logger.log(Level.TRACE, "OPNA MasterClock %d".formatted(opnaMasterClock));
             logger.log(Level.TRACE, "Start rendering.");
         }
     }
