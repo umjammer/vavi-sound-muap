@@ -126,7 +126,7 @@ public class Pc98 {
                 if (l == 0x88) return 0; // (byte) work.timerOPNA1.statReg;
                 if (l == 0x8a) {
                     // SSG can be read
-                    if ((fmAdr[m] & 0xff) < 0x10) return fmReg[m][fmAdr[m] & 0xff];
+                    if ((fmAdr[m * 2] & 0xff) < 0x10) return fmReg[m * 2][fmAdr[m * 2] & 0xff];
                 }
             } else if (connectFMDevice[sdm][m] == 2) { // YM3438
                 if (l == 0x88) return (byte) 0xff;
@@ -141,8 +141,12 @@ public class Pc98 {
                 if (l == 0x88) {
                     return (byte) (work.timerOPNA1.statReg | 0x80);
                 } else if (l == 0x8a) {
-                    if (lastPort == 0x88 && lastData == 0xff) return 1; // Identify as 2608
-                    if ((fmAdr[m] & 0xff) < 0x10) return fmReg[m][fmAdr[m] & 0xff]; // SSG can be read
+                    // the C# compares (byte) lastPort: the address port is 0x188, not 0x88. Missing
+                    // it made every OPNA look like a bare YM2203, and NAX then never ran a song past
+                    // its first note
+                    if ((lastPort & 0xff) == 0x88 && lastData == 0xff) return 1; // Identify as 2608
+                    // outportB keeps port m's registers at m * 2 (and its extended ones at m * 2 + 1)
+                    if ((fmAdr[m * 2] & 0xff) < 0x10) return fmReg[m * 2][fmAdr[m * 2] & 0xff]; // SSG can be read
                     return 0;
                 } else if (l == 0x8c) {
                     return (byte) 0x88; // bit7: busy, bit3: pcm
